@@ -277,4 +277,8 @@ public class Engine {
         }
         return count >= c;
     }
+    
+    private static boolean helper1() {
+        return false; 
+    }
 }
