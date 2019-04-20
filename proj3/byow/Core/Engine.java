@@ -277,12 +277,4 @@ public class Engine {
         }
         return count >= c;
     }
-    
-    private static boolean helper1() {
-        return false;
-    }
-
-    private static void helper2() {
-        System.out.println("helper 2");
-    }
 }
