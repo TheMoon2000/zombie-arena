@@ -17,7 +17,11 @@ public class Engine {
     TERenderer ter = new TERenderer();
     /* Feel free to change the width and height. */
     public static final int WIDTH = 80;
+<<<<<<< HEAD
     public static final int HEIGHT = 40;
+=======
+    public static final int HEIGHT = 50;
+>>>>>>> f77b9ba8d54ea3c191771166233be9b3dadd3963
 
     /**
      * Method used for exploring a fresh world. This method should handle all inputs,
