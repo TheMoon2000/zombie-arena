@@ -277,4 +277,8 @@ public class Engine {
         }
         return count >= c;
     }
+
+    private static void helper2() {
+        System.out.println("helper 2");
+    }
 }
