@@ -279,6 +279,10 @@ public class Engine {
     }
     
     private static boolean helper1() {
-        return false; 
+        return false;
+    }
+
+    private static void helper2() {
+        System.out.println("helper 2");
     }
 }
