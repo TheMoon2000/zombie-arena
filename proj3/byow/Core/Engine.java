@@ -2,12 +2,15 @@ package byow.Core;
 
 import byow.InputDemo.InputSource;
 import byow.InputDemo.StringInputDevice;
+import byow.TileEngine.Tileset;
 import byow.utils.NearTree;
 import byow.utils.Point;
 
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 public class Engine {
@@ -58,7 +61,13 @@ public class Engine {
 
         int seed = getSeed(source);
 
-        TETile[][] finalWorldFrame = null;
+        TETile[][] finalWorldFrame = new TETile[WIDTH][HEIGHT];
+        generateWorld(finalWorldFrame, seed);
+        fillTheRest(finalWorldFrame);
+
+        // For visualization
+        ter.renderFrame(finalWorldFrame);
+        
         return finalWorldFrame;
     }
 
@@ -66,8 +75,76 @@ public class Engine {
 
     // Helper methods
 
+    /**
+     * Generate a random world based on a seed
+     * @param tiles the tiles matrix
+     * @param seed the seed for the random generator instance
+     */
 
-    /** Gets the seed number from an input source
+    private void generateWorld(TETile[][] tiles, int seed) {
+        Random random = new Random(seed);
+        final int numberOfRooms = random.nextInt(24) + 10;
+
+        Map<Point, Point> originToSize = new HashMap<>();
+
+        // Add some random rooms to the world
+
+        while (originToSize.size() < numberOfRooms) {
+            int dx = random.nextInt(5) + 2;
+            int dy = random.nextInt(5) + 2;
+            int x = random.nextInt(WIDTH - dx - 2) + 1;
+            int y = random.nextInt(HEIGHT - dy - 2) + 1;
+
+            if (!hasNearby(tiles, x, y, Tileset.FLOOR, 1)
+                    && !hasNearby(tiles, x + dx, y + dy, Tileset.FLOOR, 1)
+                    && !hasNearby(tiles, x, y + dy, Tileset.FLOOR, 1)
+                    && !hasNearby(tiles, x + dx, y, Tileset.FLOOR, 1)) {
+                fill(x, y, dx, dy, tiles, Tileset.FLOOR);
+                Point startPoint = new Point(x, y);
+                originToSize.put(startPoint, new Point(dx, dy));
+            }
+        }
+
+        NearTree points = new NearTree(originToSize.keySet());
+
+
+        // Connect the rooms together
+
+        for (Point p: originToSize.keySet()) {
+            // q will always be a point that p isn't connected with
+            Point q = points.nearest(p.getX(), p.getY());
+            if (p.equals(q)) {
+                throw new RuntimeException("p = q!");
+            }
+            Point pSize = originToSize.get(p);
+            Point qSize = originToSize.get(q);
+
+            Point s = randomPoint(p.getX(), p.getY(), pSize.getX(), pSize.getY(), random);
+            Point t = randomPoint(q.getX(), q.getY(), qSize.getX(), qSize.getY(), random);
+
+            int minX = Math.min(s.getX(), t.getX());
+            int minY = Math.min(s.getY(), t.getY());
+            int maxX = Math.max(s.getX(), t.getX());
+            int maxY = Math.max(s.getY(), t.getY());
+
+            if (random.nextBoolean()) {
+                // First go vertically then horizontally
+                fill(s.getX(), minY, 0, maxY - minY, tiles, Tileset.FLOOR);
+                fill(minX, t.getY(), maxX - minX, 0, tiles, Tileset.FLOOR);
+            } else {
+                // First go horizontally then vertically
+                fill(minX, s.getY(), maxX - minX, 0, tiles, Tileset.FLOOR);
+                fill(t.getX(), minY, 0, maxY - minY, tiles, Tileset.FLOOR);
+
+            }
+
+
+        }
+    }
+
+
+    /**
+     * Gets the seed number from an input source
      * @param source The input source
      * */
 
@@ -89,8 +166,26 @@ public class Engine {
         return seed;
     }
 
+    /**
+     * Fill up a rectangular region in the given tiles matrix
+     * @param x x-coordinate of the origin
+     * @param y y-coordinate of the origin
+     * @param dx the
+     * @param dy
+     * @param tiles
+     * @param p
+     */
 
-    /** Generates a random point from the given rectangular region
+    private static void fill(int x, int y, int dx, int dy, TETile[][] tiles, TETile p) {
+        for (int i = x; i <= x + dx; i++) {
+            for (int j = y; j <= y + dy; j++) {
+                tiles[i][j] = p;
+            }
+        }
+    }
+
+    /**
+     * Generates a random point from the given rectangular region
      * @param x origin's x
      * @param y origin's y
      * @param dx width of rectangle
@@ -101,6 +196,26 @@ public class Engine {
     private static Point randomPoint(int x, int y, int dx, int dy, Random r) {
         return new Point(RandomUtils.uniform(r, x, x + dx + 1),
                       RandomUtils.uniform(r, y, y + dy + 1));
+    }
+
+
+    /**
+     * Fills up the empty space with appropriate tiles
+     * @param tiles the tiles to fill up
+     * */
+
+    private static void fillTheRest(TETile[][] tiles) {
+        for (int w = 0; w < WIDTH; w++) {
+            for (int h = 0; h < HEIGHT; h++) {
+                if (hasNearby(tiles, w, h, Tileset.FLOOR, 8) && tiles[w][h] == null) {
+                    tiles[w][h] = Tileset.FLOOR;
+                } else if (tiles[w][h] == null && hasNearby(tiles, w, h, Tileset.FLOOR, 1)) {
+                    tiles[w][h] = Tileset.WALL;
+                } else if (tiles[w][h] == null) {
+                    tiles[w][h] = Tileset.NOTHING;
+                }
+            }
+        }
     }
 
 

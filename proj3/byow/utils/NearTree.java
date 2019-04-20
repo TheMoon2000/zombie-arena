@@ -8,7 +8,7 @@ public class NearTree implements PointSet {
     private WeightedQuickUnionUF connections;
     private Map<Point, Integer> pointToIndex;
 
-    NearTree(Iterable<Point> points) {
+    public NearTree(Iterable<Point> points) {
         pointToIndex = new HashMap<>();
         int i = 0;
         for (Point p: points) {
