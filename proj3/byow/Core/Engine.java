@@ -174,12 +174,7 @@ public class Engine {
                             ter.renderFrame(tiles);
 
                             //create information bar on top
-                            StdDraw.setPenColor(StdDraw.RED);
-                            StdDraw.filledCircle(5,HEIGHT + 2,1);
-                            StdDraw.setPenColor(StdDraw.WHITE);
-                            StdDraw.text(10,HEIGHT + 2,"Health Points");
-                            StdDraw.text(5,HEIGHT + 2,"100");
-                            StdDraw.show();
+                            renewDisplayBar("Monster",100,100000,"Machine gun","20/40",10);
                         }
                     } else if (player != null) {
                         System.out.print("\n[Move back]");
@@ -246,6 +241,54 @@ public class Engine {
 
 
         return tiles;
+    }
+
+    /**
+     * Helper method that creates an display bar on top
+     * Should be called every time a key is pressed or a state is supdated
+     * Fields include tile information, health, points, current weapon, weapon ammo, wave number.
+     */
+    private void renewDisplayBar(String tile, int health, int points, String weapon, String ammo, int wave) {
+        //tile information
+        StdDraw.setPenColor(StdDraw.WHITE);
+        StdDraw.text(5,HEIGHT + 2,tile);
+
+        //health information
+        StdDraw.setPenColor(StdDraw.RED);
+        StdDraw.filledCircle(13,HEIGHT + 2,1);
+        StdDraw.setPenColor(StdDraw.WHITE);
+        StdDraw.text(16,HEIGHT + 2,"Health");
+        StdDraw.text(13,HEIGHT + 2,Integer.toString(health));
+
+        //point information
+        StdDraw.setPenColor(StdDraw.BLUE);
+        StdDraw.filledRectangle(24,HEIGHT + 2,2,1);
+        StdDraw.setPenColor(StdDraw.WHITE);
+        StdDraw.text(28,HEIGHT + 2,"Points");
+        StdDraw.text(24,HEIGHT + 2,Integer.toString(points));
+
+        //weapon information
+        StdDraw.setPenColor(StdDraw.BOOK_RED);
+        StdDraw.filledEllipse(36,HEIGHT + 2,3,1);
+        StdDraw.setPenColor(StdDraw.WHITE);
+        StdDraw.text(41,HEIGHT + 2,"Weapon");
+        StdDraw.text(36,HEIGHT + 2,weapon);
+
+        //Ammo information
+        StdDraw.setPenColor(StdDraw.PRINCETON_ORANGE);
+        StdDraw.filledRectangle(49,HEIGHT + 2,1.5,1);
+        StdDraw.setPenColor(StdDraw.WHITE);
+        StdDraw.text(52.5,HEIGHT + 2,"Ammo");
+        StdDraw.text(49,HEIGHT + 2,ammo);
+
+        //Wave information
+        StdDraw.setPenColor(StdDraw.WHITE);
+        StdDraw.text(58,HEIGHT + 2,"Wave:");
+        StdDraw.text(60,HEIGHT + 2,Integer.toString(wave));
+
+        StdDraw.show();
+
+
     }
 
     /**
