@@ -10,10 +10,15 @@ public class Player extends GameCharacter {
     public Weapon[] weapon; // Player has the ability to use weapons
     private Point location;
     private Direction orientation;
+    private int points;
+    private int wave;
+    private static final int MAX_WAVE = 10;
 
     public Player(TETile[][] tiles, Point location) {
         super(tiles);
         this.health = 100;
+        points = 0;
+        wave = 1;
         weapon = new Weapon[] {Weapon.makePistol(), Weapon.makeSword()};
 
         // Make default orientation North
@@ -86,5 +91,34 @@ public class Player extends GameCharacter {
 
     public Point getLocation() {
         return location;
+    }
+
+    public int getPoints() {
+        return points;
+    }
+
+    public Player addPoints(int p) {
+        points += p;
+        return this;
+    }
+
+    public Player deductPoints(int p) {
+        if (points < p) {
+            return null;
+        }
+        points -= p;
+        return this;
+    }
+
+    public Player nextWave() {
+        if (wave == MAX_WAVE) {
+            return null;
+        }
+        wave += 1;
+        return this;
+    }
+
+    public int currentWave() {
+        return wave;
     }
 }
