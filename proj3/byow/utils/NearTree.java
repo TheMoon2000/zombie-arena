@@ -43,6 +43,9 @@ public class NearTree implements PointSet {
                 returnPoint = node2.point;
             }
         }
+        if (connections.connected(pointToIndex.get(target), pointToIndex.get(returnPoint))) {
+            return target;
+        }
         connections.union(pointToIndex.get(target), pointToIndex.get(returnPoint));
         return returnPoint;
     }

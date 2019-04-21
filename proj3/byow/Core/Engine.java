@@ -287,7 +287,7 @@ public class Engine {
             // q will always be a point that p isn't connected with
             Point q = points.nearest(p.getX(), p.getY());
             if (p.equals(q)) {
-                throw new RuntimeException("p = q!");
+                break;
             }
             Point pSize = originToSize.get(p);
             Point qSize = originToSize.get(q);
