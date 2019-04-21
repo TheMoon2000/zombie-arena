@@ -25,8 +25,6 @@ public class Player extends GameCharacter {
     public Point move(Direction direction) {
         int x = location.getX(), y = location.getY();
 
-        tiles[x][y] = Tileset.FLOOR;
-
         switch (direction) {
             case North:
                 if (!orientation.equals(Direction.North)) {
@@ -35,6 +33,7 @@ public class Player extends GameCharacter {
                     return location;
                 } else if (y + 1 < tiles[0].length && tiles[x][y + 1].equals(Tileset.FLOOR)) {
                     tiles[x][y + 1] = Tileset.PLAYER_NORTH;
+                    tiles[x][y] = Tileset.FLOOR;
                     location = new Point(x, y + 1);
                     return location;
                 }
@@ -46,6 +45,7 @@ public class Player extends GameCharacter {
                     return location;
                 } else if (y > 0 && tiles[x][y - 1].equals(Tileset.FLOOR)) {
                     tiles[x][y - 1] = Tileset.PLAYER_SOUTH;
+                    tiles[x][y] = Tileset.FLOOR;
                     location = new Point(x, y - 1);
                     return location;
                 }
@@ -57,6 +57,7 @@ public class Player extends GameCharacter {
                     return location;
                 } else if (x > 0 && tiles[x - 1][y].equals(Tileset.FLOOR)) {
                     tiles[x - 1][y] = Tileset.PLAYER_WEST;
+                    tiles[x][y] = Tileset.FLOOR;
                     location = new Point(x - 1, y);
                     return location;
                 }
@@ -68,6 +69,7 @@ public class Player extends GameCharacter {
                     return location;
                 } else if (x + 1 < tiles.length && tiles[x + 1][y].equals(Tileset.FLOOR)) {
                     tiles[x + 1][y] = Tileset.PLAYER_EAST;
+                    tiles[x][y] = Tileset.FLOOR;
                     location = new Point(x + 1, y);
                     return location;
                 }
