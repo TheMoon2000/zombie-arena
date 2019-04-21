@@ -14,10 +14,12 @@ import byow.TileEngine.TETile;
 import edu.princeton.cs.algs4.ST;
 import edu.princeton.cs.introcs.StdDraw;
 
+import java.awt.*;
 import java.lang.reflect.WildcardType;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.SplittableRandom;
 
 public class Engine {
     TERenderer ter = new TERenderer();
@@ -31,14 +33,8 @@ public class Engine {
      */
     public void interactWithKeyboard() {
         InputSource inputSource = new KeyboardInputSource();
-        ter.initialize(WIDTH, HEIGHT);
-        StdDraw.setCanvasSize(WIDTH * 16, HEIGHT * 16);
-        StdDraw.clear(StdDraw.BLACK);
-        StdDraw.setFont(StdDraw.getFont());
-        StdDraw.setPenColor(StdDraw.RED);
-        StdDraw.text(0.5,0.5,"wow");
-        StdDraw.show();
-        interact(inputSource);
+
+        interact(inputSource, true);
 
         System.exit(0);
     }
@@ -73,10 +69,9 @@ public class Engine {
         // See proj3.byow.InputDemo for a demo of how you can make a nice clean interface
         // that works for many different input types.
 
-        ter.initialize(WIDTH, HEIGHT);
         InputSource source = new StringInputDevice(input);
 
-        return interact(source);
+        return interact(source, false);
     }
 
 
@@ -89,7 +84,36 @@ public class Engine {
      * @param source The input source
      * */
 
-    private TETile[][] interact(InputSource source) {
+    private TETile[][] interact(InputSource source, boolean keyBoardInput) {
+
+
+        //create menu if keyboardInput
+        if (keyBoardInput) {
+            StdDraw.setCanvasSize(WIDTH * 16, HEIGHT * 16);
+            StdDraw.clear(StdDraw.BLACK);
+
+            Font font1 = new Font("Arial", Font.BOLD, 60);
+            Font font2 = new Font("Helvetica", Font.ITALIC, 40);
+
+            StdDraw.setFont(font1);
+            StdDraw.setPenColor(StdDraw.WHITE);
+            StdDraw.text(0.5, 0.7, "ZOMBIE RUN");
+
+            StdDraw.setFont(font2);
+            StdDraw.setPenColor(StdDraw.WHITE);
+            StdDraw.text(0.5, 0.4, "NEW GAME (N)");
+
+            StdDraw.setFont(font2);
+            StdDraw.setPenColor(StdDraw.WHITE);
+            StdDraw.text(0.5, 0.3, "LOAD GAME (L)");
+
+            StdDraw.setFont(font2);
+            StdDraw.setPenColor(StdDraw.WHITE);
+            StdDraw.text(0.5, 0.2, "QUIT (Q)");
+
+            StdDraw.show();
+        }
+
 
         boolean startReadingSeed = false;
         boolean colon = false;
@@ -118,6 +142,13 @@ public class Engine {
                 case 'N': // new world
                     if (player == null) {
                         startReadingSeed = true;
+                        if (keyBoardInput) { //promt message to tell user to enter seed
+                            Font font3 = new Font("Times New Roman", Font.BOLD, 20);
+                            StdDraw.setFont(font3);
+                            StdDraw.setPenColor(StdDraw.WHITE);
+                            StdDraw.text(0.8, 0.1, "Please enter random seed. Then press 'S'.");
+                            StdDraw.show();
+                        }
                     } else {
                         System.out.print("\nInvalid argument");
                     }
@@ -138,32 +169,51 @@ public class Engine {
                         }
                         player = new Player(tiles, new Point(randomX, randomY));
 
-                        ter.renderFrame(tiles);
+                        if (keyBoardInput) {
+                            ter.initialize(WIDTH, HEIGHT + 3);
+                            ter.renderFrame(tiles);
+
+                            //create information bar on top
+                            StdDraw.setPenColor(StdDraw.RED);
+                            StdDraw.filledCircle(5,HEIGHT + 2,1);
+                            StdDraw.setPenColor(StdDraw.WHITE);
+                            StdDraw.text(10,HEIGHT + 2,"Health Points");
+                            StdDraw.text(5,HEIGHT + 2,"100");
+                            StdDraw.show();
+                        }
                     } else if (player != null) {
                         System.out.print("\n[Move back]");
                         player.move(Direction.South);
-                        ter.renderFrame(tiles);
+                        if (keyBoardInput) {
+                            ter.renderFrame(tiles);
+                        }
                     }
                     continue;
                 case 'W':
                     if (player != null) {
                         System.out.print("\n[Move forward]");
                         player.move(Direction.North);
-                        ter.renderFrame(tiles);
+                        if (keyBoardInput) {
+                            ter.renderFrame(tiles);
+                        }
                     }
                     continue;
                 case 'A':
                     if (player != null) {
                         System.out.print("\n[Move left]");
                         player.move(Direction.West);
-                        ter.renderFrame(tiles);
+                        if (keyBoardInput) {
+                            ter.renderFrame(tiles);
+                        }
                     }
                     continue;
                 case 'D':
                     if (player != null) {
                         System.out.print("\n[Move right]");
                         player.move(Direction.East);
-                        ter.renderFrame(tiles);
+                        if (keyBoardInput) {
+                            ter.renderFrame(tiles);
+                        }
                     }
                     continue;
                 case ' ':
@@ -181,6 +231,15 @@ public class Engine {
                 default:
                     if (startReadingSeed) {
                         seed = seed * 10 + Integer.parseInt(String.valueOf(next));
+                        if (keyBoardInput) { //display the seed
+                            Font font3 = new Font("Times New Roman", Font.BOLD, 20);
+                            StdDraw.setFont(font3);
+                            StdDraw.setPenColor(StdDraw.BLACK);
+                            StdDraw.filledRectangle(0.8,0.05,1,0.03);
+                            StdDraw.setPenColor(StdDraw.WHITE);
+                            StdDraw.text(0.8, 0.05, " " + seed + " ");
+                            StdDraw.show();
+                        }
                     }
             }
         }
