@@ -4,6 +4,8 @@ import byow.InputDemo.InputSource;
 import byow.InputDemo.KeyboardInputSource;
 import byow.InputDemo.StringInputDevice;
 import byow.TileEngine.Tileset;
+import byow.gameplay.Player;
+import byow.utils.Direction;
 import byow.utils.NearTree;
 import byow.utils.Point;
 
@@ -91,10 +93,12 @@ public class Engine {
 
         boolean startReadingSeed = false;
         boolean colon = false;
-        boolean loadedWorld = false;
 
         int seed = 0;
-        TETile[][] finalWorldFrame = new TETile[WIDTH][HEIGHT];
+        Random r;
+
+        TETile[][] tiles = new TETile[WIDTH][HEIGHT];
+        Player player = null;
 
         System.out.println("Capturing input source:");
 
@@ -108,51 +112,70 @@ public class Engine {
                 case 'Q': // if :Q then save and quit
                     if (colon) {
                         System.out.println("\nSaving...");
-                        return finalWorldFrame;
+                        return tiles;
                     }
                     continue;
                 case 'N': // new world
-                    if (loadedWorld) {
-                        System.out.print("\nInvalid argument");
-                    } else {
+                    if (player == null) {
                         startReadingSeed = true;
+                    } else {
+                        System.out.print("\nInvalid argument");
                     }
                     continue;
                 case 'S': // start game
-                    if (!loadedWorld && startReadingSeed) {
+                    if (player == null && startReadingSeed) {
+                        r = new Random(seed);
+                        generateWorld(tiles, seed);
+                        fillTheRest(tiles, new Random(seed));
                         startReadingSeed = false;
-                        generateWorld(finalWorldFrame, seed);
-                        fillTheRest(finalWorldFrame, new Random(seed));
-                        ter.renderFrame(finalWorldFrame);
-                        loadedWorld = true;
-                    } else if (loadedWorld) {
+
+                        // Randomly place the player on a floor tile
+                        int randomX = r.nextInt(WIDTH - 1);
+                        int randomY = r.nextInt(HEIGHT - 1);
+                        while (!tiles[randomX][randomY].equals(Tileset.FLOOR)) {
+                            randomX = r.nextInt(WIDTH - 1);
+                            randomY = r.nextInt(HEIGHT - 1);
+                        }
+                        player = new Player(tiles, new Point(randomX, randomY));
+
+                        ter.renderFrame(tiles);
+                    } else if (player != null) {
                         System.out.print("\n[Move back]");
+                        player.move(Direction.South);
+                        ter.renderFrame(tiles);
                     }
                     continue;
                 case 'W':
-                    if (loadedWorld) {
+                    if (player != null) {
                         System.out.print("\n[Move forward]");
+                        player.move(Direction.North);
+                        ter.renderFrame(tiles);
                     }
                     continue;
                 case 'A':
-                    if (loadedWorld) {
+                    if (player != null) {
                         System.out.print("\n[Move left]");
+                        player.move(Direction.West);
+                        ter.renderFrame(tiles);
                     }
                     continue;
                 case 'D':
-                    if (loadedWorld) {
+                    if (player != null) {
                         System.out.print("\n[Move right]");
+                        player.move(Direction.East);
+                        ter.renderFrame(tiles);
                     }
                     continue;
                 case ' ':
-                    if (loadedWorld) {
-                        System.out.print("\n[space]");
+                    if (player != null) {
+                        System.out.print("\n[action]");
                     }
                     continue;
                 case 'L':
-                    if (!loadedWorld) {
+                    if (player == null) {
                         System.out.print("\nLoad saved world (unimplemented)");
                     }
+                    continue;
                 case ':':
                     colon = true; continue;
                 default:
@@ -163,7 +186,7 @@ public class Engine {
         }
 
 
-        return finalWorldFrame;
+        return tiles;
     }
 
     /**
