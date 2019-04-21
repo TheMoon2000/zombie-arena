@@ -1,6 +1,7 @@
 package byow.Core;
 
 import byow.InputDemo.InputSource;
+import byow.InputDemo.KeyboardInputSource;
 import byow.InputDemo.StringInputDevice;
 import byow.TileEngine.Tileset;
 import byow.utils.NearTree;
@@ -17,13 +18,19 @@ public class Engine {
     TERenderer ter = new TERenderer();
     /* Feel free to change the width and height. */
     public static final int WIDTH = 80;
-    public static final int HEIGHT = 40;
+    public static final int HEIGHT = 45;
 
     /**
      * Method used for exploring a fresh world. This method should handle all inputs,
      * including inputs from the main menu.
      */
     public void interactWithKeyboard() {
+        InputSource inputSource = new KeyboardInputSource();
+        ter.initialize(WIDTH, HEIGHT);
+
+        interact(inputSource);
+
+        System.exit(0);
     }
 
     /**
@@ -59,21 +66,97 @@ public class Engine {
         ter.initialize(WIDTH, HEIGHT);
         InputSource source = new StringInputDevice(input);
 
-        int seed = getSeed(source);
-
-        TETile[][] finalWorldFrame = new TETile[WIDTH][HEIGHT];
-        generateWorld(finalWorldFrame, seed);
-        fillTheRest(finalWorldFrame);
-
-        // For visualization
-        ter.renderFrame(finalWorldFrame);
-        
-        return finalWorldFrame;
+        return interact(source);
     }
 
 
 
     // Helper methods
+
+
+    /**
+     * Reads an input source and do something about it
+     * @param source The input source
+     * */
+
+    private TETile[][] interact(InputSource source) {
+
+        boolean startReadingSeed = false;
+        boolean colon = false;
+        boolean loadedWorld = false;
+
+        int seed = 0;
+        TETile[][] finalWorldFrame = new TETile[WIDTH][HEIGHT];
+
+        System.out.println("Capturing input source:");
+
+        while (source.possibleNextInput()) {
+            char next = source.getNextKey();
+            System.out.print(next);
+            if (next != 'Q') {
+                colon = false;
+            }
+            switch (next) {
+                case 'Q': // if :Q then save and quit
+                    if (colon) {
+                        System.out.println("\nSaving...");
+                        return finalWorldFrame;
+                    }
+                    continue;
+                case 'N': // new world
+                    if (loadedWorld) {
+                        System.out.print("\nInvalid argument");
+                    } else {
+                        startReadingSeed = true;
+                    }
+                    continue;
+                case 'S': // start game
+                    if (!loadedWorld && startReadingSeed) {
+                        startReadingSeed = false;
+                        generateWorld(finalWorldFrame, seed);
+                        fillTheRest(finalWorldFrame, new Random(seed));
+                        ter.renderFrame(finalWorldFrame);
+                        loadedWorld = true;
+                    } else if (loadedWorld) {
+                        System.out.print("\n[Move back]");
+                    }
+                    continue;
+                case 'W':
+                    if (loadedWorld) {
+                        System.out.print("\n[Move forward]");
+                    }
+                    continue;
+                case 'A':
+                    if (loadedWorld) {
+                        System.out.print("\n[Move left]");
+                    }
+                    continue;
+                case 'D':
+                    if (loadedWorld) {
+                        System.out.print("\n[Move right]");
+                    }
+                    continue;
+                case ' ':
+                    if (loadedWorld) {
+                        System.out.print("\n[space]");
+                    }
+                    continue;
+                case 'L':
+                    if (!loadedWorld) {
+                        System.out.print("\nLoad saved world (unimplemented)");
+                    }
+                case ':':
+                    colon = true; continue;
+                default:
+                    if (startReadingSeed) {
+                        seed = seed * 10 + Integer.parseInt(String.valueOf(next));
+                    }
+            }
+        }
+
+
+        return finalWorldFrame;
+    }
 
     /**
      * Generate a random world based on a seed
@@ -83,15 +166,15 @@ public class Engine {
 
     private void generateWorld(TETile[][] tiles, int seed) {
         Random random = new Random(seed);
-        final int numberOfRooms = random.nextInt(24) + 10;
+        final int numberOfRooms = random.nextInt(25) + 12;
 
         Map<Point, Point> originToSize = new HashMap<>();
 
         // Add some random rooms to the world
 
         while (originToSize.size() < numberOfRooms) {
-            int dx = random.nextInt(5) + 2;
-            int dy = random.nextInt(5) + 2;
+            int dx = RandomUtils.uniform(random, 2, 8);
+            int dy = RandomUtils.uniform(random, 2, 8);
             int x = random.nextInt(WIDTH - dx - 2) + 1;
             int y = random.nextInt(HEIGHT - dy - 2) + 1;
 
@@ -144,29 +227,6 @@ public class Engine {
 
 
     /**
-     * Gets the seed number from an input source
-     * @param source The input source
-     * */
-
-    private int getSeed(InputSource source) {
-        if (!source.possibleNextInput() || source.getNextKey() != 'N') {
-            System.out.println("Invalid input, exiting...");
-            return 0;
-        }
-
-        int seed = 0;
-
-        while (source.possibleNextInput()) {
-            char next = source.getNextKey();
-            if (next != 'S') {
-                seed = seed * 10 + Integer.parseInt(String.valueOf(next));
-            }
-        }
-
-        return seed;
-    }
-
-    /**
      * Fill up a rectangular region in the given tiles matrix
      * @param x x-coordinate of the origin
      * @param y y-coordinate of the origin
@@ -204,13 +264,13 @@ public class Engine {
      * @param tiles the tiles to fill up
      * */
 
-    private static void fillTheRest(TETile[][] tiles) {
+    private static void fillTheRest(TETile[][] tiles, Random r) {
         for (int w = 0; w < WIDTH; w++) {
             for (int h = 0; h < HEIGHT; h++) {
                 if (hasNearby(tiles, w, h, Tileset.FLOOR, 8) && tiles[w][h] == null) {
                     tiles[w][h] = Tileset.FLOOR;
                 } else if (tiles[w][h] == null && hasNearby(tiles, w, h, Tileset.FLOOR, 1)) {
-                    tiles[w][h] = Tileset.WALL;
+                    tiles[w][h] = TETile.colorVariant(Tileset.WALL, 20, 20, 30, r);
                 } else if (tiles[w][h] == null) {
                     tiles[w][h] = Tileset.NOTHING;
                 }
