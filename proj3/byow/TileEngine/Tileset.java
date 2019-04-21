@@ -37,6 +37,8 @@ public class Tileset {
     public static final TETile PLAYER_SOUTH = new TETile('▼', Color.gray, Color.black, "player_S");
     public static final TETile PLAYER_EAST = new TETile('▶', Color.gray, Color.black, "player_E");
     public static final TETile PLAYER_WEST = new TETile('◀', Color.gray, Color.black, "player_W");
+    public static final TETile WEAPON_BOX = new TETile('■', new Color(232, 214, 72), Color.black,
+            "weapon_box");
 }
 
 

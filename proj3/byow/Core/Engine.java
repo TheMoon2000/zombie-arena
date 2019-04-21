@@ -15,6 +15,7 @@ import edu.princeton.cs.algs4.ST;
 import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.*;
+import java.awt.event.MouseMotionListener;
 import java.lang.reflect.WildcardType;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,7 +26,7 @@ public class Engine {
     TERenderer ter = new TERenderer();
     /* Feel free to change the width and height. */
     public static final int WIDTH = 80;
-    public static final int HEIGHT = 45;
+    public static final int HEIGHT = 40;
 
     /**
      * Method used for exploring a fresh world. This method should handle all inputs,
@@ -97,7 +98,7 @@ public class Engine {
 
             StdDraw.setFont(font1);
             StdDraw.setPenColor(StdDraw.WHITE);
-            StdDraw.text(0.5, 0.7, "ZOMBIE RUN");
+            StdDraw.text(0.5, 0.7, "ZOMBIE ARENA");
 
             StdDraw.setFont(font2);
             StdDraw.setPenColor(StdDraw.WHITE);
@@ -127,8 +128,36 @@ public class Engine {
         System.out.println("Capturing input source:");
 
         while (source.possibleNextInput()) {
+
+            //display mouse cursor's tile information if game has started
+            //update display bar everytime mouse moves
+            if (keyBoardInput && player != null) {
+                while (!StdDraw.hasNextKeyTyped()) {
+                    String tile;
+                    int x = (int)StdDraw.mouseX();
+                    int y = (int)StdDraw.mouseY();
+                    if (y >= HEIGHT) {
+                        tile = "Void";
+                    } else {
+                        if (tiles[x][y] == Tileset.FLOOR) {
+                            tile = "Floor";
+                        } else if (tiles[x][y] == Tileset.NOTHING) {
+                            tile = "Void";
+                        } else if (tiles[x][y] == Tileset.PLAYER_NORTH ||
+                                tiles[x][y] == Tileset.PLAYER_SOUTH ||
+                                tiles[x][y] == Tileset.PLAYER_WEST ||
+                                tiles[x][y] == Tileset.PLAYER_EAST) {
+                            tile = "Player";
+                        } else {
+                            tile = "Wall";
+                        }
+                    }
+                    renewDisplayBar(tile,player.getHealth(),100000,"Machine gun","20/40",10,"Displayed message");
+                }
+            }
+
             char next = source.getNextKey();
-            System.out.print(next);
+            System.out.println(next);
             if (next != 'Q') {
                 colon = false;
             }
@@ -168,13 +197,15 @@ public class Engine {
                             randomY = r.nextInt(HEIGHT - 1);
                         }
                         player = new Player(tiles, new Point(randomX, randomY));
-
                         if (keyBoardInput) {
                             ter.initialize(WIDTH, HEIGHT + 3);
                             ter.renderFrame(tiles);
 
-                            //create information bar on top
-                            renewDisplayBar("Monster",100,100000,"Machine gun","20/40",10);
+                            //Tell User where he is at the beginning
+                            StdDraw.setPenColor(StdDraw.RED);
+                            StdDraw.setPenRadius(0.1);
+                            StdDraw.circle(player.getLocation().getX() + 0.5,player.getLocation().getY() + 0.5,0.3);
+
                         }
                     } else if (player != null) {
                         System.out.print("\n[Move back]");
@@ -248,7 +279,12 @@ public class Engine {
      * Should be called every time a key is pressed or a state is supdated
      * Fields include tile information, health, points, current weapon, weapon ammo, wave number.
      */
-    private void renewDisplayBar(String tile, int health, int points, String weapon, String ammo, int wave) {
+    private void renewDisplayBar(String tile, int health, int points, String weapon, String ammo, int wave, String message) {
+
+        //cover previous display
+        StdDraw.setPenColor(StdDraw.BLACK);
+        StdDraw.filledRectangle(0,HEIGHT + 2,WIDTH,1);
+
         //tile information
         StdDraw.setPenColor(StdDraw.WHITE);
         StdDraw.text(5,HEIGHT + 2,tile);
@@ -269,7 +305,7 @@ public class Engine {
 
         //weapon information
         StdDraw.setPenColor(StdDraw.BOOK_RED);
-        StdDraw.filledEllipse(36,HEIGHT + 2,3,1);
+        StdDraw.filledRectangle(36,HEIGHT + 2,3,1);
         StdDraw.setPenColor(StdDraw.WHITE);
         StdDraw.text(41,HEIGHT + 2,"Weapon");
         StdDraw.text(36,HEIGHT + 2,weapon);
@@ -286,9 +322,11 @@ public class Engine {
         StdDraw.text(58,HEIGHT + 2,"Wave:");
         StdDraw.text(60,HEIGHT + 2,Integer.toString(wave));
 
+        //Message
+        StdDraw.setPenColor(StdDraw.WHITE);
+        StdDraw.text(70,HEIGHT + 2,message);
+
         StdDraw.show();
-
-
     }
 
     /**
@@ -330,7 +368,7 @@ public class Engine {
             // q will always be a point that p isn't connected with
             Point q = points.nearest(p.getX(), p.getY());
             if (p.equals(q)) {
-                throw new RuntimeException("p = q!");
+                continue;
             }
             Point pSize = originToSize.get(p);
             Point qSize = originToSize.get(q);
