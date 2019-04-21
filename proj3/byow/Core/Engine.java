@@ -97,7 +97,7 @@ public class Engine {
 
             StdDraw.setFont(font1);
             StdDraw.setPenColor(StdDraw.WHITE);
-            StdDraw.text(0.5, 0.7, "ZOMBIE RUN");
+            StdDraw.text(0.5, 0.7, "ZOMBIE ARENA");
 
             StdDraw.setFont(font2);
             StdDraw.setPenColor(StdDraw.WHITE);
@@ -168,18 +168,10 @@ public class Engine {
                             randomY = r.nextInt(HEIGHT - 1);
                         }
                         player = new Player(tiles, new Point(randomX, randomY));
-
+                        ter.initialize(WIDTH, HEIGHT + 3);
+                        ter.renderFrame(tiles);
                         if (keyBoardInput) {
-                            ter.initialize(WIDTH, HEIGHT + 3);
-                            ter.renderFrame(tiles);
-
-                            //create information bar on top
-                            StdDraw.setPenColor(StdDraw.RED);
-                            StdDraw.filledCircle(5,HEIGHT + 2,1);
-                            StdDraw.setPenColor(StdDraw.WHITE);
-                            StdDraw.text(9,HEIGHT + 2,"Health");
-                            StdDraw.text(5,HEIGHT + 1.95,"100");
-                            StdDraw.show();
+                            updateHealth(100);
                         }
                     } else if (player != null) {
                         System.out.print("\n[Move back]");
@@ -248,6 +240,15 @@ public class Engine {
         return tiles;
     }
 
+    private void updateHealth(int health) {
+        //create information bar on top
+        StdDraw.setPenColor(StdDraw.RED);
+        StdDraw.filledCircle(5,HEIGHT + 2,1);
+        StdDraw.setPenColor(StdDraw.WHITE);
+        StdDraw.text(9,HEIGHT + 2,"Health");
+        StdDraw.text(5,HEIGHT + 1.95,String.valueOf(health));
+        StdDraw.show();
+    }
     /**
      * Generate a random world based on a seed
      * @param tiles the tiles matrix
