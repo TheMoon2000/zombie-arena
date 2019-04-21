@@ -25,7 +25,7 @@ public class Engine {
     TERenderer ter = new TERenderer();
     /* Feel free to change the width and height. */
     public static final int WIDTH = 80;
-    public static final int HEIGHT = 45;
+    public static final int HEIGHT = 40;
 
     /**
      * Method used for exploring a fresh world. This method should handle all inputs,
@@ -177,8 +177,8 @@ public class Engine {
                             StdDraw.setPenColor(StdDraw.RED);
                             StdDraw.filledCircle(5,HEIGHT + 2,1);
                             StdDraw.setPenColor(StdDraw.WHITE);
-                            StdDraw.text(10,HEIGHT + 2,"Health Points");
-                            StdDraw.text(5,HEIGHT + 2,"100");
+                            StdDraw.text(9,HEIGHT + 2,"Health");
+                            StdDraw.text(5,HEIGHT + 1.95,"100");
                             StdDraw.show();
                         }
                     } else if (player != null) {
@@ -287,7 +287,7 @@ public class Engine {
             // q will always be a point that p isn't connected with
             Point q = points.nearest(p.getX(), p.getY());
             if (p.equals(q)) {
-                break;
+                continue;
             }
             Point pSize = originToSize.get(p);
             Point qSize = originToSize.get(q);
