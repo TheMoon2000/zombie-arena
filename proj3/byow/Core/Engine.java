@@ -9,7 +9,10 @@ import byow.utils.Point;
 
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
+import edu.princeton.cs.algs4.ST;
+import edu.princeton.cs.introcs.StdDraw;
 
+import java.lang.reflect.WildcardType;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -27,7 +30,12 @@ public class Engine {
     public void interactWithKeyboard() {
         InputSource inputSource = new KeyboardInputSource();
         ter.initialize(WIDTH, HEIGHT);
-
+        StdDraw.setCanvasSize(WIDTH * 16, HEIGHT * 16);
+        StdDraw.clear(StdDraw.BLACK);
+        StdDraw.setFont(StdDraw.getFont());
+        StdDraw.setPenColor(StdDraw.RED);
+        StdDraw.text(0.5,0.5,"wow");
+        StdDraw.show();
         interact(inputSource);
 
         System.exit(0);
