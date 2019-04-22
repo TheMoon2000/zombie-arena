@@ -89,32 +89,7 @@ public class Engine {
 
 
         //create menu if keyboardInput
-        if (keyBoardInput) {
-            StdDraw.setCanvasSize(WIDTH * 16, HEIGHT * 16);
-            StdDraw.clear(StdDraw.BLACK);
-
-            Font font1 = new Font("Arial", Font.BOLD, 60);
-            Font font2 = new Font("Helvetica", Font.ITALIC, 40);
-
-            StdDraw.setFont(font1);
-            StdDraw.setPenColor(StdDraw.WHITE);
-            StdDraw.text(0.5, 0.7, "ZOMBIE ARENA");
-
-            StdDraw.setFont(font2);
-            StdDraw.setPenColor(StdDraw.WHITE);
-            StdDraw.text(0.5, 0.4, "NEW GAME (N)");
-
-            StdDraw.setFont(font2);
-            StdDraw.setPenColor(StdDraw.WHITE);
-            StdDraw.text(0.5, 0.3, "LOAD GAME (L)");
-
-            StdDraw.setFont(font2);
-            StdDraw.setPenColor(StdDraw.WHITE);
-            StdDraw.text(0.5, 0.2, "QUIT (Q)");
-
-            StdDraw.show();
-        }
-
+        menu(keyBoardInput);
 
         boolean startReadingSeed = false;
         boolean colon = false;
@@ -130,31 +105,12 @@ public class Engine {
         while (source.possibleNextInput()) {
 
             //display mouse cursor's tile information if game has started
-            //update display bar everytime mouse moves
-            if (keyBoardInput && player != null) {
-                while (!StdDraw.hasNextKeyTyped()) {
-                    String tile;
-                    int x = (int)StdDraw.mouseX();
-                    int y = (int)StdDraw.mouseY();
-                    if (y >= HEIGHT) {
-                        tile = "Void";
-                    } else {
-                        if (tiles[x][y] == Tileset.FLOOR) {
-                            tile = "Floor";
-                        } else if (tiles[x][y] == Tileset.NOTHING) {
-                            tile = "Void";
-                        } else if (tiles[x][y] == Tileset.PLAYER_NORTH ||
-                                tiles[x][y] == Tileset.PLAYER_SOUTH ||
-                                tiles[x][y] == Tileset.PLAYER_WEST ||
-                                tiles[x][y] == Tileset.PLAYER_EAST) {
-                            tile = "Player";
-                        } else {
-                            tile = "Wall";
-                        }
-                    }
-                    renewDisplayBar(tile,player.getHealth(),100000,"Machine gun","20/40",10,"Displayed message");
-                }
+            //update display bar whenever user doesn't input anything
+            while (!StdDraw.hasNextKeyTyped()) {
+                renewDisplayBar(keyBoardInput, player != null, tiles,
+                        100, 100000, "Machine Gun", "20/40", 10, "Displayed message");
             }
+
 
             char next = source.getNextKey();
             System.out.println(next);
@@ -275,58 +231,113 @@ public class Engine {
     }
 
     /**
+     * Helper method that generates the menu
+     */
+    private void menu(boolean keyBoardInput) {
+        if (keyBoardInput) {
+            StdDraw.setCanvasSize(WIDTH * 16, HEIGHT * 16);
+            StdDraw.clear(StdDraw.BLACK);
+
+            Font font1 = new Font("Arial", Font.BOLD, 60);
+            Font font2 = new Font("Helvetica", Font.ITALIC, 40);
+
+            StdDraw.setFont(font1);
+            StdDraw.setPenColor(StdDraw.WHITE);
+            StdDraw.text(0.5, 0.7, "ZOMBIE ARENA");
+
+            StdDraw.setFont(font2);
+            StdDraw.setPenColor(StdDraw.WHITE);
+            StdDraw.text(0.5, 0.4, "NEW GAME (N)");
+
+            StdDraw.setFont(font2);
+            StdDraw.setPenColor(StdDraw.WHITE);
+            StdDraw.text(0.5, 0.3, "LOAD GAME (L)");
+
+            StdDraw.setFont(font2);
+            StdDraw.setPenColor(StdDraw.WHITE);
+            StdDraw.text(0.5, 0.2, "QUIT (Q)");
+
+            StdDraw.show();
+        }
+    }
+
+
+    /**
      * Helper method that creates an display bar on top
      * Should be called every time a key is pressed or a state is supdated
      * Fields include tile information, health, points, current weapon, weapon ammo, wave number.
      */
-    private void renewDisplayBar(String tile, int health, int points, String weapon, String ammo, int wave, String message) {
+    private void renewDisplayBar(boolean keyBoardInput, boolean gameHasStarted,TETile[][] tiles, int health, int points, String weapon, String ammo, int wave, String message) {
 
-        //cover previous display
-        StdDraw.setPenColor(StdDraw.BLACK);
-        StdDraw.filledRectangle(0,HEIGHT + 2,WIDTH,1);
+        if (keyBoardInput && gameHasStarted) {
+            //get current mouse position to update tile information
+            String tile;
+            int x = (int) StdDraw.mouseX();
+            int y = (int) StdDraw.mouseY();
+            if (y >= HEIGHT) {
+                tile = "Void";
+            } else {
+                if (tiles[x][y] == Tileset.FLOOR) {
+                    tile = "Floor";
+                } else if (tiles[x][y] == Tileset.NOTHING) {
+                    tile = "Void";
+                } else if (tiles[x][y] == Tileset.PLAYER_NORTH ||
+                        tiles[x][y] == Tileset.PLAYER_SOUTH ||
+                        tiles[x][y] == Tileset.PLAYER_WEST ||
+                        tiles[x][y] == Tileset.PLAYER_EAST) {
+                    tile = "Player";
+                } else {
+                    tile = "Wall";
+                }
+            }
 
-        //tile information
-        StdDraw.setPenColor(StdDraw.WHITE);
-        StdDraw.text(5,HEIGHT + 2,tile);
+            //cover previous display
+            StdDraw.setPenColor(StdDraw.BLACK);
+            StdDraw.filledRectangle(0, HEIGHT + 2, WIDTH, 1);
 
-        //health information
-        StdDraw.setPenColor(StdDraw.RED);
-        StdDraw.filledCircle(13,HEIGHT + 2,1);
-        StdDraw.setPenColor(StdDraw.WHITE);
-        StdDraw.text(16,HEIGHT + 2,"Health");
-        StdDraw.text(13,HEIGHT + 2,Integer.toString(health));
+            //tile information
+            StdDraw.setPenColor(StdDraw.WHITE);
+            StdDraw.text(5, HEIGHT + 2, tile);
 
-        //point information
-        StdDraw.setPenColor(StdDraw.BLUE);
-        StdDraw.filledRectangle(24,HEIGHT + 2,2,1);
-        StdDraw.setPenColor(StdDraw.WHITE);
-        StdDraw.text(28,HEIGHT + 2,"Points");
-        StdDraw.text(24,HEIGHT + 2,Integer.toString(points));
+            //health information
+            StdDraw.setPenColor(StdDraw.RED);
+            StdDraw.filledCircle(13, HEIGHT + 2, 1);
+            StdDraw.setPenColor(StdDraw.WHITE);
+            StdDraw.text(16, HEIGHT + 2, "Health");
+            StdDraw.text(13, HEIGHT + 2, Integer.toString(health));
 
-        //weapon information
-        StdDraw.setPenColor(StdDraw.BOOK_RED);
-        StdDraw.filledRectangle(36,HEIGHT + 2,3,1);
-        StdDraw.setPenColor(StdDraw.WHITE);
-        StdDraw.text(41,HEIGHT + 2,"Weapon");
-        StdDraw.text(36,HEIGHT + 2,weapon);
+            //point information
+            StdDraw.setPenColor(StdDraw.BLUE);
+            StdDraw.filledRectangle(24, HEIGHT + 2, 2, 1);
+            StdDraw.setPenColor(StdDraw.WHITE);
+            StdDraw.text(28, HEIGHT + 2, "Points");
+            StdDraw.text(24, HEIGHT + 2, Integer.toString(points));
 
-        //Ammo information
-        StdDraw.setPenColor(StdDraw.PRINCETON_ORANGE);
-        StdDraw.filledRectangle(49,HEIGHT + 2,1.5,1);
-        StdDraw.setPenColor(StdDraw.WHITE);
-        StdDraw.text(52.5,HEIGHT + 2,"Ammo");
-        StdDraw.text(49,HEIGHT + 2,ammo);
+            //weapon information
+            StdDraw.setPenColor(StdDraw.BOOK_RED);
+            StdDraw.filledRectangle(36, HEIGHT + 2, 3, 1);
+            StdDraw.setPenColor(StdDraw.WHITE);
+            StdDraw.text(41, HEIGHT + 2, "Weapon");
+            StdDraw.text(36, HEIGHT + 2, weapon);
 
-        //Wave information
-        StdDraw.setPenColor(StdDraw.WHITE);
-        StdDraw.text(58,HEIGHT + 2,"Wave:");
-        StdDraw.text(60,HEIGHT + 2,Integer.toString(wave));
+            //Ammo information
+            StdDraw.setPenColor(StdDraw.PRINCETON_ORANGE);
+            StdDraw.filledRectangle(49, HEIGHT + 2, 1.5, 1);
+            StdDraw.setPenColor(StdDraw.WHITE);
+            StdDraw.text(52.5, HEIGHT + 2, "Ammo");
+            StdDraw.text(49, HEIGHT + 2, ammo);
 
-        //Message
-        StdDraw.setPenColor(StdDraw.WHITE);
-        StdDraw.text(70,HEIGHT + 2,message);
+            //Wave information
+            StdDraw.setPenColor(StdDraw.WHITE);
+            StdDraw.text(58, HEIGHT + 2, "Wave:");
+            StdDraw.text(60, HEIGHT + 2, Integer.toString(wave));
 
-        StdDraw.show();
+            //Message
+            StdDraw.setPenColor(StdDraw.WHITE);
+            StdDraw.text(70, HEIGHT + 2, message);
+
+            StdDraw.show();
+        }
     }
 
     /**
