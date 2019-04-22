@@ -95,6 +95,7 @@ public class TETile {
         StdDraw.setPenColor(backgroundColor);
         StdDraw.filledSquare(x + 0.5, y + 0.5, 0.5);
         StdDraw.setPenColor(textColor);
+        StdDraw.setFont();
         StdDraw.text(x + 0.5, y + 0.5, Character.toString(character()));
     }
 
