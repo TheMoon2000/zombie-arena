@@ -5,6 +5,7 @@ import byow.InputDemo.KeyboardInputSource;
 import byow.InputDemo.StringInputDevice;
 import byow.TileEngine.Tileset;
 import byow.gameplay.Player;
+import byow.gameplay.Shop;
 import byow.utils.Direction;
 import byow.utils.NearTree;
 import byow.utils.Point;
@@ -17,6 +18,8 @@ import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 public class Engine {
     TERenderer ter = new TERenderer();
@@ -89,10 +92,12 @@ public class Engine {
         boolean startReadingSeed = false;
         boolean colon = false;
 
-        int seed = 0; Random r;
+        long seed = 0;
+        Random r;
 
         TETile[][] tiles = new TETile[WIDTH][HEIGHT];
         Player player = null;
+        Shop shop = null;
 
         System.out.println("Capturing input source:");
 
@@ -100,11 +105,15 @@ public class Engine {
 
             //display mouse cursor's tile information if game has started
             //update display bar whenever user doesn't input anything
-            if (!StdDraw.hasNextKeyTyped()) {
-                renewDisplayBar(player, keyBoardInput);
-            }
+            while (!StdDraw.hasNextKeyTyped()) {
+                renewDisplayBar(shop, player, keyBoardInput);
+                try {
+                    TimeUnit.MILLISECONDS.sleep(1);
+                } catch (InterruptedException e) {
+                    System.out.print("\ndelay failed");
+                }
 
-            renewDisplayBar(player, keyBoardInput);
+            }
 
             char next = source.getNextKey();
             System.out.println(next);
@@ -145,6 +154,11 @@ public class Engine {
                             randomY = r.nextInt(HEIGHT - 1);
                         }
                         player = new Player(tiles, new Point(randomX, randomY));
+
+                        //randomly generate two shops
+                        generateShop(player,seed);
+                        shop = new Shop();
+
                         if (keyBoardInput) {
                             ter.initialize(WIDTH, HEIGHT + 3);
                             ter.renderFrame(tiles);
@@ -156,6 +170,10 @@ public class Engine {
                         }
                     } else if (player != null) {
                         player.move(Direction.South);
+                        //if there is a shop nearby, display the shop's message first
+                        if (hasNearby(player.tiles,player.getLocation().getX(),player.getLocation().getY(),Tileset.LOCKED_DOOR,2)) {
+                            player.setMessage(shop.displayMessage());
+                        }
                         if (keyBoardInput) {
                             ter.renderFrame(tiles);
                         }
@@ -164,6 +182,10 @@ public class Engine {
                 case 'W':
                     if (player != null) {
                         player.move(Direction.North);
+                        //if there is a shop nearby, display the shop's message first
+                        if (hasNearby(player.tiles,player.getLocation().getX(),player.getLocation().getY(),Tileset.LOCKED_DOOR,2)) {
+                            player.setMessage(shop.displayMessage());
+                        }
                         if (keyBoardInput) {
                             ter.renderFrame(tiles);
                         }
@@ -172,6 +194,10 @@ public class Engine {
                 case 'A':
                     if (player != null) {
                         player.move(Direction.West);
+                        //if there is a shop nearby, display the shop's message first
+                        if (hasNearby(player.tiles,player.getLocation().getX(),player.getLocation().getY(),Tileset.LOCKED_DOOR,2)) {
+                            player.setMessage(shop.displayMessage());
+                        }
                         if (keyBoardInput) {
                             ter.renderFrame(tiles);
                         }
@@ -180,6 +206,10 @@ public class Engine {
                 case 'D':
                     if (player != null) {
                         player.move(Direction.East);
+                        //if there is a shop nearby, display the shop's message first
+                        if (hasNearby(player.tiles,player.getLocation().getX(),player.getLocation().getY(),Tileset.LOCKED_DOOR,2)) {
+                            player.setMessage(shop.displayMessage());
+                        }
                         if (keyBoardInput) {
                             ter.renderFrame(tiles);
                         }
@@ -193,8 +223,40 @@ public class Engine {
                         System.out.print("\nLoad saved world (unimplemented)");
                     }
                     continue;
+                case 'B': //buy a weapon from the store
+                    if (player != null) {
+                        if (hasNearby(player.tiles,player.getLocation().getX(),player.getLocation().getY(),Tileset.LOCKED_DOOR,2)) {
+                            player.setMessage(shop.buy(player));
+                        } else {
+                            player.setMessage("Buy new weapons at the shop.");
+                        }
+                    }
+                    continue;
                 case ':':
                     colon = true; continue;
+
+                //The below four inputs must be placed before default,
+                //such that the user can use the number keys to both switch weapons and enter the seed
+                case '1': //switch to first weapon
+                    if (player != null) {
+                        player.switchWeapon(1);
+                        continue; //continue placed inside for loop such that user can enter the seed if at the start menu
+                    }
+                case '2': //switch to second weapon
+                    if (player != null) {
+                        player.switchWeapon(2);
+                        continue;
+                    }
+                case '3': //switch to second weapon
+                    if (player != null) {
+                        player.switchWeapon(3);
+                        continue;
+                    }
+                case '4': //switch to second weapon
+                    if (player != null) {
+                        player.switchWeapon(4);
+                        continue;
+                    }
                 default:
                     if (startReadingSeed) {
                         seed = seed * 10 + Integer.parseInt(String.valueOf(next));
@@ -212,6 +274,52 @@ public class Engine {
 
 
         return tiles;
+    }
+
+    /**
+     * Helper method that generates a shop at a random position
+     */
+    private void generateShop(Player player, long seed) {
+        TETile[][] tiles = player.tiles;
+        ArrayList<Point> l1 = new ArrayList<>();
+        ArrayList<Point> l2 = new ArrayList<>();
+        Random r = new Random(seed);
+        for (int x = 0; x < tiles.length; x ++) {
+            for (int y = 0; y < tiles[x].length; y ++) {
+                if (tiles[x][y] == Tileset.FLOOR && hasNearby(tiles,x,y,Tileset.FLOOR,8)) {
+                        if (r.nextDouble() < 0.5) { //construct a vertical shop
+                            if (hasNearby(tiles,x,y - 1,Tileset.FLOOR,8)) {
+                                l1.add(new Point(x,y));
+                                l2.add(new Point(x,y - 1));
+                            }
+                        } else { //construct a horizontal shop
+                            if (hasNearby(tiles,x + 1,y,Tileset.FLOOR,8)) {
+                                l1.add(new Point(x,y));
+                                l2.add(new Point(x + 1,y));
+                            }
+                        }
+                }
+            }
+        }
+        int index1 = r.nextInt(l1.size());
+        int index2 = r.nextInt(l1.size());
+        Point shop1Point1 = l1.get(index1);
+        Point shop1Point2 = l2.get(index1);
+        Point shop2Point1 = l1.get(index2);
+        Point shop2Point2 = l2.get(index2);
+
+
+        while (Math.abs(shop1Point1.getX() - shop2Point1.getX()) <= 8 ||
+                Math.abs(shop1Point1.getY() - shop2Point1.getY()) <= 8) {
+            index2 = r.nextInt(l1.size());
+            shop2Point1 = l1.get(index2);
+            shop2Point2 = l2.get(index2);
+        }
+
+        tiles[shop1Point1.getX()][shop1Point1.getY()] = Tileset.LOCKED_DOOR;
+        tiles[shop1Point2.getX()][shop1Point2.getY()] = Tileset.LOCKED_DOOR;
+        tiles[shop2Point1.getX()][shop2Point1.getY()] = Tileset.LOCKED_DOOR;
+        tiles[shop2Point2.getX()][shop2Point2.getY()] = Tileset.LOCKED_DOOR;
     }
 
     /**
@@ -252,7 +360,7 @@ public class Engine {
      * Fields include tile information, health, points, current weapon, weapon ammo, wave number.
      */
 
-    private void renewDisplayBar(Player player, boolean keyboardInput) {
+    private void renewDisplayBar(Shop shop, Player player, boolean keyboardInput) {
 
         if (player == null || !keyboardInput) {
             return;
@@ -299,8 +407,8 @@ public class Engine {
 
         //Wave information
         StdDraw.setPenColor(StdDraw.WHITE);
-        StdDraw.text(58, HEIGHT + 2, "Wave:");
-        StdDraw.text(60, HEIGHT + 2, Integer.toString(player.currentWave()));
+        StdDraw.text(57, HEIGHT + 2, "Wave:");
+        StdDraw.text(59, HEIGHT + 2, Integer.toString(player.currentWave()));
 
         //Message
         StdDraw.setPenColor(StdDraw.WHITE);
@@ -321,6 +429,7 @@ public class Engine {
         if ((new Point(x, y)).equals(player.getLocation())) {return "Player";}
         if (player.tiles[x][y].equals(Tileset.FLOOR)) {return "Floor";}
         if (player.tiles[x][y].equals(Tileset.NOTHING)) {return "Void";}
+        if (player.tiles[x][y].equals(Tileset.LOCKED_DOOR)) {return "Shop";}
 
         return "Wall";
     }
@@ -332,7 +441,7 @@ public class Engine {
      * @param seed the seed for the random generator instance
      */
 
-    private void generateWorld(TETile[][] tiles, int seed) {
+    private void generateWorld(TETile[][] tiles, long seed) {
         Random random = new Random(seed);
         final int numberOfRooms = random.nextInt(25) + 12;
 

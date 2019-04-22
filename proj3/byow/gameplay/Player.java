@@ -1,13 +1,16 @@
 package byow.gameplay;
 
+import byow.Core.Engine;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 import byow.utils.Point;
 import byow.utils.Direction;
 
+import java.util.ArrayList;
+
 public class Player extends GameCharacter {
 
-    private Weapon[] weapons; // Player has the ability to use weapons
+    private ArrayList<Weapon> weapons = new ArrayList<>(); // Player has the ability to use weapons
     private int currentWeapon = 0;
     private Point location;
     private Direction orientation;
@@ -19,8 +22,9 @@ public class Player extends GameCharacter {
     public Player(TETile[][] tiles, Point location) {
         super(tiles);
         this.health = 100;
-        points = 0;
-        weapons = new Weapon[] {Weapon.makePistol(), Weapon.makeSword()};
+        points = 1200;
+        weapons.add(Weapon.makePistol());
+        weapons.add(Weapon.makeSword());
         message = "Prepare for wave #1!";
 
         // Make default orientation North
@@ -125,21 +129,26 @@ public class Player extends GameCharacter {
         return wave;
     }
 
-    public Player switchWeapon() {
-        currentWeapon = 1 - currentWeapon;
+    public Player switchWeapon(int input) { //for example, player pressed 1, so weapon switched to the one at index 0
+        if (input > weapons.size()) {
+            this.setMessage("You do not own this weapon yet!");
+        } else {
+            currentWeapon = input - 1;
+            this.setMessage("Successfully switched to " + currentWeapon().getName() + ".");
+        }
         return this;
     }
 
     public String ammoDescription() {
-        return weapons[currentWeapon].ammoDescription();
+        return weapons.get(currentWeapon).ammoDescription();
     }
 
     public Weapon currentWeapon() {
-        return weapons[currentWeapon];
+        return weapons.get(currentWeapon);
     }
 
-    public void setWeapon(Weapon weapon) {
-        weapons[currentWeapon] = weapon;
+    public void addWeapon(Weapon weapon) {
+        weapons.add(weapon);
     }
 
     public String getMessage() {
@@ -149,4 +158,5 @@ public class Player extends GameCharacter {
     public void setMessage(String message) {
         this.message = message;
     }
+
 }

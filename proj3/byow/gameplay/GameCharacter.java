@@ -7,7 +7,7 @@ public class GameCharacter {
     int health;
     public TETile[][] tiles;
 
-    private GameCharacter(TETile[][] tiles) {
+    public GameCharacter(TETile[][] tiles) {
         health = 0;
         this.tiles = tiles;
     }
