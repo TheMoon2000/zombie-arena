@@ -11,16 +11,12 @@ import byow.utils.Point;
 
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
-import edu.princeton.cs.algs4.ST;
 import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.*;
-import java.awt.event.MouseMotionListener;
-import java.lang.reflect.WildcardType;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
-import java.util.SplittableRandom;
 
 public class Engine {
     TERenderer ter = new TERenderer();
@@ -117,6 +113,7 @@ public class Engine {
             if (next != 'Q') {
                 colon = false;
             }
+
             switch (next) {
                 case 'Q': // if :Q then save and quit
                     if (colon) {
@@ -127,7 +124,7 @@ public class Engine {
                 case 'N': // new world
                     if (player == null) {
                         startReadingSeed = true;
-                        if (keyBoardInput) { //promt message to tell user to enter seed
+                        if (keyBoardInput) { //prompt message to tell user to enter seed
                             Font font3 = new Font("Times New Roman", Font.BOLD, 20);
                             StdDraw.setFont(font3);
                             StdDraw.setPenColor(StdDraw.WHITE);
@@ -158,13 +155,12 @@ public class Engine {
                             ter.renderFrame(tiles);
 
                             //Tell User where he is at the beginning
-                            StdDraw.setPenColor(StdDraw.RED);
-                            StdDraw.setPenRadius(0.1);
+                            StdDraw.setPenColor(new Color(236, 96, 91));
+                            StdDraw.setPenRadius(0.05);
                             StdDraw.circle(player.getLocation().getX() + 0.5,player.getLocation().getY() + 0.5,0.3);
 
                         }
                     } else if (player != null) {
-                        System.out.print("\n[Move back]");
                         player.move(Direction.South);
                         if (keyBoardInput) {
                             ter.renderFrame(tiles);
@@ -173,7 +169,6 @@ public class Engine {
                     continue;
                 case 'W':
                     if (player != null) {
-                        System.out.print("\n[Move forward]");
                         player.move(Direction.North);
                         if (keyBoardInput) {
                             ter.renderFrame(tiles);
@@ -182,7 +177,6 @@ public class Engine {
                     continue;
                 case 'A':
                     if (player != null) {
-                        System.out.print("\n[Move left]");
                         player.move(Direction.West);
                         if (keyBoardInput) {
                             ter.renderFrame(tiles);
@@ -191,7 +185,6 @@ public class Engine {
                     continue;
                 case 'D':
                     if (player != null) {
-                        System.out.print("\n[Move right]");
                         player.move(Direction.East);
                         if (keyBoardInput) {
                             ter.renderFrame(tiles);
@@ -199,9 +192,7 @@ public class Engine {
                     }
                     continue;
                 case ' ':
-                    if (player != null) {
-                        System.out.print("\n[action]");
-                    }
+
                     continue;
                 case 'L':
                     if (player == null) {
@@ -267,6 +258,7 @@ public class Engine {
      * Should be called every time a key is pressed or a state is supdated
      * Fields include tile information, health, points, current weapon, weapon ammo, wave number.
      */
+
     private void renewDisplayBar(boolean keyBoardInput, boolean gameHasStarted,TETile[][] tiles, int health, int points, String weapon, String ammo, int wave, String message) {
 
         if (keyBoardInput && gameHasStarted) {
@@ -339,6 +331,7 @@ public class Engine {
             StdDraw.show();
         }
     }
+
 
     /**
      * Generate a random world based on a seed

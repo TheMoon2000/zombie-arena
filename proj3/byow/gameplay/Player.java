@@ -7,14 +7,20 @@ import byow.utils.Direction;
 
 public class Player extends GameCharacter {
 
-    public Weapon[] weapon; // Player has the ability to use weapons
+    public Weapon[] weapons; // Player has the ability to use weapons
+    private int currentWeapon = 0;
     private Point location;
     private Direction orientation;
+    private int points;
+    private int wave;
+    private static final int MAX_WAVE = 10;
 
     public Player(TETile[][] tiles, Point location) {
         super(tiles);
         this.health = 100;
-        weapon = new Weapon[] {Weapon.makePistol(), Weapon.makeSword()};
+        points = 0;
+        wave = 1;
+        weapons = new Weapon[] {Weapon.makePistol(), Weapon.makeSword()};
 
         // Make default orientation North
         this.location = location;
@@ -86,5 +92,47 @@ public class Player extends GameCharacter {
 
     public Point getLocation() {
         return location;
+    }
+
+    public int getPoints() {
+        return points;
+    }
+
+    public Player addPoints(int p) {
+        points += p;
+        return this;
+    }
+
+    public Player deductPoints(int p) {
+        if (points < p) {
+            return null;
+        }
+        points -= p;
+        return this;
+    }
+
+    public Player advanceWave() {
+        if (wave == MAX_WAVE) {
+            return null;
+        }
+        wave += 1;
+        return this;
+    }
+
+    public int currentWave() {
+        return wave;
+    }
+
+    public Player switchWeapon() {
+        currentWeapon = 1 - currentWeapon;
+        return this;
+    }
+
+    public String ammoDescription() {
+        return weapons[currentWeapon].ammoDescription();
+    }
+
+    public Weapon currentWeapon() {
+        return weapons[currentWeapon];
     }
 }

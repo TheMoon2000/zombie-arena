@@ -10,7 +10,9 @@ public class Weapon {
     private int reloadDuration;
 
 
-    private Weapon(String name) {}
+    private Weapon(String name) {
+        this.name = name;
+    }
 
     static Weapon makePistol() {
         Weapon pistol = new Weapon("Pistol");
@@ -89,5 +91,13 @@ public class Weapon {
 
     public void refillAmmo() {
         ammo = ammoCapacity;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String ammoDescription() {
+        return String.valueOf(clip + " / " + ammo);
     }
 }
