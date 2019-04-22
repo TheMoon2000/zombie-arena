@@ -83,15 +83,13 @@ public class Engine {
 
     private TETile[][] interact(InputSource source, boolean keyBoardInput) {
 
-
         //create menu if keyboardInput
         menu(keyBoardInput);
 
         boolean startReadingSeed = false;
         boolean colon = false;
 
-        int seed = 0;
-        Random r;
+        int seed = 0; Random r;
 
         TETile[][] tiles = new TETile[WIDTH][HEIGHT];
         Player player = null;
@@ -102,11 +100,11 @@ public class Engine {
 
             //display mouse cursor's tile information if game has started
             //update display bar whenever user doesn't input anything
-            while (!StdDraw.hasNextKeyTyped()) {
-                renewDisplayBar(keyBoardInput, player != null, tiles,
-                        100, 100000, "Machine Gun", "20/40", 10, "Displayed message");
+            if (!StdDraw.hasNextKeyTyped()) {
+                renewDisplayBar(player, keyBoardInput);
             }
 
+            renewDisplayBar(player, keyBoardInput);
 
             char next = source.getNextKey();
             System.out.println(next);
@@ -122,17 +120,14 @@ public class Engine {
                     }
                     continue;
                 case 'N': // new world
-                    if (player == null) {
-                        startReadingSeed = true;
-                        if (keyBoardInput) { //prompt message to tell user to enter seed
-                            Font font3 = new Font("Times New Roman", Font.BOLD, 20);
-                            StdDraw.setFont(font3);
-                            StdDraw.setPenColor(StdDraw.WHITE);
-                            StdDraw.text(0.8, 0.1, "Please enter random seed. Then press 'S'.");
-                            StdDraw.show();
-                        }
-                    } else {
-                        System.out.print("\nInvalid argument");
+                    if (player != null) {continue;}
+                    startReadingSeed = true;
+                    if (keyBoardInput) {
+                        Font font3 = new Font("Times New Roman", Font.BOLD, 20);
+                        StdDraw.setFont(font3);
+                        StdDraw.setPenColor(StdDraw.WHITE);
+                        StdDraw.text(0.8, 0.1, "Please enter random seed. Then press 'S'.");
+                        StdDraw.show();
                     }
                     continue;
                 case 'S': // start game
@@ -156,9 +151,8 @@ public class Engine {
 
                             //Tell User where he is at the beginning
                             StdDraw.setPenColor(new Color(236, 96, 91));
-                            StdDraw.setPenRadius(0.05);
-                            StdDraw.circle(player.getLocation().getX() + 0.5,player.getLocation().getY() + 0.5,0.3);
-
+                            StdDraw.setPenRadius(0.01);
+                            StdDraw.circle(player.getLocation().getX() + 0.5,player.getLocation().getY() + 0.5,1);
                         }
                     } else if (player != null) {
                         player.move(Direction.South);
@@ -204,15 +198,14 @@ public class Engine {
                 default:
                     if (startReadingSeed) {
                         seed = seed * 10 + Integer.parseInt(String.valueOf(next));
-                        if (keyBoardInput) { //display the seed
-                            Font font3 = new Font("Times New Roman", Font.BOLD, 20);
-                            StdDraw.setFont(font3);
-                            StdDraw.setPenColor(StdDraw.BLACK);
-                            StdDraw.filledRectangle(0.8,0.05,1,0.03);
-                            StdDraw.setPenColor(StdDraw.WHITE);
-                            StdDraw.text(0.8, 0.05, " " + seed + " ");
-                            StdDraw.show();
-                        }
+                        if (!keyBoardInput) {continue;}
+                        Font font3 = new Font("Times New Roman", Font.BOLD, 20);
+                        StdDraw.setFont(font3);
+                        StdDraw.setPenColor(StdDraw.BLACK);
+                        StdDraw.filledRectangle(0.8,0.05,1,0.03);
+                        StdDraw.setPenColor(StdDraw.WHITE);
+                        StdDraw.text(0.8, 0.05, " " + seed + " ");
+                        StdDraw.show();
                     }
             }
         }
@@ -222,7 +215,7 @@ public class Engine {
     }
 
     /**
-     * Helper method that generates the menu
+     * Helper method that generates the main menu
      */
     private void menu(boolean keyBoardInput) {
         if (keyBoardInput) {
@@ -255,81 +248,81 @@ public class Engine {
 
     /**
      * Helper method that creates an display bar on top
-     * Should be called every time a key is pressed or a state is supdated
+     * Should be called every time a key is pressed or a state is updated
      * Fields include tile information, health, points, current weapon, weapon ammo, wave number.
      */
 
-    private void renewDisplayBar(boolean keyBoardInput, boolean gameHasStarted,TETile[][] tiles, int health, int points, String weapon, String ammo, int wave, String message) {
+    private void renewDisplayBar(Player player, boolean keyboardInput) {
 
-        if (keyBoardInput && gameHasStarted) {
-            //get current mouse position to update tile information
-            String tile;
-            int x = (int) StdDraw.mouseX();
-            int y = (int) StdDraw.mouseY();
-            if (y >= HEIGHT) {
-                tile = "Void";
-            } else {
-                if (tiles[x][y] == Tileset.FLOOR) {
-                    tile = "Floor";
-                } else if (tiles[x][y] == Tileset.NOTHING) {
-                    tile = "Void";
-                } else if (tiles[x][y] == Tileset.PLAYER_NORTH ||
-                        tiles[x][y] == Tileset.PLAYER_SOUTH ||
-                        tiles[x][y] == Tileset.PLAYER_WEST ||
-                        tiles[x][y] == Tileset.PLAYER_EAST) {
-                    tile = "Player";
-                } else {
-                    tile = "Wall";
-                }
-            }
-
-            //cover previous display
-            StdDraw.setPenColor(StdDraw.BLACK);
-            StdDraw.filledRectangle(0, HEIGHT + 2, WIDTH, 1);
-
-            //tile information
-            StdDraw.setPenColor(StdDraw.WHITE);
-            StdDraw.text(5, HEIGHT + 2, tile);
-
-            //health information
-            StdDraw.setPenColor(StdDraw.RED);
-            StdDraw.filledCircle(13, HEIGHT + 2, 1);
-            StdDraw.setPenColor(StdDraw.WHITE);
-            StdDraw.text(16, HEIGHT + 2, "Health");
-            StdDraw.text(13, HEIGHT + 2, Integer.toString(health));
-
-            //point information
-            StdDraw.setPenColor(StdDraw.BLUE);
-            StdDraw.filledRectangle(24, HEIGHT + 2, 2, 1);
-            StdDraw.setPenColor(StdDraw.WHITE);
-            StdDraw.text(28, HEIGHT + 2, "Points");
-            StdDraw.text(24, HEIGHT + 2, Integer.toString(points));
-
-            //weapon information
-            StdDraw.setPenColor(StdDraw.BOOK_RED);
-            StdDraw.filledRectangle(36, HEIGHT + 2, 3, 1);
-            StdDraw.setPenColor(StdDraw.WHITE);
-            StdDraw.text(41, HEIGHT + 2, "Weapon");
-            StdDraw.text(36, HEIGHT + 2, weapon);
-
-            //Ammo information
-            StdDraw.setPenColor(StdDraw.PRINCETON_ORANGE);
-            StdDraw.filledRectangle(49, HEIGHT + 2, 1.5, 1);
-            StdDraw.setPenColor(StdDraw.WHITE);
-            StdDraw.text(52.5, HEIGHT + 2, "Ammo");
-            StdDraw.text(49, HEIGHT + 2, ammo);
-
-            //Wave information
-            StdDraw.setPenColor(StdDraw.WHITE);
-            StdDraw.text(58, HEIGHT + 2, "Wave:");
-            StdDraw.text(60, HEIGHT + 2, Integer.toString(wave));
-
-            //Message
-            StdDraw.setPenColor(StdDraw.WHITE);
-            StdDraw.text(70, HEIGHT + 2, message);
-
-            StdDraw.show();
+        if (player == null || !keyboardInput) {
+            return;
         }
+
+        //get current mouse position to update tile information
+        String tile = tileInfo(player);
+
+        //cover previous display
+        StdDraw.setPenColor(StdDraw.BLACK);
+        StdDraw.filledRectangle(0, HEIGHT + 2, WIDTH, 1);
+
+        //tile information
+        StdDraw.setPenColor(StdDraw.WHITE);
+        StdDraw.text(5, HEIGHT + 2, tile);
+
+        //health information
+        StdDraw.setPenColor(StdDraw.RED);
+        StdDraw.filledCircle(13, HEIGHT + 2, 1);
+        StdDraw.setPenColor(StdDraw.WHITE);
+        StdDraw.text(16, HEIGHT + 2, "Health");
+        StdDraw.text(13, HEIGHT + 2, Integer.toString(player.getHealth()));
+
+        //point information
+        StdDraw.setPenColor(StdDraw.BLUE);
+        StdDraw.filledRectangle(24, HEIGHT + 2, 2, 1);
+        StdDraw.setPenColor(StdDraw.WHITE);
+        StdDraw.text(28, HEIGHT + 2, "Points");
+        StdDraw.text(24, HEIGHT + 2, Integer.toString(player.getPoints()));
+
+        //weapon information
+        StdDraw.setPenColor(StdDraw.BOOK_RED);
+        StdDraw.filledRectangle(36, HEIGHT + 2, 3, 1);
+        StdDraw.setPenColor(StdDraw.WHITE);
+        StdDraw.text(41, HEIGHT + 2, "Weapon");
+        StdDraw.text(36, HEIGHT + 2, player.currentWeapon().getName());
+
+        //Ammo information
+        StdDraw.setPenColor(StdDraw.PRINCETON_ORANGE);
+        StdDraw.filledRectangle(49, HEIGHT + 2, 2, 1);
+        StdDraw.setPenColor(StdDraw.WHITE);
+        StdDraw.text(52.5, HEIGHT + 2, "Ammo");
+        StdDraw.text(49, HEIGHT + 2, player.ammoDescription());
+
+        //Wave information
+        StdDraw.setPenColor(StdDraw.WHITE);
+        StdDraw.text(58, HEIGHT + 2, "Wave:");
+        StdDraw.text(60, HEIGHT + 2, Integer.toString(player.currentWave()));
+
+        //Message
+        StdDraw.setPenColor(StdDraw.WHITE);
+        StdDraw.text(70, HEIGHT + 2, player.getMessage());
+
+        StdDraw.show();
+    }
+
+    /**
+     * Provides information about the tile at the given mouse position
+     */
+
+    private String tileInfo(Player player) {
+        int x = (int) StdDraw.mouseX();
+        int y = (int) StdDraw.mouseY();
+
+        if (y >= HEIGHT) {return "Void";}
+        if ((new Point(x, y)).equals(player.getLocation())) {return "Player";}
+        if (player.tiles[x][y].equals(Tileset.FLOOR)) {return "Floor";}
+        if (player.tiles[x][y].equals(Tileset.NOTHING)) {return "Void";}
+
+        return "Wall";
     }
 
 
