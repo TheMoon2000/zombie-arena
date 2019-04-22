@@ -8,7 +8,7 @@ public class Weapon {
     private int clip, ammo;
     private int clipCapacity, ammoCapacity;
     private int reloadDuration;
-
+    private int price;
 
     private Weapon(String name) {
         this.name = name;
@@ -23,6 +23,7 @@ public class Weapon {
         pistol.ammo = 20;
         pistol.ammoCapacity = 20;
         pistol.reloadDuration = 4;
+        pistol.price = 500;
         return pistol;
     }
 
@@ -35,6 +36,7 @@ public class Weapon {
         shotgun.ammo = 12;
         shotgun.ammoCapacity = 18;
         shotgun.reloadDuration = 5;
+        shotgun.price = 1200;
         return shotgun;
     }
 
@@ -47,6 +49,7 @@ public class Weapon {
         sniperRifle.ammo = 15;
         sniperRifle.ammoCapacity = 20;
         sniperRifle.reloadDuration = 5;
+        sniperRifle.price = 1500;
         return sniperRifle;
     }
 
@@ -57,7 +60,7 @@ public class Weapon {
         return sword;
     }
 
-    int damage(int distance) {
+    public int damage(int distance) {
         if (maxDistance < distance) {
             return 0;
         } else if (name.equals("Shotgun")) {
@@ -98,6 +101,10 @@ public class Weapon {
     }
 
     public String ammoDescription() {
-        return String.valueOf(clip + " / " + ammo);
+        return clip + " / " + ammo;
+    }
+
+    public int getPrice() {
+        return price;
     }
 }

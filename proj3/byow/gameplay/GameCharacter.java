@@ -5,9 +5,9 @@ import byow.TileEngine.TETile;
 public class GameCharacter {
 
     int health;
-    TETile[][] tiles;
+    public TETile[][] tiles;
 
-    public GameCharacter(TETile[][] tiles) {
+    private GameCharacter(TETile[][] tiles) {
         health = 0;
         this.tiles = tiles;
     }
