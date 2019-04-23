@@ -100,17 +100,15 @@ public class Player extends GameCharacter {
         return points;
     }
 
-    public Player addPoints(int p) {
+    public void addPoints(int p) {
         points += p;
-        return this;
     }
 
-    public Player deductPoints(int p) {
+    public void deductPoints(int p) {
         if (points < p) {
-            return null;
+            return;
         }
         points -= p;
-        return this;
     }
 
     public Player advanceWave() {
