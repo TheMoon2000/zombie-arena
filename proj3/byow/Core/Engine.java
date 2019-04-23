@@ -233,7 +233,7 @@ public class Engine {
 
             //display mouse cursor's tile information if game has started
             //update display bar whenever user doesn't input anything
-            while (!StdDraw.hasNextKeyTyped() && player != null) {
+            while (keyBoardInput && !StdDraw.hasNextKeyTyped() && player != null) {
                 sleep(10);
                 renewDisplayBar(player, keyBoardInput);
             }
@@ -340,15 +340,6 @@ public class Engine {
                 case ':':
                     colon = true;
                     break;
-                // The below four inputs must be placed before default,
-                // such that the user can use the number keys
-                // to both switch weapons and enter the seed
-                case '1':
-                case '2':
-                    if (player != null) {
-                        player.switchWeapon(Integer.parseInt(String.valueOf(next)));
-                        break;
-                    }
                 case 'T': //Press T every time to see a randomly generated shortest path
                     Random random = new Random();
                     int x1 = random.nextInt(WIDTH);
@@ -382,6 +373,15 @@ public class Engine {
                         ter.renderFrame(tilesCopy);
                     }
                     continue;
+                // The below four inputs must be placed before default,
+                // such that the user can use the number keys
+                // to both switch weapons and enter the seed
+                case '1':
+                case '2':
+                    if (player != null) {
+                        player.switchWeapon(Integer.parseInt(String.valueOf(next)));
+                        break;
+                    }
                 default:
                     if (startReadingSeed) {
                         seed = seed * 10 + Integer.parseInt(String.valueOf(next));
@@ -489,31 +489,33 @@ public class Engine {
      * Helper method that generates the main menu
      */
     private void menu(boolean keyBoardInput) {
-        if (keyBoardInput) {
-            StdDraw.setCanvasSize(WIDTH * 16, HEIGHT * 16);
-            StdDraw.clear(StdDraw.BLACK);
-
-            Font font1 = new Font("Arial", Font.BOLD, 60);
-            Font font2 = new Font("Helvetica", Font.ITALIC, 40);
-
-            StdDraw.setFont(font1);
-            StdDraw.setPenColor(StdDraw.WHITE);
-            StdDraw.text(0.5, 0.7, "ZOMBIE ARENA");
-
-            StdDraw.setFont(font2);
-            StdDraw.setPenColor(StdDraw.WHITE);
-            StdDraw.text(0.5, 0.4, "NEW GAME (N)");
-
-            StdDraw.setFont(font2);
-            StdDraw.setPenColor(StdDraw.WHITE);
-            StdDraw.text(0.5, 0.3, "LOAD GAME (L)");
-
-            StdDraw.setFont(font2);
-            StdDraw.setPenColor(StdDraw.WHITE);
-            StdDraw.text(0.5, 0.2, "QUIT (Q)");
-
-            StdDraw.show();
+        if (!keyBoardInput) {
+            return;
         }
+
+        StdDraw.setCanvasSize(WIDTH * 16, HEIGHT * 16);
+        StdDraw.clear(StdDraw.BLACK);
+
+        Font font1 = new Font("Arial", Font.BOLD, 60);
+        Font font2 = new Font("Helvetica", Font.ITALIC, 40);
+
+        StdDraw.setFont(font1);
+        StdDraw.setPenColor(StdDraw.WHITE);
+        StdDraw.text(0.5, 0.7, "ZOMBIE ARENA");
+
+        StdDraw.setFont(font2);
+        StdDraw.setPenColor(StdDraw.WHITE);
+        StdDraw.text(0.5, 0.4, "NEW GAME (N)");
+
+        StdDraw.setFont(font2);
+        StdDraw.setPenColor(StdDraw.WHITE);
+        StdDraw.text(0.5, 0.3, "LOAD GAME (L)");
+
+        StdDraw.setFont(font2);
+        StdDraw.setPenColor(StdDraw.WHITE);
+        StdDraw.text(0.5, 0.2, "QUIT (Q)");
+
+        StdDraw.show();
     }
 
     /**
