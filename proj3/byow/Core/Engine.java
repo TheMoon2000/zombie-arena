@@ -201,7 +201,8 @@ public class Engine {
 
         InputSource source = new StringInputDevice(input);
 
-        return interact(source, false);
+        TETile[][] tiles = interact(source, false);
+        return tiles;
     }
 
     /**
@@ -225,7 +226,7 @@ public class Engine {
         Player player = null;
 
         //create new graph
-        WeightedUndirectedGraph astarGraph = new WeightedUndirectedGraph();
+        WeightedUndirectedGraph aStarGraph = new WeightedUndirectedGraph();
 
         System.out.println("Capturing input source:");
 
@@ -235,11 +236,11 @@ public class Engine {
             //update display bar whenever user doesn't input anything
             while (keyBoardInput && !StdDraw.hasNextKeyTyped() && player != null) {
                 sleep(10);
-                renewDisplayBar(player, keyBoardInput);
+                renewDisplayBar(player);
             }
 
             char next = source.getNextKey();
-            System.out.print("\n" + next);
+
             if (next != 'Q') {
                 colon = false;
             }
@@ -283,8 +284,8 @@ public class Engine {
                         //randomly generate two shops
                         generateShop(player, seed);
 
-                        //collect all the floor tiles into a connected graph for djikstra algorithm
-                        aStarCollect(astarGraph, tiles, player.getLocation());
+                        //collect all the floor tiles into a connected graph for Dijkstra's algorithm
+                        aStarCollect(aStarGraph, tiles, player.getLocation());
 
                         if (keyBoardInput) {
                             ter.initialize(WIDTH, HEIGHT + 3);
@@ -361,7 +362,7 @@ public class Engine {
                             tilesCopy[i][j] = tiles[i][j];
                         }
                     }
-                    AStarSolver<Point> solver = new AStarSolver<>(astarGraph, new Point(x1, y1),
+                    AStarSolver<Point> solver = new AStarSolver<>(aStarGraph, new Point(x1, y1),
                             new Point(x2, y2), 1000);
                     List<Point> solution = solver.solution();
                     for (Point p : solution) {
@@ -397,7 +398,9 @@ public class Engine {
                         StdDraw.show();
                     }
             }
-            renewDisplayBar(player, keyBoardInput);
+            if (keyBoardInput) {
+                renewDisplayBar(player);
+            }
         }
 
 
@@ -524,9 +527,9 @@ public class Engine {
      * Fields include tile information, health, points, current weapon, weapon ammo, wave number.
      */
 
-    private void renewDisplayBar(Player player, boolean keyboardInput) {
+    private void renewDisplayBar(Player player) {
 
-        if (player == null || !keyboardInput) {
+        if (player == null) {
             return;
         }
 

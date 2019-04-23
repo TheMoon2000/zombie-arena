@@ -18,7 +18,7 @@ public class Shop {
             Weapon.makeSniperRifle()
     };
 
-    private static final Color bgColor = new Color(26, 26, 29);
+    private static final Color BGCOLOR = new Color(26, 26, 29);
     private static final Font cellFont = new Font("Monaco", Font.PLAIN, 15);
     private static final Font captionFont = new Font("Monaco", Font.PLAIN, 11);
     private static final Color cellTextColor = new Color(200,200, 200);
@@ -71,7 +71,7 @@ public class Shop {
         double centerX = ((double) ter.getWidth()) / 2.0;
         double centerY = ((double) ter.getHeight()) / 2.0;
 
-        StdDraw.clear(bgColor);
+        StdDraw.clear(BGCOLOR);
         StdDraw.setPenColor(Color.darkGray);
         StdDraw.setPenRadius(0.005);
         StdDraw.rectangle(centerX, centerY, 20, 16);
