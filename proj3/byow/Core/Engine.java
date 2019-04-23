@@ -228,8 +228,6 @@ public class Engine {
         //create new graph
         WeightedUndirectedGraph aStarGraph = new WeightedUndirectedGraph();
 
-        System.out.println("Capturing input source:");
-
         while (source.possibleNextInput()) {
 
             //display mouse cursor's tile information if game has started
@@ -248,7 +246,6 @@ public class Engine {
             switch (next) {
                 case 'Q': // if :Q then save and quit
                     if (colon) {
-                        System.out.println("\nSaving...");
                         return tiles;
                     }
                     break;
@@ -329,9 +326,7 @@ public class Engine {
                 case 'B': //buy a weapon from the store
                     if (player != null) {
                         if (hasNearby(player.tiles, player.getLocation(), Tileset.WEAPON_BOX, 1)) {
-                            System.out.print("\nentered shop");
                             player.setMessage(Shop.openMenu(player, ter, source, keyBoardInput));
-                            System.out.print("\nclosed shop");
                             ter.renderFrame(tiles);
                         } else {
                             player.setMessage("Buy new weapons at the shop.");
