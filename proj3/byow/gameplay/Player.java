@@ -130,7 +130,6 @@ public class Player extends GameCharacter {
 
     public void switchWeapon(int input) {
         currentWeapon = input - 1;
-        System.out.println("number of weapons " + weapons.length);
         if (weapons[currentWeapon] == null) {
             this.message = "Empty weapon slot.";
         } else {
