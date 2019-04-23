@@ -8,6 +8,7 @@ import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 import byow.gameplay.Player;
 import byow.gameplay.Shop;
+import byow.hw4.AStarGraph;
 import byow.hw4.AStarSolver;
 import byow.hw4.WeightedUndirectedGraph;
 import byow.utils.Direction;
@@ -203,7 +204,7 @@ public class Engine {
         // See proj3.byow.InputDemo for a demo of how you can make a nice clean interface
         // that works for many different input types.
 
-        InputSource source = new StringInputDevice(input);
+        InputSource source = new StringInputDevice(input.toUpperCase());
 
         return interact(source, false);
     }
@@ -215,81 +216,51 @@ public class Engine {
      */
 
     private TETile[][] interact(InputSource source, boolean keyBoardInput) {
-
-        //create menu if keyboardInput
         menu(keyBoardInput);
-
         boolean startReadingSeed = false;
-        boolean colon = false;
-
         long seed = 0; Random r;
-
         TETile[][] tiles = new TETile[WIDTH][HEIGHT];
         Player player = null;
-
-        //create new graph
         WeightedUndirectedGraph aStarGraph = new WeightedUndirectedGraph();
 
         while (source.possibleNextInput()) {
-
-            //display mouse cursor's tile information if game has started
-            //update display bar whenever user doesn't input anything
             while (keyBoardInput && !StdDraw.hasNextKeyTyped() && player != null) {
                 sleep(10);
                 renewDisplayBar(player);
             }
-
-            char next = Character.toUpperCase(source.getNextKey());
-
-            if (next != 'Q') {
-                colon = false;
-            }
-
+            char next = source.getNextKey();
             switch (next) {
-                case 'Q': // if :Q then save and quit
-                    if (colon) {
+                case ':': // if :Q then save and quit
+                    if (source.getNextKey() == 'Q') {
                         return tiles;
                     }
                     break;
                 case 'N': // new world
-                    if (player != null) {
-                        continue;
+                    if (player == null) {
+                        startReadingSeed = true;
+                        drawSeedPrompt(keyBoardInput);
                     }
-                    startReadingSeed = true;
-                    drawSeedPrompt(keyBoardInput);
                     break;
                 case 'S': // start game
                     if (player == null && startReadingSeed) {
                         r = new Random(seed);
                         generateWorld(tiles, seed);
-                        fillTheRest(tiles, new Random(seed));
                         startReadingSeed = false;
-
-                        // Randomly place the player on a floor tile
                         player = new Player(tiles, randomPlacement(r, tiles));
-                        //randomly generate two shops
                         generateShop(player, seed);
-                        //collect all the floor tiles into a connected graph for A* algorithm
                         aStarCollect(aStarGraph, tiles, player.getLocation());
-
                         if (keyBoardInput) {
                             ter.initialize(WIDTH, HEIGHT + 3);
                             ter.renderFrame(tiles);
                             locate(player);
                         }
                         break;
-                    } else if (player == null) {
-                        break;
-                    }
-                    // Otherwise, 'S' refers to a direction, so fall through...
-                case 'W':
-                case 'A':
-                case 'D':
+                    } // fall through is 'S' refers to a direction
+                case 'W': case 'A': case 'D':
                     if (player != null) {
                         player.move(Direction.parse(next));
-                        //if there is a shop nearby, display the shop's message first
                         if (hasNearby(player.getTiles(), player.getLocation(),
-                                Tileset.WEAPON_BOX, 1)) {
+                                Tileset.WEAPON_BOX, 1)) { // display the shop's message
                             player.setMessage(Shop.displayMessage());
                         } else {
                             player.setMessage(player.waveMessage());
@@ -300,8 +271,7 @@ public class Engine {
                         }
                     }
                     break;
-                case ' ': break;
-                case 'L': break;
+                case ' ': break; case 'L': break;
                 case 'B': //buy a weapon from the store
                     if (player != null) {
                         if (hasNearby(player.getTiles(), player.getLocation(),
@@ -313,69 +283,63 @@ public class Engine {
                         }
                     }
                     break;
-                case ':':
-                    colon = true; break;
-                case 'T': //Press T every time to see a randomly generated shortest path
-                    Random random = new Random();
-                    int x1 = random.nextInt(WIDTH);
-                    int y1 = random.nextInt(HEIGHT);
-                    while (tiles[x1][y1] != Tileset.FLOOR) {
-                        x1 = random.nextInt(WIDTH);
-                        y1 = random.nextInt(HEIGHT);
-                    }
-
-                    int x2 = random.nextInt(WIDTH);
-                    int y2 = random.nextInt(HEIGHT);
-                    while (tiles[x2][y2] != Tileset.FLOOR) {
-                        x2 = random.nextInt(WIDTH);
-                        y2 = random.nextInt(HEIGHT);
-                    }
-                    TETile[][] tilesCopy = new TETile[WIDTH][HEIGHT];
-                    for (int i = 0; i < WIDTH; i++) {
-                        System.arraycopy(tiles[i], 0, tilesCopy[i], 0, HEIGHT);
-                    }
-                    AStarSolver<Point> solver = new AStarSolver<>(aStarGraph, new Point(x1, y1),
-                            new Point(x2, y2), 1000);
-                    List<Point> solution = solver.solution();
-                    for (Point p : solution) {
-                        tilesCopy[p.getX()][p.getY()] = Tileset.FLOWER;
-                    }
-                    tilesCopy[x1][y1] = Tileset.LOCKED_DOOR;
-                    tilesCopy[x2][y2] = Tileset.LOCKED_DOOR;
-                    if (keyBoardInput) {
-                        ter.renderFrame(tilesCopy);
-                        renewDisplayBar(player);
-                    }
-                    continue;
-                // The below four inputs must be placed before default,
-                // such that the user can use the number keys
-                // to both switch weapons and enter the seed
-                case '1':
-                case '2':
-                    if (player != null) {
-                        player.switchWeapon(Integer.parseInt(String.valueOf(next)));
-                        break;
-                    }
                 default:
-                    if (startReadingSeed) {
+                    if ((next == '1' || next == '2') && player != null) {
+                        player.switchWeapon(Integer.parseInt(String.valueOf(next)));
+                    } else if (startReadingSeed) {
                         seed = seed * 10 + Integer.parseInt(String.valueOf(next));
-                        if (!keyBoardInput) {
-                            continue;
-                        }
-                        displaySeed(seed);
+                        displaySeed(seed, keyBoardInput);
                     }
             }
         }
-
         return tiles;
     }
 
     /**
      * Helper methods that takes all the floor tiles and add them into an A* graph
      */
+
     private void aStarCollect(WeightedUndirectedGraph aStarGraph, TETile[][] tiles, Point source) {
         HashMap<Point, Boolean> map = new HashMap<>();
         depthFirstSearch(aStarGraph, tiles, map, source);
+    }
+
+    /**
+     * Test feature. To call in interact(), paste: ter.renderFrame(test(player, aStarGraph));
+     * @param player
+     * @param aStarGraph
+     * @return
+     */
+
+    private static TETile[][] test(Player player, AStarGraph aStarGraph) {
+        Random random = new Random();
+        int x1 = random.nextInt(WIDTH);
+        int y1 = random.nextInt(HEIGHT);
+        while (player.getTiles()[x1][y1] != Tileset.FLOOR) {
+            x1 = random.nextInt(WIDTH);
+            y1 = random.nextInt(HEIGHT);
+        }
+
+        int x2 = random.nextInt(WIDTH);
+        int y2 = random.nextInt(HEIGHT);
+        while (player.getTiles()[x2][y2] != Tileset.FLOOR) {
+            x2 = random.nextInt(WIDTH);
+            y2 = random.nextInt(HEIGHT);
+        }
+        TETile[][] tilesCopy = new TETile[WIDTH][HEIGHT];
+        for (int i = 0; i < WIDTH; i++) {
+            System.arraycopy(player.getTiles()[i], 0, tilesCopy[i], 0, HEIGHT);
+        }
+        AStarSolver<Point> solver = new AStarSolver<>(aStarGraph, new Point(x1, y1),
+                new Point(x2, y2), 1000);
+        List<Point> solution = solver.solution();
+        for (Point p : solution) {
+            tilesCopy[p.getX()][p.getY()] = Tileset.FLOWER;
+        }
+        tilesCopy[x1][y1] = Tileset.LOCKED_DOOR;
+        tilesCopy[x2][y2] = Tileset.LOCKED_DOOR;
+
+        return tilesCopy;
     }
 
     private void depthFirstSearch(WeightedUndirectedGraph aStarGraph, TETile[][] tiles,
@@ -583,14 +547,16 @@ public class Engine {
      * @param seed the random generator's seed
      */
 
-    private static void displaySeed(long seed) {
-        Font font3 = new Font("Times New Roman", Font.BOLD, 20);
-        StdDraw.setFont(font3);
-        StdDraw.setPenColor(StdDraw.BLACK);
-        StdDraw.filledRectangle(0.8, 0.05, 1, 0.03);
-        StdDraw.setPenColor(StdDraw.WHITE);
-        StdDraw.text(0.8, 0.05, " " + seed + " ");
-        StdDraw.show();
+    private static void displaySeed(long seed, boolean keyboardInput) {
+        if (keyboardInput) {
+            Font font3 = new Font("Times New Roman", Font.BOLD, 20);
+            StdDraw.setFont(font3);
+            StdDraw.setPenColor(StdDraw.BLACK);
+            StdDraw.filledRectangle(0.8, 0.05, 1, 0.03);
+            StdDraw.setPenColor(StdDraw.WHITE);
+            StdDraw.text(0.8, 0.05, " " + seed + " ");
+            StdDraw.show();
+        }
     }
 
     /**
@@ -684,7 +650,8 @@ public class Engine {
 
             }
 
-
         }
+
+        fillTheRest(tiles, new Random(seed));
     }
 }
