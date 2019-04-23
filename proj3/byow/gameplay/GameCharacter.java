@@ -1,10 +1,12 @@
 package byow.gameplay;
 
 import byow.TileEngine.TETile;
+import byow.utils.Point;
 
 public class GameCharacter {
 
     private int health;
+    Point location;
     TETile[][] tiles;
 
     GameCharacter(TETile[][] tiles) {
@@ -12,14 +14,12 @@ public class GameCharacter {
         this.tiles = tiles;
     }
 
-    int addHealth(int amount) {
+    void addHealth(int amount) {
         this.health = Math.min(100, this.health + amount);
-        return this.health;
     }
 
-    int reduceHealth(int amount) {
+    void reduceHealth(int amount) {
         this.health = Math.max(0, this.health - amount);
-        return this.health;
     }
 
     public int getHealth() {
@@ -28,5 +28,9 @@ public class GameCharacter {
 
     public TETile[][] getTiles() {
         return tiles;
+    }
+
+    public Point getLocation() {
+        return location;
     }
 }
