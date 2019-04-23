@@ -1,6 +1,6 @@
 package byow.TileEngine;
 
-import java.awt.Color;
+import java.awt.*;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -95,7 +95,8 @@ public class TETile {
         StdDraw.setPenColor(backgroundColor);
         StdDraw.filledSquare(x + 0.5, y + 0.5, 0.5);
         StdDraw.setPenColor(textColor);
-        StdDraw.setFont();
+        Font font = new Font("Monaco", Font.BOLD, 14);
+        StdDraw.setFont(font);
         StdDraw.text(x + 0.5, y + 0.5, Character.toString(character()));
     }
 
