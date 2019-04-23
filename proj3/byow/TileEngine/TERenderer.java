@@ -98,4 +98,12 @@ public class TERenderer {
         }
         StdDraw.show();
     }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
 }
