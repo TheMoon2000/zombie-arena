@@ -4,15 +4,15 @@ import byow.TileEngine.TETile;
 
 public class GameCharacter {
 
-    int health;
+    private int health;
     public TETile[][] tiles;
 
-    public GameCharacter(TETile[][] tiles) {
+    GameCharacter(TETile[][] tiles) {
         health = 0;
         this.tiles = tiles;
     }
 
-    public int addHealth(int health) {
+    int addHealth(int health) {
         this.health = Math.min(100, this.health + health);
         return this.health;
     }
