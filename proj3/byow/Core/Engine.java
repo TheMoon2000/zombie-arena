@@ -61,7 +61,7 @@ public class Engine {
      * @return the 2D TETile[][] representing the state of the world
      */
     public TETile[][] interactWithInputString(String input) {
-        // TODO: Fill out this method so that it run the engine using the input
+        // Fill out this method so that it run the engine using the input
         // passed in as an argument, and return a 2D tile representation of the
         // world that would have been drawn if the same inputs had been given
         // to interactWithKeyboard().
@@ -97,7 +97,6 @@ public class Engine {
 
         TETile[][] tiles = new TETile[WIDTH][HEIGHT];
         Player player = null;
-        Shop shop = null;
 
         System.out.println("Capturing input source:");
 
@@ -105,18 +104,13 @@ public class Engine {
 
             //display mouse cursor's tile information if game has started
             //update display bar whenever user doesn't input anything
-            while (!StdDraw.hasNextKeyTyped()) {
-                renewDisplayBar(shop, player, keyBoardInput);
-                try {
-                    TimeUnit.MILLISECONDS.sleep(1);
-                } catch (InterruptedException e) {
-                    System.out.print("\ndelay failed");
-                }
-
+            while (!StdDraw.hasNextKeyTyped() && player != null) {
+                sleep(10);
+                renewDisplayBar(player, keyBoardInput);
             }
 
             char next = source.getNextKey();
-            System.out.println(next);
+            System.out.print("\n" + next);
             if (next != 'Q') {
                 colon = false;
             }
@@ -127,9 +121,11 @@ public class Engine {
                         System.out.println("\nSaving...");
                         return tiles;
                     }
-                    continue;
+                    break;
                 case 'N': // new world
-                    if (player != null) {continue;}
+                    if (player != null) {
+                        continue;
+                    }
                     startReadingSeed = true;
                     if (keyBoardInput) {
                         Font font3 = new Font("Times New Roman", Font.BOLD, 20);
@@ -138,7 +134,7 @@ public class Engine {
                         StdDraw.text(0.8, 0.1, "Please enter random seed. Then press 'S'.");
                         StdDraw.show();
                     }
-                    continue;
+                    break;
                 case 'S': // start game
                     if (player == null && startReadingSeed) {
                         r = new Random(seed);
@@ -156,8 +152,7 @@ public class Engine {
                         player = new Player(tiles, new Point(randomX, randomY));
 
                         //randomly generate two shops
-                        generateShop(player,seed);
-                        shop = new Shop();
+                        generateShop(player, seed);
 
                         if (keyBoardInput) {
                             ter.initialize(WIDTH, HEIGHT + 3);
@@ -166,110 +161,75 @@ public class Engine {
                             //Tell User where he is at the beginning
                             StdDraw.setPenColor(new Color(236, 96, 91));
                             StdDraw.setPenRadius(0.01);
-                            StdDraw.circle(player.getLocation().getX() + 0.5,player.getLocation().getY() + 0.5,1);
+                            StdDraw.circle(player.getLocation().getX() + 0.5,
+                                           player.getLocation().getY() + 0.5, 1);
                         }
-                    } else if (player != null) {
-                        player.move(Direction.South);
-                        //if there is a shop nearby, display the shop's message first
-                        if (hasNearby(player.tiles,player.getLocation().getX(),player.getLocation().getY(),Tileset.LOCKED_DOOR,2)) {
-                            player.setMessage(shop.displayMessage());
-                        }
-                        if (keyBoardInput) {
-                            ter.renderFrame(tiles);
-                        }
+                        break;
+                    } else if (player == null) {
+                        break;
                     }
-                    continue;
-                case 'W':
+                    // Otherwise, 'S' refers to a direction, so fall through...
+                case 'W': case 'A': case 'D':
                     if (player != null) {
-                        player.move(Direction.North);
+                        player.move(Direction.parse(next));
                         //if there is a shop nearby, display the shop's message first
-                        if (hasNearby(player.tiles,player.getLocation().getX(),player.getLocation().getY(),Tileset.LOCKED_DOOR,2)) {
-                            player.setMessage(shop.displayMessage());
+                        if (hasNearby(player.tiles, player.getLocation(), Tileset.WEAPON_BOX, 1)) {
+                            player.setMessage(Shop.displayMessage());
+                        } else {
+                            player.setMessage(player.waveMessage());
                         }
                         if (keyBoardInput) {
                             ter.renderFrame(tiles);
                         }
                     }
-                    continue;
-                case 'A':
-                    if (player != null) {
-                        player.move(Direction.West);
-                        //if there is a shop nearby, display the shop's message first
-                        if (hasNearby(player.tiles,player.getLocation().getX(),player.getLocation().getY(),Tileset.LOCKED_DOOR,2)) {
-                            player.setMessage(shop.displayMessage());
-                        }
-                        if (keyBoardInput) {
-                            ter.renderFrame(tiles);
-                        }
-                    }
-                    continue;
-                case 'D':
-                    if (player != null) {
-                        player.move(Direction.East);
-                        //if there is a shop nearby, display the shop's message first
-                        if (hasNearby(player.tiles,player.getLocation().getX(),player.getLocation().getY(),Tileset.LOCKED_DOOR,2)) {
-                            player.setMessage(shop.displayMessage());
-                        }
-                        if (keyBoardInput) {
-                            ter.renderFrame(tiles);
-                        }
-                    }
-                    continue;
+                    break;
                 case ' ':
 
-                    continue;
+                    break;
                 case 'L':
                     if (player == null) {
                         System.out.print("\nLoad saved world (unimplemented)");
                     }
-                    continue;
+                    break;
                 case 'B': //buy a weapon from the store
                     if (player != null) {
-                        if (hasNearby(player.tiles,player.getLocation().getX(),player.getLocation().getY(),Tileset.LOCKED_DOOR,2)) {
-                            player.setMessage(shop.buy(player));
+                        if (hasNearby(player.tiles, player.getLocation(), Tileset.WEAPON_BOX, 1)) {
+                            System.out.print("\nentered shop");
+                            Shop.openMenu(player, ter, source, keyBoardInput);
+                            System.out.print("\nclosed shop");
+                            ter.renderFrame(tiles);
                         } else {
                             player.setMessage("Buy new weapons at the shop.");
                         }
                     }
-                    continue;
+                    break;
                 case ':':
-                    colon = true; continue;
-
-                //The below four inputs must be placed before default,
-                //such that the user can use the number keys to both switch weapons and enter the seed
-                case '1': //switch to first weapon
+                    colon = true;
+                    break;
+                // The below four inputs must be placed before default,
+                // such that the user can use the number keys
+                // to both switch weapons and enter the seed
+                case '1': case '2': case '3':
                     if (player != null) {
-                        player.switchWeapon(1);
-                        continue; //continue placed inside for loop such that user can enter the seed if at the start menu
-                    }
-                case '2': //switch to second weapon
-                    if (player != null) {
-                        player.switchWeapon(2);
-                        continue;
-                    }
-                case '3': //switch to second weapon
-                    if (player != null) {
-                        player.switchWeapon(3);
-                        continue;
-                    }
-                case '4': //switch to second weapon
-                    if (player != null) {
-                        player.switchWeapon(4);
-                        continue;
+                        player.switchWeapon(Integer.parseInt(String.valueOf(next)));
+                        break;
                     }
                 default:
                     if (startReadingSeed) {
                         seed = seed * 10 + Integer.parseInt(String.valueOf(next));
-                        if (!keyBoardInput) {continue;}
+                        if (!keyBoardInput) {
+                            continue;
+                        }
                         Font font3 = new Font("Times New Roman", Font.BOLD, 20);
                         StdDraw.setFont(font3);
                         StdDraw.setPenColor(StdDraw.BLACK);
-                        StdDraw.filledRectangle(0.8,0.05,1,0.03);
+                        StdDraw.filledRectangle(0.8, 0.05, 1, 0.03);
                         StdDraw.setPenColor(StdDraw.WHITE);
                         StdDraw.text(0.8, 0.05, " " + seed + " ");
                         StdDraw.show();
                     }
             }
+            renewDisplayBar(player, keyBoardInput);
         }
 
 
@@ -284,20 +244,21 @@ public class Engine {
         ArrayList<Point> l1 = new ArrayList<>();
         ArrayList<Point> l2 = new ArrayList<>();
         Random r = new Random(seed);
-        for (int x = 0; x < tiles.length; x ++) {
-            for (int y = 0; y < tiles[x].length; y ++) {
-                if (tiles[x][y] == Tileset.FLOOR && hasNearby(tiles,x,y,Tileset.FLOOR,8)) {
-                        if (r.nextDouble() < 0.5) { //construct a vertical shop
-                            if (hasNearby(tiles,x,y - 1,Tileset.FLOOR,8)) {
-                                l1.add(new Point(x,y));
-                                l2.add(new Point(x,y - 1));
-                            }
-                        } else { //construct a horizontal shop
-                            if (hasNearby(tiles,x + 1,y,Tileset.FLOOR,8)) {
-                                l1.add(new Point(x,y));
-                                l2.add(new Point(x + 1,y));
-                            }
+        for (int x = 0; x < tiles.length; x++) {
+            for (int y = 0; y < tiles[x].length; y++) {
+                if (tiles[x][y] == Tileset.FLOOR
+                        && hasNearby(tiles, new Point(x, y), Tileset.FLOOR, 8)) {
+                    if (r.nextDouble() < 0.5) { //construct a vertical shop
+                        if (hasNearby(tiles, new Point(x, y - 1), Tileset.FLOOR, 8)) {
+                            l1.add(new Point(x, y));
+                            l2.add(new Point(x, y - 1));
                         }
+                    } else { //construct a horizontal shop
+                        if (hasNearby(tiles, new Point(x + 1, y), Tileset.FLOOR, 8)) {
+                            l1.add(new Point(x, y));
+                            l2.add(new Point(x + 1, y));
+                        }
+                    }
                 }
             }
         }
@@ -309,17 +270,17 @@ public class Engine {
         Point shop2Point2 = l2.get(index2);
 
 
-        while (Math.abs(shop1Point1.getX() - shop2Point1.getX()) <= 8 ||
-                Math.abs(shop1Point1.getY() - shop2Point1.getY()) <= 8) {
+        while (Math.abs(shop1Point1.getX() - shop2Point1.getX()) <= 8
+                || Math.abs(shop1Point1.getY() - shop2Point1.getY()) <= 8) {
             index2 = r.nextInt(l1.size());
             shop2Point1 = l1.get(index2);
             shop2Point2 = l2.get(index2);
         }
 
-        tiles[shop1Point1.getX()][shop1Point1.getY()] = Tileset.LOCKED_DOOR;
-        tiles[shop1Point2.getX()][shop1Point2.getY()] = Tileset.LOCKED_DOOR;
-        tiles[shop2Point1.getX()][shop2Point1.getY()] = Tileset.LOCKED_DOOR;
-        tiles[shop2Point2.getX()][shop2Point2.getY()] = Tileset.LOCKED_DOOR;
+        tiles[shop1Point1.getX()][shop1Point1.getY()] = Tileset.WEAPON_BOX;
+        tiles[shop1Point2.getX()][shop1Point2.getY()] = Tileset.WEAPON_BOX;
+        tiles[shop2Point1.getX()][shop2Point1.getY()] = Tileset.WEAPON_BOX;
+        tiles[shop2Point2.getX()][shop2Point2.getY()] = Tileset.WEAPON_BOX;
     }
 
     /**
@@ -360,7 +321,7 @@ public class Engine {
      * Fields include tile information, health, points, current weapon, weapon ammo, wave number.
      */
 
-    private void renewDisplayBar(Shop shop, Player player, boolean keyboardInput) {
+    private void renewDisplayBar(Player player, boolean keyboardInput) {
 
         if (player == null || !keyboardInput) {
             return;
@@ -425,11 +386,21 @@ public class Engine {
         int x = (int) StdDraw.mouseX();
         int y = (int) StdDraw.mouseY();
 
-        if (y >= HEIGHT) {return "Void";}
-        if ((new Point(x, y)).equals(player.getLocation())) {return "Player";}
-        if (player.tiles[x][y].equals(Tileset.FLOOR)) {return "Floor";}
-        if (player.tiles[x][y].equals(Tileset.NOTHING)) {return "Void";}
-        if (player.tiles[x][y].equals(Tileset.LOCKED_DOOR)) {return "Shop";}
+        if (y >= HEIGHT) {
+            return "Void";
+        }
+        if ((new Point(x, y)).equals(player.getLocation())) {
+            return "Player";
+        }
+        if (player.tiles[x][y].equals(Tileset.FLOOR)) {
+            return "Floor";
+        }
+        if (player.tiles[x][y].equals(Tileset.NOTHING)) {
+            return "Void";
+        }
+        if (player.tiles[x][y].equals(Tileset.WEAPON_BOX)) {
+            return "Shop";
+        }
 
         return "Wall";
     }
@@ -455,10 +426,10 @@ public class Engine {
             int x = random.nextInt(WIDTH - dx - 2) + 1;
             int y = random.nextInt(HEIGHT - dy - 2) + 1;
 
-            if (!hasNearby(tiles, x, y, Tileset.FLOOR, 1)
-                    && !hasNearby(tiles, x + dx, y + dy, Tileset.FLOOR, 1)
-                    && !hasNearby(tiles, x, y + dy, Tileset.FLOOR, 1)
-                    && !hasNearby(tiles, x + dx, y, Tileset.FLOOR, 1)) {
+            if (!hasNearby(tiles, new Point(x, y), Tileset.FLOOR, 1)
+                    && !hasNearby(tiles, new Point(x + dx, y + dy), Tileset.FLOOR, 1)
+                    && !hasNearby(tiles, new Point(x, y + dy), Tileset.FLOOR, 1)
+                    && !hasNearby(tiles, new Point(x + dx, y), Tileset.FLOOR, 1)) {
                 fill(x, y, dx, dy, tiles, Tileset.FLOOR);
                 Point startPoint = new Point(x, y);
                 originToSize.put(startPoint, new Point(dx, dy));
@@ -507,10 +478,10 @@ public class Engine {
      * Fill up a rectangular region in the given tiles matrix
      * @param x x-coordinate of the origin
      * @param y y-coordinate of the origin
-     * @param dx the
-     * @param dy
-     * @param tiles
-     * @param p
+     * @param dx the width
+     * @param dy the height
+     * @param tiles the tiles matrix
+     * @param p the tile pattern to fill
      */
 
     private static void fill(int x, int y, int dx, int dy, TETile[][] tiles, TETile p) {
@@ -544,9 +515,10 @@ public class Engine {
     private static void fillTheRest(TETile[][] tiles, Random r) {
         for (int w = 0; w < WIDTH; w++) {
             for (int h = 0; h < HEIGHT; h++) {
-                if (hasNearby(tiles, w, h, Tileset.FLOOR, 8) && tiles[w][h] == null) {
+                if (hasNearby(tiles, new Point(w, h), Tileset.FLOOR, 8) && tiles[w][h] == null) {
                     tiles[w][h] = Tileset.FLOOR;
-                } else if (tiles[w][h] == null && hasNearby(tiles, w, h, Tileset.FLOOR, 1)) {
+                } else if (tiles[w][h] == null
+                        && hasNearby(tiles, new Point(w, h), Tileset.FLOOR, 1)) {
                     tiles[w][h] = TETile.colorVariant(Tileset.WALL, 20, 20, 30, r);
                 } else if (tiles[w][h] == null) {
                     tiles[w][h] = Tileset.NOTHING;
@@ -558,16 +530,16 @@ public class Engine {
 
     /**
      * Determine if at least c of the 8 neighbors of the given point is a tile of type p
-     * @param x the x-coordinate of the given point
-     * @param y the y-coordinate of the given point
+     * @param location A Point object containing the location to search
      * @param p the tile pattern to look for
      * @param c the minimum number of surrounding tiles that are of type p
      * @param tiles the tile matrix
      * */
 
-    private static boolean hasNearby(TETile[][] tiles, int x, int y, TETile p, int c) {
+    private static boolean hasNearby(TETile[][] tiles, Point location, TETile p, int c) {
 
         int count = 0;
+        int x = location.getX(), y = location.getY();
 
         // Check right
         if (x + 1 < WIDTH && tiles[x + 1][y] != null && tiles[x + 1][y].equals(p)) {
@@ -613,5 +585,17 @@ public class Engine {
             count += 1;
         }
         return count >= c;
+    }
+
+    /**
+     * Pause for a moment
+     * @param n (in milliseconds) the time to wait
+     */
+    private static void sleep(int n) {
+        try {
+            TimeUnit.MILLISECONDS.sleep(n);
+        } catch (InterruptedException e) {
+            System.out.print("\ndelay failed");
+        }
     }
 }
