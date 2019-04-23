@@ -1,6 +1,6 @@
 package byow.gameplay;
 
-public class Weapon {
+public class Weapon implements ShopItem {
 
     private String name;
     private int damage;
@@ -14,13 +14,33 @@ public class Weapon {
         this.name = name;
     }
 
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public int getPrice() {
+        return price;
+    }
+
+    @Override
+    public String apply(Player player) {
+        if (player.getPoints() >= price) {
+            player.replaceWeapon(this);
+            player.deductPoints(price);
+            return "You just bought a new " + name + "!";
+        }
+        return "Not enough points to buy " + name + "!";
+    }
+
     static Weapon makePistol() {
         Weapon pistol = new Weapon("Pistol");
         pistol.damage = 15;
         pistol.maxDistance = 5;
         pistol.clip = 10;
         pistol.clipCapacity = 10;
-        pistol.ammo = 20;
+        pistol.ammo = 15;
         pistol.ammoCapacity = 20;
         pistol.reloadDuration = 4;
         pistol.price = 500;
@@ -40,7 +60,7 @@ public class Weapon {
         return shotgun;
     }
 
-    static Weapon sniperRifle() {
+    static Weapon makeSniperRifle() {
         Weapon sniperRifle = new Weapon("Sniper rifle");
         sniperRifle.damage = 80;
         sniperRifle.maxDistance = 100;
@@ -96,15 +116,22 @@ public class Weapon {
         ammo = ammoCapacity;
     }
 
-    public String getName() {
-        return name;
-    }
-
     public String ammoDescription() {
         return clip + " / " + ammo;
     }
 
-    public int getPrice() {
-        return price;
+    @Override
+    public boolean equals(Object obj) {
+        try {
+            Weapon other = (Weapon) obj;
+            return this.getName().equals(other.getName());
+        } catch (ClassCastException e) {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return this.getName().hashCode();
     }
 }

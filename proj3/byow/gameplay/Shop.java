@@ -1,37 +1,121 @@
 package byow.gameplay;
 
-import java.util.ArrayList;
+import byow.InputDemo.InputSource;
+import byow.TileEngine.TERenderer;
+import edu.princeton.cs.introcs.StdDraw;
+
+import java.awt.*;
+import java.util.concurrent.TimeUnit;
 
 public class Shop {
 
-    private ArrayList<Weapon> listOfAvailableWeapons = new ArrayList<>(); //list of items that can be purchased
-    private int index = 0; //index pointing to the next item that can be purchased
+    private static final ShopItem[] UPGRADES_LIST = new ShopItem[] {
+            Health.of(100),
+            new Ammo(),
+            Weapon.makeSword(),
+            Weapon.makePistol(),
+            Weapon.makeShotgun(),
+            Weapon.makeSniperRifle()
+    };
 
-    public Shop(){
-        listOfAvailableWeapons.add(Weapon.makeShotgun());
-        listOfAvailableWeapons.add(Weapon.sniperRifle());
+    private static final Color bgColor = new Color(26, 26, 29);
+    private static final Font cellFont = new Font("Monaco", Font.PLAIN, 15);
+    private static final Font captionFont = new Font("Monaco", Font.PLAIN, 11);
+    private static final Color cellTextColor = new Color(200,200, 200);
+    private static final Color captionTextColor = new Color(190, 190, 190);
+
+    public static String openMenu(Player player, TERenderer ter, InputSource source, boolean kb) {
+
+        int selection = -1;
+
+        while (source.possibleNextInput()) {
+
+            renderMenu(selection, ter, kb);
+            char next = source.getNextKey();
+
+            switch (next) {
+                case ' ':
+                    selection = (selection + 1) % UPGRADES_LIST.length;
+                    renderMenu(selection, ter, kb);
+                    break;
+                case 'P':
+                    return UPGRADES_LIST[selection].apply(player);
+                case 'B':
+                    return "You did not buy anything :("; // Exit the shop
+                default:
+            }
+        }
+
+        return "Source interrupted";
     }
 
-    public String buy(Player player) {
-        if (index >= listOfAvailableWeapons.size()) {
-            return "All available weapons bought.";
-        }
-        if (player.getPoints() >= listOfAvailableWeapons.get(index).getPrice()) {
-            player.deductPoints(listOfAvailableWeapons.get(index).getPrice());
-            player.addWeapon(listOfAvailableWeapons.get(index));
-            index ++;
-            return "You bought a " + listOfAvailableWeapons.get(index - 1).getName() + " .";
-        } else {
-            return "You do not have enough points";
-        }
+    /**
+     * Specifies what the player sees when approaching a shop
+     * @return The description string that will be displayed in the menu bar
+     */
+
+    public static String displayMessage() {
+        return "Press B to open shop menu.";
     }
 
-    public String displayMessage() {
-        if (index >= listOfAvailableWeapons.size()) {
-            return "All available weapons bought.";
-        } else {
-            return "Press B to buy a " + listOfAvailableWeapons.get(index).getName() + " for " + listOfAvailableWeapons.get(index).getPrice();
+    private static void renderMenu(int selection, TERenderer ter, boolean keyboard) {
+
+        if (!keyboard) {
+            return;
         }
+
+        double centerX = ((double) ter.getWidth()) / 2.0;
+        double centerY = ((double) ter.getHeight()) / 2.0;
+
+        StdDraw.clear(bgColor);
+        StdDraw.setPenColor(Color.darkGray);
+        StdDraw.setPenRadius(0.005);
+        StdDraw.rectangle(centerX, centerY, 20, 16);
+
+        Font title = new Font("Monaco", Font.PLAIN, 25);
+        StdDraw.setFont(title);
+        StdDraw.setPenColor(Color.GRAY);
+        StdDraw.text(centerX, centerY + 12.5, "Upgrades");
+
+        double currentY = centerY + 8.5;
+        StdDraw.setFont(cellFont);
+
+        for (int i = 0; i < UPGRADES_LIST.length; i++) {
+
+            // Draw the cell rectangle
+            StdDraw.setPenColor(new Color(41, 42, 43));
+            if (i == selection) {
+                StdDraw.setPenColor(new Color(50, 50, 52));
+            }
+            StdDraw.filledRectangle(centerX, currentY, 19, 1.8);
+
+            // Draw the text
+            StdDraw.setPenColor(cellTextColor);
+            StdDraw.textLeft(centerX - 18, currentY - 0.02, UPGRADES_LIST[i].getName());
+            StdDraw.textRight(centerX + 18, currentY - 0.02, "" + UPGRADES_LIST[i].getPrice());
+
+            currentY -= 4;
+        }
+
+        // Draw the caption
+        StdDraw.setFont(captionFont);
+        StdDraw.setPenColor(captionTextColor);
+        StdDraw.text(centerX, centerY - 15,
+                "Press 'P' to purchase, SPACE to select, 'B' to exit shop.");
+
+        StdDraw.show();
     }
 
+
+    /**
+     * Pause for a moment
+     * @param n (in milliseconds) the time to wait
+     */
+    private static void sleep(int n) {
+        try {
+            TimeUnit.MILLISECONDS.sleep(n);
+        } catch (InterruptedException e) {
+            System.out.print("\ndelay failed");
+        }
+    }
 }

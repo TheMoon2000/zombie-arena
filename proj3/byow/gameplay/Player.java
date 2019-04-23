@@ -1,16 +1,13 @@
 package byow.gameplay;
 
-import byow.Core.Engine;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 import byow.utils.Point;
 import byow.utils.Direction;
 
-import java.util.ArrayList;
-
 public class Player extends GameCharacter {
 
-    private ArrayList<Weapon> weapons = new ArrayList<>(); // Player has the ability to use weapons
+    private Weapon[] weapons = new Weapon[3]; // Player has the ability to use weapons
     private int currentWeapon = 0;
     private Point location;
     private Direction orientation;
@@ -21,10 +18,10 @@ public class Player extends GameCharacter {
 
     public Player(TETile[][] tiles, Point location) {
         super(tiles);
-        this.health = 100;
+        this.addHealth(100);
         points = 1200;
-        weapons.add(Weapon.makePistol());
-        weapons.add(Weapon.makeSword());
+        weapons[0] = Weapon.makePistol();
+        weapons[1] = Weapon.makeSword();
         message = "Prepare for wave #1!";
 
         // Make default orientation North
@@ -121,34 +118,45 @@ public class Player extends GameCharacter {
             return null;
         }
         wave += 1;
-        message = "Prepare for wave #" + wave + "!";
+        message = waveMessage();
         return this;
+    }
+
+    public String waveMessage() {
+        return "Prepare for wave #" + wave + "!";
     }
 
     public int currentWave() {
         return wave;
     }
 
-    public Player switchWeapon(int input) { //for example, player pressed 1, so weapon switched to the one at index 0
-        if (input > weapons.size()) {
-            this.setMessage("You do not own this weapon yet!");
+    public void switchWeapon(int input) { //for example, player pressed 1, so weapon switched to the one at index 0
+        currentWeapon = input - 1;
+        if (weapons[currentWeapon] == null) {
+            this.message = "Empty weapon slot.";
         } else {
-            currentWeapon = input - 1;
-            this.setMessage("Successfully switched to " + currentWeapon().getName() + ".");
+            this.message = "Current weapon: " + currentWeapon().getName() + "";
         }
-        return this;
     }
 
     public String ammoDescription() {
-        return weapons.get(currentWeapon).ammoDescription();
+        return weapons[currentWeapon].ammoDescription();
+    }
+
+    void refillAmmo() {
+        for (Weapon w: weapons) {
+            if (w != null) {
+                w.refillAmmo();
+            }
+        }
     }
 
     public Weapon currentWeapon() {
-        return weapons.get(currentWeapon);
+        return weapons[currentWeapon];
     }
 
-    public void addWeapon(Weapon weapon) {
-        weapons.add(weapon);
+    public void replaceWeapon(Weapon weapon) {
+        weapons[currentWeapon] = weapon;
     }
 
     public String getMessage() {
