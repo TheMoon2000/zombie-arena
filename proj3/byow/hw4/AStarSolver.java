@@ -1,6 +1,6 @@
 package byow.hw4;
 
-import bearmaps.proj2ab.ArrayHeapMinPQ;
+import byow.proj2ab.ArrayHeapMinPQ;
 import edu.princeton.cs.algs4.Stopwatch;
 
 import java.util.ArrayList;

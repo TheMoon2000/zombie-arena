@@ -3,34 +3,159 @@ package byow.Core;
 import byow.InputDemo.InputSource;
 import byow.InputDemo.KeyboardInputSource;
 import byow.InputDemo.StringInputDevice;
+import byow.TileEngine.TERenderer;
+import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 import byow.gameplay.Player;
 import byow.gameplay.Shop;
-import byow.hw4.AStarGraph;
 import byow.hw4.AStarSolver;
-import byow.hw4.WeightedEdge;
 import byow.hw4.WeightedUndirectedGraph;
 import byow.utils.Direction;
 import byow.utils.NearTree;
 import byow.utils.Point;
-
-import byow.TileEngine.TERenderer;
-import byow.TileEngine.TETile;
 import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.*;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class Engine {
-    TERenderer ter = new TERenderer();
     /* Feel free to change the width and height. */
     public static final int WIDTH = 80;
     public static final int HEIGHT = 40;
+    TERenderer ter = new TERenderer();
+
+    /**
+     * Fill up a rectangular region in the given tiles matrix
+     *
+     * @param x     x-coordinate of the origin
+     * @param y     y-coordinate of the origin
+     * @param dx    the width
+     * @param dy    the height
+     * @param tiles the tiles matrix
+     * @param p     the tile pattern to fill
+     */
+
+    private static void fill(int x, int y, int dx, int dy, TETile[][] tiles, TETile p) {
+        for (int i = x; i <= x + dx; i++) {
+            for (int j = y; j <= y + dy; j++) {
+                tiles[i][j] = p;
+            }
+        }
+    }
+
+    /**
+     * Generates a random point from the given rectangular region
+     *
+     * @param x  origin's x
+     * @param y  origin's y
+     * @param dx width of rectangle
+     * @param dy height of rectangle
+     * @param r  the random generator instance
+     */
+
+    private static Point randomPoint(int x, int y, int dx, int dy, Random r) {
+        return new Point(RandomUtils.uniform(r, x, x + dx + 1),
+                RandomUtils.uniform(r, y, y + dy + 1));
+    }
+
+
+    // Helper methods
+
+    /**
+     * Fills up the empty space with appropriate tiles
+     *
+     * @param tiles the tiles to fill up
+     */
+
+    private static void fillTheRest(TETile[][] tiles, Random r) {
+        for (int w = 0; w < WIDTH; w++) {
+            for (int h = 0; h < HEIGHT; h++) {
+                if (hasNearby(tiles, new Point(w, h), Tileset.FLOOR, 8) && tiles[w][h] == null) {
+                    tiles[w][h] = Tileset.FLOOR;
+                } else if (tiles[w][h] == null
+                        && hasNearby(tiles, new Point(w, h), Tileset.FLOOR, 1)) {
+                    tiles[w][h] = TETile.colorVariant(Tileset.WALL, 20, 20, 30, r);
+                } else if (tiles[w][h] == null) {
+                    tiles[w][h] = Tileset.NOTHING;
+                }
+            }
+        }
+    }
+
+    /**
+     * Determine if at least c of the 8 neighbors of the given point is a tile of type p
+     *
+     * @param location A Point object containing the location to search
+     * @param p        the tile pattern to look for
+     * @param c        the minimum number of surrounding tiles that are of type p
+     * @param tiles    the tile matrix
+     */
+
+    private static boolean hasNearby(TETile[][] tiles, Point location, TETile p, int c) {
+
+        int count = 0;
+        int x = location.getX(), y = location.getY();
+
+        // Check right
+        if (x + 1 < WIDTH && tiles[x + 1][y] != null && tiles[x + 1][y].equals(p)) {
+            count += 1;
+        }
+
+        // Check top right
+        if (x + 1 < WIDTH && y + 1 < HEIGHT && tiles[x + 1][y + 1] != null
+                && tiles[x + 1][y + 1].equals(p)) {
+            count += 1;
+        }
+
+        // Check top
+        if (y + 1 < HEIGHT && tiles[x][y + 1] != null && tiles[x][y + 1].equals(p)) {
+            count += 1;
+        }
+
+        // Check top left
+        if (x > 0 && y + 1 < HEIGHT && tiles[x - 1][y + 1] != null
+                && tiles[x - 1][y + 1].equals(p)) {
+            count += 1;
+        }
+
+        // Check left
+        if (x > 0 && tiles[x - 1][y] != null && tiles[x - 1][y].equals(p)) {
+            count += 1;
+        }
+
+        // Check bottom left
+        if (x > 0 && y > 0 && tiles[x - 1][y - 1] != null
+                && tiles[x - 1][y - 1].equals(p)) {
+            count += 1;
+        }
+
+        // Check bottom
+        if (y > 0 && tiles[x][y - 1] != null && tiles[x][y - 1].equals(p)) {
+            count += 1;
+        }
+
+        // Check bottom right
+        if (x + 1 < WIDTH && y > 0 && tiles[x + 1][y - 1] != null
+                && tiles[x + 1][y - 1].equals(p)) {
+            count += 1;
+        }
+        return count >= c;
+    }
+
+    /**
+     * Pause for a moment
+     *
+     * @param n (in milliseconds) the time to wait
+     */
+    private static void sleep(int n) {
+        try {
+            TimeUnit.MILLISECONDS.sleep(n);
+        } catch (InterruptedException e) {
+            System.out.print("\ndelay failed");
+        }
+    }
 
     /**
      * Method used for exploring a fresh world. This method should handle all inputs,
@@ -49,18 +174,18 @@ public class Engine {
      * of characters (for example, "n123sswwdasdassadwas", "n123sss:q", "lwww". The engine should
      * behave exactly as if the user typed these characters into the engine using
      * interactWithKeyboard.
-     *
+     * <p>
      * Recall that strings ending in ":q" should cause the game to quite save. For example,
      * if we do interactWithInputString("n123sss:q"), we expect the game to run the first
      * 7 commands (n123sss) and then quit and save. If we then do
      * interactWithInputString("l"), we should be back in the exact same state.
-     *
+     * <p>
      * In other words, both of these calls:
-     *   - interactWithInputString("n123sss:q")
-     *   - interactWithInputString("lww")
-     *
+     * - interactWithInputString("n123sss:q")
+     * - interactWithInputString("lww")
+     * <p>
      * should yield the exact same world state as:
-     *   - interactWithInputString("n123sssww")
+     * - interactWithInputString("n123sssww")
      *
      * @param input the input string to feed to your program
      * @return the 2D TETile[][] representing the state of the world
@@ -79,15 +204,11 @@ public class Engine {
         return interact(source, false);
     }
 
-
-
-    // Helper methods
-
-
     /**
      * Reads an input source and do something about it
+     *
      * @param source The input source
-     * */
+     */
 
     private TETile[][] interact(InputSource source, boolean keyBoardInput) {
 
@@ -163,7 +284,7 @@ public class Engine {
                         generateShop(player, seed);
 
                         //collect all the floor tiles into a connected graph for djikstra algorithm
-                        aStarCollect(astarGraph,tiles,player.getLocation());
+                        aStarCollect(astarGraph, tiles, player.getLocation());
 
                         if (keyBoardInput) {
                             ter.initialize(WIDTH, HEIGHT + 3);
@@ -173,14 +294,16 @@ public class Engine {
                             StdDraw.setPenColor(new Color(236, 96, 91));
                             StdDraw.setPenRadius(0.01);
                             StdDraw.circle(player.getLocation().getX() + 0.5,
-                                           player.getLocation().getY() + 0.5, 1);
+                                    player.getLocation().getY() + 0.5, 1);
                         }
                         break;
                     } else if (player == null) {
                         break;
                     }
                     // Otherwise, 'S' refers to a direction, so fall through...
-                case 'W': case 'A': case 'D':
+                case 'W':
+                case 'A':
+                case 'D':
                     if (player != null) {
                         player.move(Direction.parse(next));
                         //if there is a shop nearby, display the shop's message first
@@ -220,12 +343,13 @@ public class Engine {
                 // The below four inputs must be placed before default,
                 // such that the user can use the number keys
                 // to both switch weapons and enter the seed
-                case '1': case '2':
+                case '1':
+                case '2':
                     if (player != null) {
                         player.switchWeapon(Integer.parseInt(String.valueOf(next)));
                         break;
                     }
-                case 'T': //Press T every time to see a randomly generated shortest path, delete this case later
+                case 'T': //Press T every time to see a randomly generated shortest path
                     Random random = new Random();
                     int x1 = random.nextInt(WIDTH);
                     int y1 = random.nextInt(HEIGHT);
@@ -241,12 +365,13 @@ public class Engine {
                         y2 = random.nextInt(HEIGHT);
                     }
                     TETile[][] tilesCopy = new TETile[WIDTH][HEIGHT];
-                    for (int i = 0; i < WIDTH; i ++) {
-                        for (int j = 0; j < HEIGHT; j ++) {
+                    for (int i = 0; i < WIDTH; i++) {
+                        for (int j = 0; j < HEIGHT; j++) {
                             tilesCopy[i][j] = tiles[i][j];
                         }
                     }
-                    AStarSolver<Point> solver = new AStarSolver<>(astarGraph,new Point(x1,y1),new Point(x2,y2),1000);
+                    AStarSolver<Point> solver = new AStarSolver<>(astarGraph, new Point(x1, y1),
+                            new Point(x2, y2), 1000);
                     List<Point> solution = solver.solution();
                     for (Point p : solution) {
                         tilesCopy[p.getX()][p.getY()] = Tileset.FLOWER;
@@ -283,35 +408,35 @@ public class Engine {
      * Helper methods that takes all the floor tiles and add them into an astargraph
      */
     private void aStarCollect(WeightedUndirectedGraph aStarGraph, TETile[][] tiles, Point source) {
-        HashMap<Point,Boolean> map = new HashMap<>();
-        depthFirstSearch(aStarGraph,tiles,map,source);
+        HashMap<Point, Boolean> map = new HashMap<>();
+        depthFirstSearch(aStarGraph, tiles, map, source);
     }
 
-    private void depthFirstSearch(WeightedUndirectedGraph aStarGraph, TETile[][] tiles, HashMap<Point,Boolean> map, Point current) {
-        map.put(current,true);
+    private void depthFirstSearch(WeightedUndirectedGraph aStarGraph, TETile[][] tiles,
+                                  HashMap<Point, Boolean> map, Point current) {
+        map.put(current, true);
         List<Point> adjacent = new ArrayList<>();
         //check the four adjacent tiles to see if they are floors
         if (tiles[current.getX() + 1][current.getY()].equals(Tileset.FLOOR)) {
-            adjacent.add(new Point(current.getX() + 1,current.getY()));
+            adjacent.add(new Point(current.getX() + 1, current.getY()));
         }
         if (tiles[current.getX() - 1][current.getY()].equals(Tileset.FLOOR)) {
-            adjacent.add(new Point(current.getX() - 1,current.getY()));
+            adjacent.add(new Point(current.getX() - 1, current.getY()));
         }
         if (tiles[current.getX()][current.getY() + 1].equals(Tileset.FLOOR)) {
-            adjacent.add(new Point(current.getX(),current.getY() + 1));
+            adjacent.add(new Point(current.getX(), current.getY() + 1));
         }
         if (tiles[current.getX()][current.getY() - 1].equals(Tileset.FLOOR)) {
-            adjacent.add(new Point(current.getX(),current.getY() - 1));
+            adjacent.add(new Point(current.getX(), current.getY() - 1));
         }
         for (Point p : adjacent) {
-            aStarGraph.addEdge(current,p);
+            aStarGraph.addEdge(current, p);
             if (!map.containsKey(p)) {
 
-                depthFirstSearch(aStarGraph,tiles,map,p);
+                depthFirstSearch(aStarGraph, tiles, map, p);
             }
         }
     }
-
 
     /**
      * Helper method that generates a shop at a random position
@@ -390,7 +515,6 @@ public class Engine {
             StdDraw.show();
         }
     }
-
 
     /**
      * Helper method that creates an display bar on top
@@ -482,11 +606,11 @@ public class Engine {
         return "Wall";
     }
 
-
     /**
      * Generate a random world based on a seed
+     *
      * @param tiles the tiles matrix
-     * @param seed the seed for the random generator instance
+     * @param seed  the seed for the random generator instance
      */
 
     private void generateWorld(TETile[][] tiles, long seed) {
@@ -518,7 +642,7 @@ public class Engine {
 
         // Connect the rooms together
 
-        for (Point p: originToSize.keySet()) {
+        for (Point p : originToSize.keySet()) {
             // q will always be a point that p isn't connected with
             Point q = points.nearest(p.getX(), p.getY());
             if (p.equals(q)) {
@@ -547,132 +671,6 @@ public class Engine {
             }
 
 
-        }
-    }
-
-
-    /**
-     * Fill up a rectangular region in the given tiles matrix
-     * @param x x-coordinate of the origin
-     * @param y y-coordinate of the origin
-     * @param dx the width
-     * @param dy the height
-     * @param tiles the tiles matrix
-     * @param p the tile pattern to fill
-     */
-
-    private static void fill(int x, int y, int dx, int dy, TETile[][] tiles, TETile p) {
-        for (int i = x; i <= x + dx; i++) {
-            for (int j = y; j <= y + dy; j++) {
-                tiles[i][j] = p;
-            }
-        }
-    }
-
-    /**
-     * Generates a random point from the given rectangular region
-     * @param x origin's x
-     * @param y origin's y
-     * @param dx width of rectangle
-     * @param dy height of rectangle
-     * @param r the random generator instance
-     * */
-
-    private static Point randomPoint(int x, int y, int dx, int dy, Random r) {
-        return new Point(RandomUtils.uniform(r, x, x + dx + 1),
-                      RandomUtils.uniform(r, y, y + dy + 1));
-    }
-
-
-    /**
-     * Fills up the empty space with appropriate tiles
-     * @param tiles the tiles to fill up
-     * */
-
-    private static void fillTheRest(TETile[][] tiles, Random r) {
-        for (int w = 0; w < WIDTH; w++) {
-            for (int h = 0; h < HEIGHT; h++) {
-                if (hasNearby(tiles, new Point(w, h), Tileset.FLOOR, 8) && tiles[w][h] == null) {
-                    tiles[w][h] = Tileset.FLOOR;
-                } else if (tiles[w][h] == null
-                        && hasNearby(tiles, new Point(w, h), Tileset.FLOOR, 1)) {
-                    tiles[w][h] = TETile.colorVariant(Tileset.WALL, 20, 20, 30, r);
-                } else if (tiles[w][h] == null) {
-                    tiles[w][h] = Tileset.NOTHING;
-                }
-            }
-        }
-    }
-
-
-    /**
-     * Determine if at least c of the 8 neighbors of the given point is a tile of type p
-     * @param location A Point object containing the location to search
-     * @param p the tile pattern to look for
-     * @param c the minimum number of surrounding tiles that are of type p
-     * @param tiles the tile matrix
-     * */
-
-    private static boolean hasNearby(TETile[][] tiles, Point location, TETile p, int c) {
-
-        int count = 0;
-        int x = location.getX(), y = location.getY();
-
-        // Check right
-        if (x + 1 < WIDTH && tiles[x + 1][y] != null && tiles[x + 1][y].equals(p)) {
-            count += 1;
-        }
-
-        // Check top right
-        if (x + 1 < WIDTH && y + 1 < HEIGHT && tiles[x + 1][y + 1] != null
-                && tiles[x + 1][y + 1].equals(p)) {
-            count += 1;
-        }
-
-        // Check top
-        if (y + 1 < HEIGHT && tiles[x][y + 1] != null && tiles[x][y + 1].equals(p)) {
-            count += 1;
-        }
-
-        // Check top left
-        if (x > 0 && y + 1 < HEIGHT && tiles[x - 1][y + 1] != null
-                && tiles[x - 1][y + 1].equals(p)) {
-            count += 1;
-        }
-
-        // Check left
-        if (x > 0 && tiles[x - 1][y] != null && tiles[x - 1][y].equals(p)) {
-            count += 1;
-        }
-
-        // Check bottom left
-        if (x > 0 && y > 0 && tiles[x - 1][y - 1] != null
-                && tiles[x - 1][y - 1].equals(p)) {
-            count += 1;
-        }
-
-        // Check bottom
-        if (y > 0 && tiles[x][y - 1] != null && tiles[x][y - 1].equals(p)) {
-            count += 1;
-        }
-
-        // Check bottom right
-        if (x + 1 < WIDTH && y > 0 && tiles[x + 1][y - 1] != null
-                && tiles[x + 1][y - 1].equals(p)) {
-            count += 1;
-        }
-        return count >= c;
-    }
-
-    /**
-     * Pause for a moment
-     * @param n (in milliseconds) the time to wait
-     */
-    private static void sleep(int n) {
-        try {
-            TimeUnit.MILLISECONDS.sleep(n);
-        } catch (InterruptedException e) {
-            System.out.print("\ndelay failed");
         }
     }
 }
