@@ -201,8 +201,7 @@ public class Engine {
 
         InputSource source = new StringInputDevice(input);
 
-        TETile[][] tiles = interact(source, false);
-        return tiles;
+        return interact(source, false);
     }
 
     /**
@@ -237,7 +236,7 @@ public class Engine {
                 renewDisplayBar(player);
             }
 
-            char next = source.getNextKey();
+            char next = Character.toUpperCase(source.getNextKey());
 
             if (next != 'Q') {
                 colon = false;
@@ -265,6 +264,7 @@ public class Engine {
                 case 'S': // start game
                     if (player == null && startReadingSeed) {
                         r = new Random(seed);
+                        System.out.print("\nseed: " + seed);
                         generateWorld(tiles, seed);
                         fillTheRest(tiles, new Random(seed));
                         startReadingSeed = false;
