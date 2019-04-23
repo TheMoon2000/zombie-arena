@@ -6,6 +6,10 @@ import byow.InputDemo.StringInputDevice;
 import byow.TileEngine.Tileset;
 import byow.gameplay.Player;
 import byow.gameplay.Shop;
+import byow.hw4.AStarGraph;
+import byow.hw4.AStarSolver;
+import byow.hw4.WeightedEdge;
+import byow.hw4.WeightedUndirectedGraph;
 import byow.utils.Direction;
 import byow.utils.NearTree;
 import byow.utils.Point;
@@ -16,6 +20,7 @@ import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.ArrayList;
@@ -98,6 +103,9 @@ public class Engine {
         TETile[][] tiles = new TETile[WIDTH][HEIGHT];
         Player player = null;
 
+        //create new graph
+        WeightedUndirectedGraph astarGraph = new WeightedUndirectedGraph();
+
         System.out.println("Capturing input source:");
 
         while (source.possibleNextInput()) {
@@ -154,6 +162,9 @@ public class Engine {
                         //randomly generate two shops
                         generateShop(player, seed);
 
+                        //collect all the floor tiles into a connected graph for djikstra algorithm
+                        aStarCollect(astarGraph,tiles,player.getLocation());
+
                         if (keyBoardInput) {
                             ter.initialize(WIDTH, HEIGHT + 3);
                             ter.renderFrame(tiles);
@@ -195,7 +206,7 @@ public class Engine {
                     if (player != null) {
                         if (hasNearby(player.tiles, player.getLocation(), Tileset.WEAPON_BOX, 1)) {
                             System.out.print("\nentered shop");
-                            Shop.openMenu(player, ter, source, keyBoardInput);
+                            player.setMessage(Shop.openMenu(player, ter, source, keyBoardInput));
                             System.out.print("\nclosed shop");
                             ter.renderFrame(tiles);
                         } else {
@@ -209,11 +220,43 @@ public class Engine {
                 // The below four inputs must be placed before default,
                 // such that the user can use the number keys
                 // to both switch weapons and enter the seed
-                case '1': case '2': case '3':
+                case '1': case '2':
                     if (player != null) {
                         player.switchWeapon(Integer.parseInt(String.valueOf(next)));
                         break;
                     }
+                case 'T': //Press T every time to see a randomly generated shortest path, delete this case later
+                    Random random = new Random();
+                    int x1 = random.nextInt(WIDTH);
+                    int y1 = random.nextInt(HEIGHT);
+                    while (tiles[x1][y1] != Tileset.FLOOR) {
+                        x1 = random.nextInt(WIDTH);
+                        y1 = random.nextInt(HEIGHT);
+                    }
+
+                    int x2 = random.nextInt(WIDTH);
+                    int y2 = random.nextInt(HEIGHT);
+                    while (tiles[x2][y2] != Tileset.FLOOR) {
+                        x2 = random.nextInt(WIDTH);
+                        y2 = random.nextInt(HEIGHT);
+                    }
+                    TETile[][] tilesCopy = new TETile[WIDTH][HEIGHT];
+                    for (int i = 0; i < WIDTH; i ++) {
+                        for (int j = 0; j < HEIGHT; j ++) {
+                            tilesCopy[i][j] = tiles[i][j];
+                        }
+                    }
+                    AStarSolver<Point> solver = new AStarSolver<>(astarGraph,new Point(x1,y1),new Point(x2,y2),1000);
+                    List<Point> solution = solver.solution();
+                    for (Point p : solution) {
+                        tilesCopy[p.getX()][p.getY()] = Tileset.FLOWER;
+                    }
+                    tilesCopy[x1][y1] = Tileset.LOCKED_DOOR;
+                    tilesCopy[x2][y2] = Tileset.LOCKED_DOOR;
+                    if (keyBoardInput) {
+                        ter.renderFrame(tilesCopy);
+                    }
+                    continue;
                 default:
                     if (startReadingSeed) {
                         seed = seed * 10 + Integer.parseInt(String.valueOf(next));
@@ -235,6 +278,40 @@ public class Engine {
 
         return tiles;
     }
+
+    /**
+     * Helper methods that takes all the floor tiles and add them into an astargraph
+     */
+    private void aStarCollect(WeightedUndirectedGraph aStarGraph, TETile[][] tiles, Point source) {
+        HashMap<Point,Boolean> map = new HashMap<>();
+        depthFirstSearch(aStarGraph,tiles,map,source);
+    }
+
+    private void depthFirstSearch(WeightedUndirectedGraph aStarGraph, TETile[][] tiles, HashMap<Point,Boolean> map, Point current) {
+        map.put(current,true);
+        List<Point> adjacent = new ArrayList<>();
+        //check the four adjacent tiles to see if they are floors
+        if (tiles[current.getX() + 1][current.getY()].equals(Tileset.FLOOR)) {
+            adjacent.add(new Point(current.getX() + 1,current.getY()));
+        }
+        if (tiles[current.getX() - 1][current.getY()].equals(Tileset.FLOOR)) {
+            adjacent.add(new Point(current.getX() - 1,current.getY()));
+        }
+        if (tiles[current.getX()][current.getY() + 1].equals(Tileset.FLOOR)) {
+            adjacent.add(new Point(current.getX(),current.getY() + 1));
+        }
+        if (tiles[current.getX()][current.getY() - 1].equals(Tileset.FLOOR)) {
+            adjacent.add(new Point(current.getX(),current.getY() - 1));
+        }
+        for (Point p : adjacent) {
+            aStarGraph.addEdge(current,p);
+            if (!map.containsKey(p)) {
+
+                depthFirstSearch(aStarGraph,tiles,map,p);
+            }
+        }
+    }
+
 
     /**
      * Helper method that generates a shop at a random position

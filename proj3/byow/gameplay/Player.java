@@ -7,7 +7,7 @@ import byow.utils.Direction;
 
 public class Player extends GameCharacter {
 
-    private Weapon[] weapons = new Weapon[3]; // Player has the ability to use weapons
+    private Weapon[] weapons = new Weapon[2]; // Player has the ability to use weapons
     private int currentWeapon = 0;
     private Point location;
     private Direction orientation;
@@ -132,6 +132,7 @@ public class Player extends GameCharacter {
 
     public void switchWeapon(int input) { //for example, player pressed 1, so weapon switched to the one at index 0
         currentWeapon = input - 1;
+        System.out.println("number of weapons " + weapons.length);
         if (weapons[currentWeapon] == null) {
             this.message = "Empty weapon slot.";
         } else {

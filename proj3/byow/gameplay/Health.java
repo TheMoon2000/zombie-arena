@@ -3,7 +3,7 @@ package byow.gameplay;
 public class Health implements ShopItem {
 
     private int healPower;
-    private static final int PRICE = 500;
+    private static final int PRICE = 1000;
 
     private Health(int healPower) {
         this.healPower = healPower;

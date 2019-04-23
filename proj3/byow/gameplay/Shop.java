@@ -39,7 +39,11 @@ public class Shop {
                     renderMenu(selection, ter, kb);
                     break;
                 case 'P':
-                    return UPGRADES_LIST[selection].apply(player);
+                    if (selection == -1) {
+                        break;
+                    } else {
+                        return UPGRADES_LIST[selection].apply(player);
+                    }
                 case 'B':
                     return "You did not buy anything :("; // Exit the shop
                 default:
