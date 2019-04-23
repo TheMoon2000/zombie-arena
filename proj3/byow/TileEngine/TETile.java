@@ -1,6 +1,7 @@
 package byow.TileEngine;
 
-import java.awt.*;
+import java.awt.Font;
+import java.awt.Color;
 import java.util.Arrays;
 import java.util.Random;
 

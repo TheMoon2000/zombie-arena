@@ -4,25 +4,26 @@ import byow.InputDemo.InputSource;
 import byow.TileEngine.TERenderer;
 import edu.princeton.cs.introcs.StdDraw;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Font;
 import java.util.concurrent.TimeUnit;
 
 public class Shop {
 
     private static final ShopItem[] UPGRADES_LIST = new ShopItem[] {
-            Health.of(100),
-            new Ammo(),
-            Weapon.makeSword(),
-            Weapon.makePistol(),
-            Weapon.makeShotgun(),
-            Weapon.makeSniperRifle()
+        Health.of(100),
+        new Ammo(),
+        Weapon.makeSword(),
+        Weapon.makePistol(),
+        Weapon.makeShotgun(),
+        Weapon.makeSniperRifle()
     };
 
     private static final Color BGCOLOR = new Color(26, 26, 29);
-    private static final Font cellFont = new Font("Monaco", Font.PLAIN, 15);
-    private static final Font captionFont = new Font("Monaco", Font.PLAIN, 11);
-    private static final Color cellTextColor = new Color(200,200, 200);
-    private static final Color captionTextColor = new Color(190, 190, 190);
+    private static final Font CELL_FONT = new Font("Monaco", Font.PLAIN, 15);
+    private static final Font CAPTION_FONT = new Font("Monaco", Font.PLAIN, 11);
+    private static final Color CELL_TEXT_COLOR = new Color(200, 200, 200);
+    private static final Color CAPTION_COLOR = new Color(190, 190, 190);
 
     public static String openMenu(Player player, TERenderer ter, InputSource source, boolean kb) {
 
@@ -82,7 +83,7 @@ public class Shop {
         StdDraw.text(centerX, centerY + 12.5, "Upgrades");
 
         double currentY = centerY + 8.5;
-        StdDraw.setFont(cellFont);
+        StdDraw.setFont(CELL_FONT);
 
         for (int i = 0; i < UPGRADES_LIST.length; i++) {
 
@@ -94,7 +95,7 @@ public class Shop {
             StdDraw.filledRectangle(centerX, currentY, 19, 1.8);
 
             // Draw the text
-            StdDraw.setPenColor(cellTextColor);
+            StdDraw.setPenColor(CELL_TEXT_COLOR);
             StdDraw.textLeft(centerX - 18, currentY - 0.02, UPGRADES_LIST[i].getName());
             StdDraw.textRight(centerX + 18, currentY - 0.02, "" + UPGRADES_LIST[i].getPrice());
 
@@ -102,8 +103,8 @@ public class Shop {
         }
 
         // Draw the caption
-        StdDraw.setFont(captionFont);
-        StdDraw.setPenColor(captionTextColor);
+        StdDraw.setFont(CAPTION_FONT);
+        StdDraw.setPenColor(CAPTION_COLOR);
         StdDraw.text(centerX, centerY - 15,
                 "Press 'P' to purchase, SPACE to select, 'B' to exit shop.");
 

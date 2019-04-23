@@ -128,7 +128,7 @@ public class Player extends GameCharacter {
         return wave;
     }
 
-    public void switchWeapon(int input) { //for example, player pressed 1, so weapon switched to the one at index 0
+    public void switchWeapon(int input) {
         currentWeapon = input - 1;
         System.out.println("number of weapons " + weapons.length);
         if (weapons[currentWeapon] == null) {

@@ -1,7 +1,8 @@
 package byow.utils;
 
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
-import java.util.*;
+import java.util.Map;
+import java.util.HashMap;
 
 public class NearTree implements PointSet {
     private KDNode rootNode;
