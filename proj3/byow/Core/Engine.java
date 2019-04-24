@@ -8,9 +8,6 @@ import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 import byow.gameplay.Player;
 import byow.gameplay.Shop;
-import byow.hw4.AStarGraph;
-import byow.hw4.AStarSolver;
-import byow.hw4.WeightedUndirectedGraph;
 import byow.utils.Direction;
 import byow.utils.NearTree;
 import byow.utils.Point;
@@ -18,11 +15,7 @@ import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.Font;
 import java.awt.Color;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class Engine {
@@ -30,6 +23,7 @@ public class Engine {
     public static final int WIDTH = 80;
     public static final int HEIGHT = 40;
     TERenderer ter = new TERenderer();
+    private static Random r;
 
     /**
      * Fill up a rectangular region in the given tiles matrix
@@ -217,11 +211,9 @@ public class Engine {
 
     private TETile[][] interact(InputSource source, boolean keyBoardInput) {
         menu(keyBoardInput);
-        boolean startReadingSeed = false;
-        long seed = 0; Random r;
+        boolean startReadingSeed = false; long seed = 0;
         TETile[][] tiles = new TETile[WIDTH][HEIGHT];
         Player player = null;
-        WeightedUndirectedGraph aStarGraph = new WeightedUndirectedGraph();
 
         while (source.possibleNextInput()) {
             while (keyBoardInput && !StdDraw.hasNextKeyTyped() && player != null) {
@@ -246,9 +238,7 @@ public class Engine {
                         r = new Random(seed);
                         generateWorld(tiles, seed);
                         startReadingSeed = false;
-                        player = new Player(tiles, randomPlacement(r, tiles));
-                        generateShop(player, seed);
-                        aStarCollect(aStarGraph, tiles, player.getLocation());
+                        player = new Player(tiles, randomPlacement(tiles));
                         if (keyBoardInput) {
                             ter.initialize(WIDTH, HEIGHT + 3);
                             ter.renderFrame(tiles);
@@ -262,8 +252,6 @@ public class Engine {
                         if (hasNearby(player.getTiles(), player.getLocation(),
                                 Tileset.WEAPON_BOX, 1)) { // display the shop's message
                             player.setMessage(Shop.displayMessage());
-                        } else {
-                            player.setMessage(player.waveMessage());
                         }
                         if (keyBoardInput) {
                             ter.renderFrame(tiles);
@@ -272,20 +260,19 @@ public class Engine {
                     }
                     break;
                 case ' ': break; case 'L': break;
+                case 'T':
+                    ter.renderFrame(test(tiles));
+                    break;
                 case 'B': //buy a weapon from the store
-                    if (player != null) {
-                        if (hasNearby(player.getTiles(), player.getLocation(),
+                    if (player != null && hasNearby(player.getTiles(), player.getLocation(),
                                 Tileset.WEAPON_BOX, 1)) {
-                            player.setMessage(Shop.openMenu(player, ter, source, keyBoardInput));
-                            ter.renderFrame(tiles);
-                        } else {
-                            player.setMessage("Buy new weapons at the shop.");
-                        }
+                        player.setMessage(Shop.openMenu(player, ter, source, keyBoardInput));
+                        ter.renderFrame(tiles);
                     }
                     break;
                 default:
                     if ((next == '1' || next == '2') && player != null) {
-                        player.switchWeapon(Integer.parseInt(String.valueOf(next)));
+                        player.switchWeapon();
                     } else if (startReadingSeed) {
                         seed = seed * 10 + Integer.parseInt(String.valueOf(next));
                         displaySeed(seed, keyBoardInput);
@@ -296,97 +283,50 @@ public class Engine {
     }
 
     /**
-     * Helper methods that takes all the floor tiles and add them into an A* graph
-     */
-
-    private void aStarCollect(WeightedUndirectedGraph aStarGraph, TETile[][] tiles, Point source) {
-        HashMap<Point, Boolean> map = new HashMap<>();
-        depthFirstSearch(aStarGraph, tiles, map, source);
-    }
-
-    /**
-     * Test feature. To call in interact(), paste: ter.renderFrame(test(player, aStarGraph));
-     * @param player
-     * @param aStarGraph
+     * Test feature that returns the shortest path of two random points
+     * @param tiles The world to run shortest-path finder
      * @return
      */
 
-    private static TETile[][] test(Player player, AStarGraph aStarGraph) {
+    private static TETile[][] test(TETile[][] tiles) {
         Random random = new Random();
-        int x1 = random.nextInt(WIDTH);
-        int y1 = random.nextInt(HEIGHT);
-        while (player.getTiles()[x1][y1] != Tileset.FLOOR) {
-            x1 = random.nextInt(WIDTH);
-            y1 = random.nextInt(HEIGHT);
-        }
 
-        int x2 = random.nextInt(WIDTH);
-        int y2 = random.nextInt(HEIGHT);
-        while (player.getTiles()[x2][y2] != Tileset.FLOOR) {
-            x2 = random.nextInt(WIDTH);
-            y2 = random.nextInt(HEIGHT);
-        }
+        // Create two test points
+        Point p1 = randomPlacement(tiles);
+        Point p2 = randomPlacement(tiles);
+
+        // Create a new copy of tiles so that the original world won't be overwritten
         TETile[][] tilesCopy = new TETile[WIDTH][HEIGHT];
         for (int i = 0; i < WIDTH; i++) {
-            System.arraycopy(player.getTiles()[i], 0, tilesCopy[i], 0, HEIGHT);
+            System.arraycopy(tiles[i], 0, tilesCopy[i], 0, HEIGHT);
         }
-        AStarSolver<Point> solver = new AStarSolver<>(aStarGraph, new Point(x1, y1),
-                new Point(x2, y2), 1000);
-        List<Point> solution = solver.solution();
+
+        List<Point> solution = Direction.shortestPath(p1, p2);
         for (Point p : solution) {
             tilesCopy[p.getX()][p.getY()] = Tileset.FLOWER;
         }
-        tilesCopy[x1][y1] = Tileset.LOCKED_DOOR;
-        tilesCopy[x2][y2] = Tileset.LOCKED_DOOR;
 
         return tilesCopy;
     }
 
-    private void depthFirstSearch(WeightedUndirectedGraph aStarGraph, TETile[][] tiles,
-                                  HashMap<Point, Boolean> map, Point current) {
-        map.put(current, true);
-        List<Point> adjacent = new ArrayList<>();
-        //check the four adjacent tiles to see if they are floors
-        if (tiles[current.getX() + 1][current.getY()].equals(Tileset.FLOOR)) {
-            adjacent.add(new Point(current.getX() + 1, current.getY()));
-        }
-        if (tiles[current.getX() - 1][current.getY()].equals(Tileset.FLOOR)) {
-            adjacent.add(new Point(current.getX() - 1, current.getY()));
-        }
-        if (tiles[current.getX()][current.getY() + 1].equals(Tileset.FLOOR)) {
-            adjacent.add(new Point(current.getX(), current.getY() + 1));
-        }
-        if (tiles[current.getX()][current.getY() - 1].equals(Tileset.FLOOR)) {
-            adjacent.add(new Point(current.getX(), current.getY() - 1));
-        }
-        for (Point p : adjacent) {
-            aStarGraph.addEdge(current, p);
-            if (!map.containsKey(p)) {
-
-                depthFirstSearch(aStarGraph, tiles, map, p);
-            }
-        }
-    }
 
     /**
      * Helper method that generates a shop at a random position
      */
-    private void generateShop(Player player, long seed) {
-        TETile[][] tiles = player.getTiles();
+    private void generateShop(TETile[][] tiles, Random r) {
         ArrayList<Point> l1 = new ArrayList<>();
         ArrayList<Point> l2 = new ArrayList<>();
-        Random r = new Random(seed);
         for (int x = 0; x < tiles.length; x++) {
             for (int y = 0; y < tiles[x].length; y++) {
                 if (tiles[x][y] == Tileset.FLOOR
-                        && hasNearby(tiles, new Point(x, y), Tileset.FLOOR, 8)) {
+                        && hasNearby(tiles, new Point(x, y), Tileset.FLOOR, 7)) {
                     if (r.nextDouble() < 0.5) { //construct a vertical shop
-                        if (hasNearby(tiles, new Point(x, y - 1), Tileset.FLOOR, 8)) {
+                        if (hasNearby(tiles, new Point(x, y - 1), Tileset.FLOOR, 7)) {
                             l1.add(new Point(x, y));
                             l2.add(new Point(x, y - 1));
                         }
                     } else { //construct a horizontal shop
-                        if (hasNearby(tiles, new Point(x + 1, y), Tileset.FLOOR, 8)) {
+                        if (hasNearby(tiles, new Point(x + 1, y), Tileset.FLOOR, 7)) {
                             l1.add(new Point(x, y));
                             l2.add(new Point(x + 1, y));
                         }
@@ -500,13 +440,13 @@ public class Engine {
         StdDraw.text(49, HEIGHT + 2, player.ammoDescription());
 
         //Wave information
-        StdDraw.setPenColor(StdDraw.WHITE);
-        StdDraw.text(57, HEIGHT + 2, "Wave:");
-        StdDraw.text(59, HEIGHT + 2, Integer.toString(player.currentWave()));
+//        StdDraw.setPenColor(StdDraw.WHITE);
+//        StdDraw.text(57, HEIGHT + 2, "Wave:");
+//        StdDraw.text(59, HEIGHT + 2, Integer.toString(player.currentWave()));
 
         //Message
         StdDraw.setPenColor(StdDraw.WHITE);
-        StdDraw.text(70, HEIGHT + 2, player.getMessage());
+        StdDraw.textLeft(57, HEIGHT + 2, player.getMessage());
 
         StdDraw.show();
     }
@@ -521,7 +461,7 @@ public class Engine {
         }
     }
 
-    private static Point randomPlacement(Random r, TETile[][] tiles) {
+    public static Point randomPlacement(TETile[][] tiles) {
         int randomX = r.nextInt(WIDTH - 1);
         int randomY = r.nextInt(HEIGHT - 1);
         while (!tiles[randomX][randomY].equals(Tileset.FLOOR)) {
@@ -652,6 +592,8 @@ public class Engine {
 
         }
 
-        fillTheRest(tiles, new Random(seed));
+        fillTheRest(tiles, random);
+        generateShop(tiles, random);
+        Direction.initPathFinder(tiles, randomPlacement(tiles));
     }
 }
