@@ -6,6 +6,7 @@ import byow.InputDemo.StringInputDevice;
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
+import byow.utils.InputHistory;
 import byow.gameplay.Player;
 import byow.gameplay.Shop;
 import byow.utils.Direction;
@@ -15,18 +16,20 @@ import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.Font;
 import java.awt.Color;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.PrintWriter;
-import java.util.*;
+import java.util.Random;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
 public class Engine {
     /* Feel free to change the width and height. */
     public static final int WIDTH = 80;
     public static final int HEIGHT = 40;
-    TERenderer ter = new TERenderer();
+    private TERenderer ter = new TERenderer();
     private static Random r;
+    private boolean kbInput = false;
 
     /**
      * Fill up a rectangular region in the given tiles matrix
@@ -54,10 +57,9 @@ public class Engine {
      * @param y  origin's y
      * @param dx width of rectangle
      * @param dy height of rectangle
-     * @param r  the random generator instance
      */
 
-    private static Point randomPoint(int x, int y, int dx, int dy, Random r) {
+    private static Point randomPoint(int x, int y, int dx, int dy) {
         return new Point(RandomUtils.uniform(r, x, x + dx + 1),
                 RandomUtils.uniform(r, y, y + dy + 1));
     }
@@ -71,7 +73,7 @@ public class Engine {
      * @param tiles the tiles to fill up
      */
 
-    private static void fillTheRest(TETile[][] tiles, Random r) {
+    private static void fillTheRest(TETile[][] tiles) {
         for (int w = 0; w < WIDTH; w++) {
             for (int h = 0; h < HEIGHT; h++) {
                 if (hasNearby(tiles, new Point(w, h), Tileset.FLOOR, 8) && tiles[w][h] == null) {
@@ -166,6 +168,8 @@ public class Engine {
     public void interactWithKeyboard() {
         InputSource inputSource = new KeyboardInputSource();
 
+        kbInput = true;
+        makeMenu();
         interact(inputSource, true);
 
         System.exit(0);
@@ -212,183 +216,91 @@ public class Engine {
      * @param source The input source
      */
 
-    private TETile[][] interact(InputSource source, boolean keyBoardInput) {
-        menu(keyBoardInput);
+    private TETile[][] interact(InputSource source, boolean keyboardInput) {
         boolean startReadingSeed = false; long seed = 0;
-        TETile[][] tiles = new TETile[WIDTH][HEIGHT];
-        Player player = null;
-        String inputString = ""; //this string records the current input
-        String previousInput = ""; //this string captures the previous input in the file
-        int charCount = 0;
+        TETile[][] tiles = new TETile[WIDTH][HEIGHT]; Player player = null;
+        InputSource tmpSource = new StringInputDevice(""); // temporarily stores real-time input
 
         while (source.possibleNextInput()) {
-            while (keyBoardInput && !StdDraw.hasNextKeyTyped() && player != null) {
-                sleep(10);
-                renewDisplayBar(player);
+            while (keyboardInput && !StdDraw.hasNextKeyTyped() && player != null) {
+                sleep(10); renewDisplayBar(player);
             }
-            char next = source.getNextKey();
-            if (next != ':' && next != 'L') {
-                inputString = inputString + next; //if the input isn't : or L, put it in the inputString
-            }
-            boolean reloading = false; //reloading is for loading the game
-
-            do { //use switch statement as a loop if we are reloading
-                switch (next) {
-                    case ':': // if :Q then save and quit
-                        if (source.getNextKey() == 'Q') {
-                            quit(inputString);
-                            return tiles;
-                        }
-                        break;
-                    case 'N': // new world
-                        if (player == null) {
-                            startReadingSeed = true;
-                            drawSeedPrompt(keyBoardInput);
-                            if (!reloading) {
-                                createNewFile();
-                            } //if user wants to create new world, then replace old save file
-                        }
-                        break;
-                    case 'S': // start game
-                        if (player == null && startReadingSeed) {
-                            r = new Random(seed);
-                            generateWorld(tiles, seed);
-                            startReadingSeed = false;
-                            player = new Player(tiles, randomPlacement(tiles));
-                            if (keyBoardInput) {
-                                ter.initialize(WIDTH, HEIGHT + 3);
-                                ter.renderFrame(tiles);
-                                locate(player);
-                            }
-                            break;
-                        } // fall through is 'S' refers to a direction
-                    case 'W':
-                    case 'A':
-                    case 'D':
-                        if (player != null) {
-                            player.move(Direction.parse(next));
-                            if (hasNearby(player.getTiles(), player.getLocation(),
-                                    Tileset.WEAPON_BOX, 1)) { // display the shop's message
-                                player.setMessage(Shop.displayMessage());
-                            }
-                            if (keyBoardInput) {
-                                ter.renderFrame(tiles);
-                                renewDisplayBar(player);
-                            }
-                        }
-                        break;
-                    case ' ':
-                        break;
-                    case 'L':
-                        previousInput = readInput(); //read the previous input from txt file
-                        reloading = true; //start loading previous game
-                        break;
-                    case 'T':
-                        ter.renderFrame(test(tiles));
-                        break;
-                    case 'B': //buy a weapon from the store
-                        if (reloading) {
-                            break;
-                        } //if this is part of reloading process, jump to bottom to process shop inputs
-                        if (player != null && hasNearby(player.getTiles(), player.getLocation(),
-                                Tileset.WEAPON_BOX, 1)) {
-                            player.setMessage(Shop.openMenu(player, ter, source, keyBoardInput));
-                            inputString += Shop.returnInputString(); //add the user's operations at the shop to our input string.
-                            ter.renderFrame(tiles);
-                        }
-                        break;
-                    default:
-                        if ((next == '1' || next == '2') && player != null) {
-                            player.switchWeapon();
-                        } else if (startReadingSeed) {
-                            seed = seed * 10 + Integer.parseInt(String.valueOf(next));
-                            displaySeed(seed, keyBoardInput);
-                        }
-
-                }
-                if (reloading) { //if the game is reloading through previousInput
-                    if (charCount < previousInput.length()) {
-                        if (next == 'B') { //deal with shop inputs
-                            String menuString = "";
-                            while (charCount < previousInput.length()
-                                    && (previousInput.charAt(charCount)) != 'P'
-                                    && (previousInput.charAt(charCount)) != 'B') {
-                                menuString += previousInput.charAt(charCount);
-                                charCount ++;
-                            }
-                            if (charCount < previousInput.length()) {
-                                menuString += previousInput.charAt(charCount);
-                            }
-                            InputSource menuInput = new StringInputDevice(menuString.toUpperCase());
-                            player.setMessage(Shop.openMenu(player, ter, menuInput, keyBoardInput));
-                            ter.renderFrame(tiles);
-                            if (charCount + 1 < previousInput.length()) {
-                                charCount ++;
-                                next = previousInput.charAt(charCount);
-                                charCount ++;
-                            } else {
-                                reloading = false;
-                            }
-                        } else {
-                            next = previousInput.charAt(charCount);
-                            charCount ++;
-                        }
-                    } else {
-                        reloading = false;
+            char next = source.getNextKey(); InputHistory.addInputChar(next);
+            switch (next) {
+                case ':': // if :Q then save and quit
+                    if (source.getNextKey() == 'Q') {
+                        InputHistory.save(); return tiles;
                     }
-                }
-            } while (reloading); //if the game is reloading, redo the switch statement with an updated "next" value
+                    break;
+                case 'N': // new world
+                    if (player == null) {
+                        startReadingSeed = true; drawSeedPrompt(keyboardInput);
+                        InputHistory.createNewFile(); // overwrites existing world
+                    }
+                    break;
+                case 'S': // start game
+                    if (player == null && startReadingSeed) {
+                        r = new Random(seed); // sets global random generator
+                        generateWorld(tiles, seed);
+                        startReadingSeed = false;
+                        player = new Player(tiles, randomPlacement(tiles));
+                        if (keyboardInput) {
+                            ter.initialize(WIDTH, HEIGHT + 3);
+                            ter.renderFrame(tiles);
+                            locate(player);
+                        }
+                        break;
+                    } // fall through is 'S' refers to a direction
+                case 'W': case 'A': case 'D':
+                    if (player != null) {
+                        player.move(Direction.parse(next));
+                        if (hasNearby(player.getTiles(), player.getLocation(),
+                                Tileset.WEAPON_BOX, 1)) { // display the shop's message
+                            player.setMessage(Shop.displayMessage());
+                        }
+                        if (keyboardInput) {
+                            ter.renderFrame(tiles);
+                            renewDisplayBar(player);
+                        }
+                    }
+                    break;
+                case ' ':
+                    break;
+                case 'L':
+                    if (!InputHistory.isReloading && InputHistory.hasValidInput()) {
+                        tmpSource = source; keyboardInput = false; // treat file input as string
+                        source = InputHistory.source();
+                    } else if (player != null) { // end of reloading
+                        source = tmpSource; keyboardInput = kbInput;
+                        ter.initialize(WIDTH, HEIGHT + 3); ter.renderFrame(tiles);
+                        player.setMessage("Welcome back to Zombie Arena!");
+                        renewDisplayBar(player); locate(player);
+                    }
+                    InputHistory.isReloading = !InputHistory.isReloading;
+                    break;
+                case 'B': //buy a weapon from the store
+                    if (player != null && hasNearby(player.getTiles(), player.getLocation(),
+                            Tileset.WEAPON_BOX, 1)) {
+                        player.setMessage(Shop.openMenu(player, ter, source, keyboardInput));
+                    }
+                    break;
+                default:
+                    if ((next == '1' || next == '2') && player != null) {
+                        player.switchWeapon();
+                    } else if (startReadingSeed) {
+                        seed = seed * 10 + Integer.parseInt(String.valueOf(next));
+                        displaySeed(seed, keyboardInput);
+                    }
+            }
         }
         return tiles;
     }
 
 
     /**
-     * Helper method that creates a new save file
-     */
-    private static void createNewFile() {
-        try {
-            //create an empty new file that replaces the old one
-            PrintWriter writer = new PrintWriter("SaveFile.txt", "UTF-8");
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-    }
-
-    /**
-     * Helper method that reads input string from file
-     */
-    private static String readInput() {
-        String inputString = "";
-        try {
-            int i;
-            FileReader fr = new FileReader("SaveFile.txt");
-            while ((i = fr.read()) != -1) {
-                inputString += (char) i;
-            }
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-        return inputString;
-    }
-
-    /**
-     * Helper method that appends all the current input in this game to the save file when quitting
-     */
-    private static void quit(String inputString) {
-        try {
-            FileWriter fw = new FileWriter("SaveFile.txt",true); //the true will append the new data instead of creating new file
-            fw.write(inputString);//appends the string to the file
-            fw.close();
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-    }
-
-    /**
      * Test feature that returns the shortest path of two random points
      * @param tiles The world to run shortest-path finder
-     * @return
+     * @return a new version of tiles with the path included
      */
 
     private static TETile[][] test(TETile[][] tiles) {
@@ -416,7 +328,7 @@ public class Engine {
     /**
      * Helper method that generates a shop at a random position
      */
-    private void generateShop(TETile[][] tiles, Random r) {
+    private void generateShop(TETile[][] tiles) {
         ArrayList<Point> l1 = new ArrayList<>();
         ArrayList<Point> l2 = new ArrayList<>();
         for (int x = 0; x < tiles.length; x++) {
@@ -461,8 +373,8 @@ public class Engine {
     /**
      * Helper method that generates the main menu
      */
-    private void menu(boolean keyBoardInput) {
-        if (!keyBoardInput) {
+    private void makeMenu() {
+        if (!kbInput) {
             return;
         }
 
@@ -582,7 +494,7 @@ public class Engine {
     private static void locate(Player player) {
         StdDraw.setPenColor(new Color(236, 96, 91));
         StdDraw.setPenRadius(0.01);
-        StdDraw.circle(player.getLocation().getX() + 0.5, player.getLocation().getY() + 0.5, 1);
+        StdDraw.circle(player.getLocation().getX() + 0.5, player.getLocation().getY() + 0.5, 1.5);
     }
 
     /**
@@ -674,8 +586,8 @@ public class Engine {
             Point pSize = originToSize.get(p);
             Point qSize = originToSize.get(q);
 
-            Point s = randomPoint(p.getX(), p.getY(), pSize.getX(), pSize.getY(), random);
-            Point t = randomPoint(q.getX(), q.getY(), qSize.getX(), qSize.getY(), random);
+            Point s = randomPoint(p.getX(), p.getY(), pSize.getX(), pSize.getY());
+            Point t = randomPoint(q.getX(), q.getY(), qSize.getX(), qSize.getY());
 
             int minX = Math.min(s.getX(), t.getX());
             int minY = Math.min(s.getY(), t.getY());
@@ -695,8 +607,8 @@ public class Engine {
 
         }
 
-        fillTheRest(tiles, random);
-        generateShop(tiles, random);
+        fillTheRest(tiles);
+        generateShop(tiles);
         Direction.initPathFinder(tiles, randomPlacement(tiles));
     }
 }

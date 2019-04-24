@@ -2,6 +2,7 @@ package byow.gameplay;
 
 import byow.InputDemo.InputSource;
 import byow.TileEngine.TERenderer;
+import byow.utils.InputHistory;
 import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.Color;
@@ -25,19 +26,17 @@ public class Shop {
     private static final Color CELL_TEXT_COLOR = new Color(200, 200, 200);
     private static final Color CAPTION_COLOR = new Color(190, 190, 190);
 
-    private static String inputString;
-
     public static String openMenu(Player player, TERenderer ter, InputSource source, boolean kb) {
 
         int selection = -1;
         Wave.update();
-        inputString = ""; //clear input string first
 
         while (source.possibleNextInput()) {
 
             renderMenu(selection, ter, kb);
             char next = source.getNextKey();
-            inputString += next; //add character to inputstring
+            InputHistory.addInputChar(next);
+            System.out.print(next);
 
             switch (next) {
                 case ' ':
@@ -48,9 +47,16 @@ public class Shop {
                     if (selection == -1) {
                         break;
                     } else {
-                        return UPGRADES_LIST[selection].apply(player);
+                        String returnValue = UPGRADES_LIST[selection].apply(player);
+                        if (kb) {
+                            ter.renderFrame(player.tiles);
+                        }
+                        return returnValue;
                     }
                 case 'B':
+                    if (kb) {
+                        ter.renderFrame(player.tiles);
+                    }
                     return "You did not buy anything :("; // Exit the shop
                 default:
             }
@@ -127,9 +133,5 @@ public class Shop {
         } catch (InterruptedException e) {
             System.out.print("\ndelay failed");
         }
-    }
-
-    public static String returnInputString() {
-        return inputString;
     }
 }
