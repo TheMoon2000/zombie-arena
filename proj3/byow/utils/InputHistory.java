@@ -12,7 +12,7 @@ import java.nio.charset.StandardCharsets;
 public class InputHistory {
 
     private static StringBuilder input = new StringBuilder();
-    public static boolean isReloading = false;
+    private static boolean isReloading = false;
 
     public static void addInputChar(char c) {
         if (c != ':' && c != 'L') {
@@ -22,8 +22,8 @@ public class InputHistory {
 
     public static void save() {
         try {
-            FileWriter fw = new FileWriter("SaveFile.txt",false);
-            fw.write(input.toString() + "L");//appends the string to the file
+            FileWriter fw = new FileWriter("SaveFile.txt", false);
+            fw.write(input.toString() + "L"); //appends the string to the file
             fw.close();
         } catch (IOException e) {
             System.out.println("Unable to write to disk");
@@ -41,14 +41,14 @@ public class InputHistory {
         try {
             //create an empty new file that replaces the old one
             new PrintWriter("SaveFile.txt", StandardCharsets.UTF_8);
-        } catch (Exception e) {
+        } catch (IOException e) {
             System.out.println("Unable to create SaveFile.txt!");
         }
     }
 
     public static boolean hasValidInput() {
-        In input = new In("SaveFile.txt");
-        String all = input.readAll();
+        In myInput = new In("SaveFile.txt");
+        String all = myInput.readAll();
         return !all.isEmpty() && all.charAt(all.length() - 1) == 'L';
     }
 
@@ -57,14 +57,20 @@ public class InputHistory {
      */
     public static InputSource source() {
         StringBuilder fileInput = new StringBuilder();
-        In input = new In("SaveFile.txt");
-        while (input.hasNextChar()) {
-            fileInput.append(input.readChar());
+        In myInput = new In("SaveFile.txt");
+        while (myInput.hasNextChar()) {
+            fileInput.append(myInput.readChar());
         }
         System.out.println("\nRead the following string from SaveFile.txt:");
         System.out.println(fileInput.toString());
         return new StringInputDevice(fileInput.toString());
     }
 
+    public static boolean reloading() {
+        return isReloading;
+    }
 
+    public static void setReloading(boolean reloading) {
+        isReloading = reloading;
+    }
 }

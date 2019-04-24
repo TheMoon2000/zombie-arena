@@ -268,7 +268,7 @@ public class Engine {
                 case ' ':
                     break;
                 case 'L':
-                    if (!InputHistory.isReloading && InputHistory.hasValidInput()) {
+                    if (!InputHistory.reloading() && InputHistory.hasValidInput()) {
                         tmpSource = source; keyboardInput = false; // treat file input as string
                         source = InputHistory.source();
                     } else if (player != null) { // end of reloading
@@ -277,7 +277,7 @@ public class Engine {
                         player.setMessage("Welcome back to Zombie Arena!");
                         renewDisplayBar(player); locate(player);
                     }
-                    InputHistory.isReloading = !InputHistory.isReloading;
+                    InputHistory.setReloading(!InputHistory.reloading());
                     break;
                 case 'B': //buy a weapon from the store
                     if (player != null && hasNearby(player.getTiles(), player.getLocation(),
