@@ -2,11 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f687dc9f-cebf-44bc-90c9-78de69c0a700" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/byow/Core/Engine.java" beforeDir="false" afterPath="$PROJECT_DIR$/byow/Core/Engine.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/byow/hw4/AStarSolver.java" beforeDir="false" afterPath="$PROJECT_DIR$/byow/hw4/AStarSolver.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/byow/proj2ab/ArrayHeapMinPQ.java" beforeDir="false" afterPath="$PROJECT_DIR$/byow/proj2ab/ArrayHeapMinPQ.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/byow/proj2ab/DoubleMapPQ.java" beforeDir="false" afterPath="$PROJECT_DIR$/byow/proj2ab/DoubleMapPQ.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/byow/proj2ab/ExtrinsicMinPQ.java" beforeDir="false" afterPath="$PROJECT_DIR$/byow/proj2ab/ExtrinsicMinPQ.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/proj3/byow/Core/Engine.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/proj3/byow/Core/Engine.class" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -25,20 +21,17 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/byow/Core/Engine.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1964">
-              <caret line="363" column="42" selection-start-line="363" selection-start-column="42" selection-end-line="363" selection-end-column="42" />
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
+            <state relative-caret-position="-5091">
+              <caret line="243" column="39" lean-forward="true" selection-start-line="243" selection-start-column="39" selection-end-line="243" selection-end-column="39" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/byow/TileEngine/TETile.java">
+        <entry file="file://$PROJECT_DIR$/byow/Core/RandomUtils.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="270">
-              <caret line="23" column="13" selection-start-line="23" selection-start-column="13" selection-end-line="23" selection-end-column="13" />
+            <state relative-caret-position="-7137">
+              <caret line="14" column="13" selection-start-line="14" selection-start-column="13" selection-end-line="14" selection-end-column="13" />
             </state>
           </provider>
         </entry>
@@ -76,8 +69,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/byow/hw4/AStarSolver.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="150">
-              <caret line="10" lean-forward="true" selection-start-line="10" selection-end-line="10" />
+            <state relative-caret-position="75">
+              <caret line="10" selection-start-line="10" selection-end-line="10" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -107,7 +100,7 @@
         <entry file="file://$PROJECT_DIR$/byow/proj2ab/ExtrinsicMinPQ.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="300">
-              <caret line="20" lean-forward="true" selection-start-line="20" selection-end-line="20" />
+              <caret line="20" selection-start-line="20" selection-end-line="20" />
             </state>
           </provider>
         </entry>
@@ -170,6 +163,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="PackagesPane" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -222,12 +216,11 @@
           <select />
         </subPane>
       </pane>
-      <pane id="PackagesPane" />
       <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1555999342867" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1555999619134" />
     <property name="project.structure.last.edited" value="Project" />
     <property name="project.structure.proportion" value="0.0" />
     <property name="project.structure.side.proportion" value="0.0" />
@@ -294,9 +287,8 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1440" height="900" extended-state="0" />
-    <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.27825466" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.28183118" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Designer" order="2" />
       <window_info id="Image Layers" order="3" />
@@ -311,7 +303,7 @@
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Version Control" order="7" />
-      <window_info anchor="bottom" id="Style Checker" order="8" visible="true" weight="0.32891566" />
+      <window_info anchor="bottom" id="Style Checker" order="8" weight="0.32891566" />
       <window_info anchor="bottom" id="Terminal" order="9" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
       <window_info anchor="bottom" id="Messages" order="11" />
@@ -548,7 +540,7 @@
     <entry file="file://$PROJECT_DIR$/byow/TileEngine/TETile.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="270">
-          <caret line="23" column="13" selection-start-line="23" selection-start-column="13" selection-end-line="23" selection-end-column="13" />
+          <caret line="24" column="13" selection-start-line="24" selection-start-column="13" selection-end-line="24" selection-end-column="13" />
         </state>
       </provider>
     </entry>
@@ -576,10 +568,13 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/byow/hw4/WeightedEdge.java">
+    <entry file="file://$PROJECT_DIR$/byow/hw4/AStarSolver.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="6" column="13" selection-start-line="6" selection-start-column="13" selection-end-line="6" selection-end-column="13" />
+        <state relative-caret-position="75">
+          <caret line="10" selection-start-line="10" selection-end-line="10" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -600,27 +595,28 @@
     <entry file="file://$PROJECT_DIR$/byow/proj2ab/ExtrinsicMinPQ.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="300">
-          <caret line="20" lean-forward="true" selection-start-line="20" selection-end-line="20" />
+          <caret line="20" selection-start-line="20" selection-end-line="20" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/byow/hw4/AStarSolver.java">
+    <entry file="file://$PROJECT_DIR$/byow/hw4/WeightedEdge.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="150">
-          <caret line="10" lean-forward="true" selection-start-line="10" selection-end-line="10" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
+        <state relative-caret-position="90">
+          <caret line="6" column="13" selection-start-line="6" selection-start-column="13" selection-end-line="6" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/byow/Core/RandomUtils.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-7137">
+          <caret line="14" column="13" selection-start-line="14" selection-start-column="13" selection-end-line="14" selection-end-column="13" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/byow/Core/Engine.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1964">
-          <caret line="363" column="42" selection-start-line="363" selection-start-column="42" selection-end-line="363" selection-end-column="42" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
+        <state relative-caret-position="-5091">
+          <caret line="243" column="39" lean-forward="true" selection-start-line="243" selection-start-column="39" selection-end-line="243" selection-end-column="39" />
         </state>
       </provider>
     </entry>

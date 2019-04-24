@@ -15,6 +15,9 @@ import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.Font;
 import java.awt.Color;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -214,6 +217,9 @@ public class Engine {
         boolean startReadingSeed = false; long seed = 0;
         TETile[][] tiles = new TETile[WIDTH][HEIGHT];
         Player player = null;
+        String inputString = ""; //this string records the current input
+        String previousInput = ""; //this string captures the previous input in the file
+        int charCount = 0;
 
         while (source.possibleNextInput()) {
             while (keyBoardInput && !StdDraw.hasNextKeyTyped() && player != null) {
@@ -221,65 +227,162 @@ public class Engine {
                 renewDisplayBar(player);
             }
             char next = source.getNextKey();
-            switch (next) {
-                case ':': // if :Q then save and quit
-                    if (source.getNextKey() == 'Q') {
-                        return tiles;
-                    }
-                    break;
-                case 'N': // new world
-                    if (player == null) {
-                        startReadingSeed = true;
-                        drawSeedPrompt(keyBoardInput);
-                    }
-                    break;
-                case 'S': // start game
-                    if (player == null && startReadingSeed) {
-                        r = new Random(seed);
-                        generateWorld(tiles, seed);
-                        startReadingSeed = false;
-                        player = new Player(tiles, randomPlacement(tiles));
-                        if (keyBoardInput) {
-                            ter.initialize(WIDTH, HEIGHT + 3);
-                            ter.renderFrame(tiles);
-                            locate(player);
+            if (next != ':' && next != 'L') {
+                inputString = inputString + next; //if the input isn't : or L, put it in the inputString
+            }
+            boolean reloading = false; //reloading is for loading the game
+
+            do { //use switch statement as a loop if we are reloading
+                switch (next) {
+                    case ':': // if :Q then save and quit
+                        if (source.getNextKey() == 'Q') {
+                            quit(inputString);
+                            return tiles;
                         }
                         break;
-                    } // fall through is 'S' refers to a direction
-                case 'W': case 'A': case 'D':
-                    if (player != null) {
-                        player.move(Direction.parse(next));
-                        if (hasNearby(player.getTiles(), player.getLocation(),
-                                Tileset.WEAPON_BOX, 1)) { // display the shop's message
-                            player.setMessage(Shop.displayMessage());
+                    case 'N': // new world
+                        if (player == null) {
+                            startReadingSeed = true;
+                            drawSeedPrompt(keyBoardInput);
+                            if (!reloading) {
+                                createNewFile();
+                            } //if user wants to create new world, then replace old save file
                         }
-                        if (keyBoardInput) {
-                            ter.renderFrame(tiles);
-                            renewDisplayBar(player);
+                        break;
+                    case 'S': // start game
+                        if (player == null && startReadingSeed) {
+                            r = new Random(seed);
+                            generateWorld(tiles, seed);
+                            startReadingSeed = false;
+                            player = new Player(tiles, randomPlacement(tiles));
+                            if (keyBoardInput) {
+                                ter.initialize(WIDTH, HEIGHT + 3);
+                                ter.renderFrame(tiles);
+                                locate(player);
+                            }
+                            break;
+                        } // fall through is 'S' refers to a direction
+                    case 'W':
+                    case 'A':
+                    case 'D':
+                        if (player != null) {
+                            player.move(Direction.parse(next));
+                            if (hasNearby(player.getTiles(), player.getLocation(),
+                                    Tileset.WEAPON_BOX, 1)) { // display the shop's message
+                                player.setMessage(Shop.displayMessage());
+                            }
+                            if (keyBoardInput) {
+                                ter.renderFrame(tiles);
+                                renewDisplayBar(player);
+                            }
                         }
-                    }
-                    break;
-                case ' ': break; case 'L': break;
-                case 'T':
-                    ter.renderFrame(test(tiles));
-                    break;
-                case 'B': //buy a weapon from the store
-                    if (player != null && hasNearby(player.getTiles(), player.getLocation(),
+                        break;
+                    case ' ':
+                        break;
+                    case 'L':
+                        previousInput = readInput(); //read the previous input from txt file
+                        reloading = true; //start loading previous game
+                        break;
+                    case 'T':
+                        ter.renderFrame(test(tiles));
+                        break;
+                    case 'B': //buy a weapon from the store
+                        if (reloading) {
+                            break;
+                        } //if this is part of reloading process, jump to bottom to process shop inputs
+                        if (player != null && hasNearby(player.getTiles(), player.getLocation(),
                                 Tileset.WEAPON_BOX, 1)) {
-                        player.setMessage(Shop.openMenu(player, ter, source, keyBoardInput));
-                        ter.renderFrame(tiles);
+                            player.setMessage(Shop.openMenu(player, ter, source, keyBoardInput));
+                            inputString += Shop.returnInputString(); //add the user's operations at the shop to our input string.
+                            ter.renderFrame(tiles);
+                        }
+                        break;
+                    default:
+                        if ((next == '1' || next == '2') && player != null) {
+                            player.switchWeapon();
+                        } else if (startReadingSeed) {
+                            seed = seed * 10 + Integer.parseInt(String.valueOf(next));
+                            displaySeed(seed, keyBoardInput);
+                        }
+
+                }
+                if (reloading) { //if the game is reloading through previousInput
+                    if (charCount < previousInput.length()) {
+                        if (next == 'B') { //deal with shop inputs
+                            String menuString = "";
+                            while (charCount < previousInput.length()
+                                    && (previousInput.charAt(charCount)) != 'P'
+                                    && (previousInput.charAt(charCount)) != 'B') {
+                                menuString += previousInput.charAt(charCount);
+                                charCount ++;
+                            }
+                            if (charCount < previousInput.length()) {
+                                menuString += previousInput.charAt(charCount);
+                            }
+                            InputSource menuInput = new StringInputDevice(menuString.toUpperCase());
+                            player.setMessage(Shop.openMenu(player, ter, menuInput, keyBoardInput));
+                            ter.renderFrame(tiles);
+                            if (charCount + 1 < previousInput.length()) {
+                                charCount ++;
+                                next = previousInput.charAt(charCount);
+                                charCount ++;
+                            } else {
+                                reloading = false;
+                            }
+                        } else {
+                            next = previousInput.charAt(charCount);
+                            charCount ++;
+                        }
+                    } else {
+                        reloading = false;
                     }
-                    break;
-                default:
-                    if ((next == '1' || next == '2') && player != null) {
-                        player.switchWeapon();
-                    } else if (startReadingSeed) {
-                        seed = seed * 10 + Integer.parseInt(String.valueOf(next));
-                        displaySeed(seed, keyBoardInput);
-                    }
-            }
+                }
+            } while (reloading); //if the game is reloading, redo the switch statement with an updated "next" value
         }
         return tiles;
+    }
+
+
+    /**
+     * Helper method that creates a new save file
+     */
+    private static void createNewFile() {
+        try {
+            //create an empty new file that replaces the old one
+            PrintWriter writer = new PrintWriter("SaveFile.txt", "UTF-8");
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+
+    /**
+     * Helper method that reads input string from file
+     */
+    private static String readInput() {
+        String inputString = "";
+        try {
+            int i;
+            FileReader fr = new FileReader("SaveFile.txt");
+            while ((i = fr.read()) != -1) {
+                inputString += (char) i;
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        return inputString;
+    }
+
+    /**
+     * Helper method that appends all the current input in this game to the save file when quitting
+     */
+    private static void quit(String inputString) {
+        try {
+            FileWriter fw = new FileWriter("SaveFile.txt",true); //the true will append the new data instead of creating new file
+            fw.write(inputString);//appends the string to the file
+            fw.close();
+        } catch (Exception e) {
+            System.out.println(e);
+        }
     }
 
     /**

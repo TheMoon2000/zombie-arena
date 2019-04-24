@@ -25,15 +25,19 @@ public class Shop {
     private static final Color CELL_TEXT_COLOR = new Color(200, 200, 200);
     private static final Color CAPTION_COLOR = new Color(190, 190, 190);
 
+    private static String inputString;
+
     public static String openMenu(Player player, TERenderer ter, InputSource source, boolean kb) {
 
         int selection = -1;
         Wave.update();
+        inputString = ""; //clear input string first
 
         while (source.possibleNextInput()) {
 
             renderMenu(selection, ter, kb);
             char next = source.getNextKey();
+            inputString += next; //add character to inputstring
 
             switch (next) {
                 case ' ':
@@ -123,5 +127,9 @@ public class Shop {
         } catch (InterruptedException e) {
             System.out.print("\ndelay failed");
         }
+    }
+
+    public static String returnInputString() {
+        return inputString;
     }
 }
