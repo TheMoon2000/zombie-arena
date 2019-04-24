@@ -9,20 +9,21 @@ public class Player extends GameCharacter {
 
     private Weapon[] weapons = new Weapon[2]; // Player has the ability to use weapons
     private int currentWeapon = 0;
-    private Point location;
     private Direction orientation;
     private int points;
-    private int wave;
-    private static final int MAX_WAVE = 10;
+
+    private static final int PREP_STEPS = 30;
+    static final int MAX_HEALTH = 100;
     private String message;
 
     public Player(TETile[][] tiles, Point location) {
         super(tiles);
-        this.addHealth(100);
+        this.addHealth(MAX_HEALTH);
         points = 1200;
         weapons[0] = Weapon.makePistol();
         weapons[1] = Weapon.makeSword();
-        message = "Prepare for wave #1!";
+        Wave.init(this, tiles);
+        message = Wave.message();
 
         // Make default orientation North
         this.location = location;
@@ -32,6 +33,10 @@ public class Player extends GameCharacter {
 
     public Player move(Direction direction) {
         int x = location.getX(), y = location.getY();
+        if (!Wave.started() && direction.equals(orientation)) {
+            Wave.update();
+        }
+        message = Wave.message();
 
         switch (direction) {
             case North:
@@ -92,9 +97,7 @@ public class Player extends GameCharacter {
         return orientation;
     }
 
-    public Point getLocation() {
-        return location;
-    }
+    // Points
 
     public int getPoints() {
         return points;
@@ -111,25 +114,10 @@ public class Player extends GameCharacter {
         points -= p;
     }
 
-    public Player advanceWave() {
-        if (wave == MAX_WAVE) {
-            return null;
-        }
-        wave += 1;
-        message = waveMessage();
-        return this;
-    }
+    // Weapons
 
-    public String waveMessage() {
-        return "Prepare for wave #" + wave + "!";
-    }
-
-    public int currentWave() {
-        return wave;
-    }
-
-    public void switchWeapon(int input) {
-        currentWeapon = input - 1;
+    public void switchWeapon() {
+        currentWeapon = 1 - currentWeapon;
         if (weapons[currentWeapon] == null) {
             this.message = "Empty weapon slot.";
         } else {

@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 public class Shop {
 
     private static final ShopItem[] UPGRADES_LIST = new ShopItem[] {
-        Health.of(100),
+        Health.of(Player.MAX_HEALTH),
         new Ammo(),
         Weapon.makeSword(),
         Weapon.makePistol(),
@@ -28,6 +28,7 @@ public class Shop {
     public static String openMenu(Player player, TERenderer ter, InputSource source, boolean kb) {
 
         int selection = -1;
+        Wave.update();
 
         while (source.possibleNextInput()) {
 

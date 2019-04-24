@@ -10,7 +10,6 @@ public class GameCharacter {
     TETile[][] tiles;
 
     GameCharacter(TETile[][] tiles) {
-        health = 0;
         this.tiles = tiles;
     }
 
