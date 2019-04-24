@@ -38,9 +38,13 @@ public class Tileset {
     public static final TETile PLAYER_SOUTH = new TETile('▼', Color.gray, FLOOR_COLOR, "player_S");
     public static final TETile PLAYER_EAST = new TETile('▶', Color.gray, FLOOR_COLOR, "player_E");
     public static final TETile PLAYER_WEST = new TETile('◀', Color.gray, FLOOR_COLOR, "player_W");
-    public static final TETile WEAPON_BOX = new TETile(' ', Color.WHITE, new Color(232, 214, 72),
+    public static final TETile WEAPON_BOX = new TETile(' ', Color.white, new Color(232, 214, 72),
             "weapon_box");
     public static final TETile ZOMBIE = new TETile('x', Color.red, FLOOR_COLOR, "zombie");
+    public static final TETile PBULLET = new TETile('·', Color.white, FLOOR_COLOR,
+            "pistol bullet");
+    public static final TETile MBULLET = new TETile('•', new Color(236, 229, 179), FLOOR_COLOR,
+            "machine / sniper rifle bullet");
 }
 
 
