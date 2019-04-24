@@ -40,6 +40,7 @@ public class Tileset {
     public static final TETile PLAYER_WEST = new TETile('◀', Color.gray, FLOOR_COLOR, "player_W");
     public static final TETile WEAPON_BOX = new TETile(' ', Color.WHITE, new Color(232, 214, 72),
             "weapon_box");
+    public static final TETile ZOMBIE = new TETile('x', Color.red, FLOOR_COLOR, "zombie");
 }
 
 
