@@ -15,7 +15,7 @@ public class InputHistory {
     public static boolean isReloading = false;
 
     public static void addInputChar(char c) {
-        if (c != ':') {
+        if (c != ':' && c != 'L') {
             input.append(Character.toUpperCase(c));
         }
     }

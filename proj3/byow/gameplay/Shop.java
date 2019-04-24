@@ -26,14 +26,14 @@ public class Shop {
     private static final Color CELL_TEXT_COLOR = new Color(200, 200, 200);
     private static final Color CAPTION_COLOR = new Color(190, 190, 190);
 
-    public static String openMenu(Player player, TERenderer ter, InputSource source, boolean kb) {
+    public static String openMenu(Player player, InputSource source, boolean kb) {
 
         int selection = -1;
-        Wave.update();
+        Wave.update(player.location);
 
         while (source.possibleNextInput()) {
 
-            renderMenu(selection, ter, kb);
+            renderMenu(selection, player.ter, kb);
             char next = source.getNextKey();
             InputHistory.addInputChar(next);
             System.out.print(next);
@@ -41,7 +41,7 @@ public class Shop {
             switch (next) {
                 case ' ':
                     selection = (selection + 1) % UPGRADES_LIST.length;
-                    renderMenu(selection, ter, kb);
+                    renderMenu(selection, player.ter, kb);
                     break;
                 case 'P':
                     if (selection == -1) {
@@ -49,13 +49,13 @@ public class Shop {
                     } else {
                         String returnValue = UPGRADES_LIST[selection].apply(player);
                         if (kb) {
-                            ter.renderFrame(player.tiles);
+                            player.ter.renderFrame(player.tiles);
                         }
                         return returnValue;
                     }
                 case 'B':
                     if (kb) {
-                        ter.renderFrame(player.tiles);
+                        player.ter.renderFrame(player.tiles);
                     }
                     return "You did not buy anything :("; // Exit the shop
                 default:

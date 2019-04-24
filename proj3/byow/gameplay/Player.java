@@ -1,5 +1,6 @@
 package byow.gameplay;
 
+import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 import byow.utils.Point;
@@ -11,12 +12,13 @@ public class Player extends GameCharacter {
     private int currentWeapon = 0;
     private Direction orientation;
     private int points;
+    TERenderer ter;
 
     private static final int PREP_STEPS = 30;
     static final int MAX_HEALTH = 100;
     private String message;
 
-    public Player(TETile[][] tiles, Point location) {
+    public Player(TETile[][] tiles, Point location, TERenderer renderer) {
         super(tiles);
         this.addHealth(MAX_HEALTH);
         points = 1200;
@@ -24,6 +26,7 @@ public class Player extends GameCharacter {
         weapons[1] = Weapon.makeSword();
         Wave.init(this, tiles);
         message = Wave.message();
+        ter = renderer;
 
         // Make default orientation North
         this.location = location;
@@ -31,70 +34,62 @@ public class Player extends GameCharacter {
         orientation = Direction.North;
     }
 
-    public Player move(Direction direction) {
+    public void move(Direction direction) {
         int x = location.getX(), y = location.getY();
-        if (!Wave.started() && direction.equals(orientation)) {
-            Wave.update();
-        }
-        message = Wave.message();
+        Point previousLocation = location;
 
         switch (direction) {
             case North:
                 if (!orientation.equals(Direction.North)) {
                     orientation = Direction.North;
                     tiles[x][y] = Tileset.PLAYER_NORTH;
-                    return this;
                 } else if (y + 1 < tiles[0].length && tiles[x][y + 1].equals(Tileset.FLOOR)) {
                     tiles[x][y + 1] = Tileset.PLAYER_NORTH;
                     tiles[x][y] = Tileset.FLOOR;
                     location = new Point(x, y + 1);
-                    return this;
                 }
-                return null;
+                break;
             case South:
                 if (!orientation.equals(Direction.South)) {
                     orientation = Direction.South;
                     tiles[x][y] = Tileset.PLAYER_SOUTH;
-                    return this;
                 } else if (y > 0 && tiles[x][y - 1].equals(Tileset.FLOOR)) {
                     tiles[x][y - 1] = Tileset.PLAYER_SOUTH;
                     tiles[x][y] = Tileset.FLOOR;
                     location = new Point(x, y - 1);
-                    return this;
                 }
-                return null;
+                break;
             case West:
                 if (!orientation.equals(Direction.West)) {
                     orientation = Direction.West;
                     tiles[x][y] = Tileset.PLAYER_WEST;
-                    return this;
                 } else if (x > 0 && tiles[x - 1][y].equals(Tileset.FLOOR)) {
                     tiles[x - 1][y] = Tileset.PLAYER_WEST;
                     tiles[x][y] = Tileset.FLOOR;
                     location = new Point(x - 1, y);
-                    return this;
                 }
-                return null;
+                break;
             case East:
                 if (!orientation.equals(Direction.East)) {
                     orientation = Direction.East;
                     tiles[x][y] = Tileset.PLAYER_EAST;
-                    return this;
                 } else if (x + 1 < tiles.length && tiles[x + 1][y].equals(Tileset.FLOOR)) {
                     tiles[x + 1][y] = Tileset.PLAYER_EAST;
                     tiles[x][y] = Tileset.FLOOR;
                     location = new Point(x + 1, y);
-                    return this;
                 }
-                return null;
+                break;
             default:
                 throw new IllegalArgumentException("Illegal movement direction: " + direction);
         }
 
+        Wave.update(previousLocation);
+        message = Wave.message();
+
     }
 
-    public Direction getOrientation() {
-        return orientation;
+    public TETile getCurrentTile() {
+        return tiles[location.getX()][location.getY()];
     }
 
     // Points
@@ -141,7 +136,7 @@ public class Player extends GameCharacter {
         return weapons[currentWeapon];
     }
 
-    public void replaceWeapon(Weapon weapon) {
+    void replaceWeapon(Weapon weapon) {
         weapons[currentWeapon] = weapon;
     }
 
