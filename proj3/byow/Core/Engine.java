@@ -442,14 +442,14 @@ public class Engine {
         StdDraw.text(24, HEIGHT + 2, Integer.toString(player.getPoints()));
 
         //weapon information
-        StdDraw.setPenColor(StdDraw.BOOK_RED);
+        StdDraw.setPenColor(new Color(180, 70, 60));
         StdDraw.filledRectangle(36, HEIGHT + 2, 3, 1);
         StdDraw.setPenColor(StdDraw.WHITE);
         StdDraw.text(41, HEIGHT + 2, "Weapon");
         StdDraw.text(36, HEIGHT + 2, player.currentWeapon().getName());
 
         //Ammo information
-        StdDraw.setPenColor(StdDraw.PRINCETON_ORANGE);
+        StdDraw.setPenColor(new Color(207, 127, 56));
         StdDraw.filledRectangle(49, HEIGHT + 2, 2, 1);
         StdDraw.setPenColor(StdDraw.WHITE);
         StdDraw.text(52.5, HEIGHT + 2, "Ammo");
