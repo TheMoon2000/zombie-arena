@@ -243,7 +243,7 @@ public class Engine {
                         r = new Random(seed); // sets global random generator
                         generateWorld(tiles, seed);
                         startReadingSeed = false;
-                        player = new Player(tiles, randomPlacement(tiles));
+                        player = new Player(tiles, randomPlacement(tiles), ter);
                         if (keyboardInput) {
                             ter.initialize(WIDTH, HEIGHT + 3);
                             ter.renderFrame(tiles);
@@ -281,7 +281,7 @@ public class Engine {
                 case 'B': //buy a weapon from the store
                     if (player != null && hasNearby(player.getTiles(), player.getLocation(),
                             Tileset.WEAPON_BOX, 1)) {
-                        player.setMessage(Shop.openMenu(player, ter, source, keyboardInput));
+                        player.setMessage(Shop.openMenu(player, source, keyboardInput));
                     }
                     break;
                 default:
@@ -476,10 +476,21 @@ public class Engine {
         }
     }
 
-    public static Point randomPlacement(TETile[][] tiles) {
+    private static Point randomPlacement(TETile[][] tiles) {
         int randomX = r.nextInt(WIDTH - 1);
         int randomY = r.nextInt(HEIGHT - 1);
         while (!tiles[randomX][randomY].equals(Tileset.FLOOR)) {
+            randomX = r.nextInt(WIDTH - 1);
+            randomY = r.nextInt(HEIGHT - 1);
+        }
+        return new Point(randomX, randomY);
+    }
+
+    public static Point randomPlacement(TETile[][] tiles, Player player) {
+        int randomX = r.nextInt(WIDTH - 1);
+        int randomY = r.nextInt(HEIGHT - 1);
+        while (!tiles[randomX][randomY].equals(Tileset.FLOOR)
+               || hasNearby(tiles, player.getLocation(), player.getCurrentTile(), 1)) {
             randomX = r.nextInt(WIDTH - 1);
             randomY = r.nextInt(HEIGHT - 1);
         }
@@ -536,6 +547,9 @@ public class Engine {
         }
         if (player.getTiles()[x][y].equals(Tileset.WEAPON_BOX)) {
             return "Shop";
+        }
+        if (player.getTiles()[x][y].equals(Tileset.ZOMBIE)) {
+            return "Zombie";
         }
 
         return "Wall";
