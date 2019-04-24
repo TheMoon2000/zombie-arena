@@ -226,6 +226,7 @@ public class Engine {
                 sleep(10); renewDisplayBar(player);
             }
             char next = source.getNextKey(); InputHistory.addInputChar(next);
+            System.out.print(next);
             switch (next) {
                 case ':': // if :Q then save and quit
                     if (source.getNextKey() == 'Q') {

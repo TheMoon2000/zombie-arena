@@ -67,8 +67,6 @@ public class Wave {
             for (Zombie alive: aliveZombies) {
                 alive.advance(location);
             }
-
-            player.ter.renderFrame(tiles);
         }
     }
 
