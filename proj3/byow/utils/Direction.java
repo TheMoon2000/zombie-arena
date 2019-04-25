@@ -5,7 +5,9 @@ import byow.TileEngine.Tileset;
 import byow.hw4.AStarSolver;
 import byow.hw4.WeightedUndirectedGraph;
 
-import java.util.*;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.List;
 
 public enum Direction {
     West, East, North, South, Disoriented;
@@ -28,8 +30,8 @@ public enum Direction {
         }
     }
 
-    public static void initPathFinder(TETile[][] tiles, Point s) {
-        Direction.tiles = tiles;
+    public static void initPathFinder(TETile[][] myTiles, Point s) {
+        Direction.tiles = myTiles;
         Set<Point> visited = new HashSet<>();
         WeightedUndirectedGraph graph = new WeightedUndirectedGraph();
         makeGraph(graph, visited, s);

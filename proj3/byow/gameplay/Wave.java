@@ -22,9 +22,9 @@ public class Wave {
     static Set<Zombie> aliveZombies;
     private static int preparation; // How many steps the player can make before wave starts
 
-    public static void init(Player player, TETile[][] tiles) {
-        Wave.player = player;
-        Wave.tiles = tiles;
+    public static void init(Player myPlayer, TETile[][] myTiles) {
+        Wave.player = myPlayer;
+        Wave.tiles = myTiles;
         aliveZombies = new HashSet<>();
         waveZombies = new ArrayDeque<>();
         waveStarted = true;
@@ -45,7 +45,7 @@ public class Wave {
             waveStarted = false;
             wave++;
         } else if (zombiesRemaining() == 0) {
-             waveStarted = true;
+            waveStarted = true;
             // Scenario 3: player's preparation time is over, begin wave
 
             // Add zombies here...
