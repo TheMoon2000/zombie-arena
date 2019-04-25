@@ -7,8 +7,8 @@ public class Weapon implements ShopItem {
     private int maxDistance;
     private int clip, ammo;
     private int clipCapacity, ammoCapacity;
-    private int reloadDuration;
     private int price;
+    private int speed;
 
     private Weapon(String name) {
         this.name = name;
@@ -34,6 +34,10 @@ public class Weapon implements ShopItem {
         return "Not enough points to buy " + name + "!";
     }
 
+    public int getSpeed() {
+        return this.speed;
+    }
+
     static Weapon makePistol() {
         Weapon pistol = new Weapon("Pistol");
         pistol.damage = 15;
@@ -42,8 +46,8 @@ public class Weapon implements ShopItem {
         pistol.clipCapacity = 10;
         pistol.ammo = 15;
         pistol.ammoCapacity = 20;
-        pistol.reloadDuration = 4;
         pistol.price = 500;
+        pistol.speed = 1;
         return pistol;
     }
 
@@ -55,8 +59,8 @@ public class Weapon implements ShopItem {
         shotgun.clipCapacity = 6;
         shotgun.ammo = 12;
         shotgun.ammoCapacity = 18;
-        shotgun.reloadDuration = 5;
         shotgun.price = 1200;
+        shotgun.speed = 2;
         return shotgun;
     }
 
@@ -68,8 +72,8 @@ public class Weapon implements ShopItem {
         sniperRifle.clipCapacity = 5;
         sniperRifle.ammo = 15;
         sniperRifle.ammoCapacity = 20;
-        sniperRifle.reloadDuration = 5;
         sniperRifle.price = 1500;
+        sniperRifle.speed = 10;
         return sniperRifle;
     }
 
@@ -77,6 +81,7 @@ public class Weapon implements ShopItem {
         Weapon sword = new Weapon("Sword");
         sword.damage = 60;
         sword.maxDistance = 1;
+        sword.speed = 1;
         return sword;
     }
 
@@ -93,23 +98,30 @@ public class Weapon implements ShopItem {
     public int fire(int distance) {
         if (name.equals("Sword")) {
             return damage;
-        } else if (clip > 0) {
-            clip--;
+        } else {
             return damage(distance);
         }
-
-        return -1;
     }
 
-    public int reload() {
+    public int shoot() {
+        if (name.equals("Sword")) {
+            return 1;
+        }
+        if (clip > 0) {
+            clip--;
+        }
+        return clip;
+    }
+
+    public boolean reload() {
         if (ammo == 0) {
-            return 0;
+            return false;
         }
 
         int refill = Math.min(ammo, clipCapacity - clip);
         ammo -= refill;
         clip += refill;
-        return reloadDuration;
+        return true;
     }
 
     public void refillAmmo() {
@@ -133,5 +145,9 @@ public class Weapon implements ShopItem {
     @Override
     public int hashCode() {
         return this.getName().hashCode();
+    }
+
+    public int getMaxDistance() {
+        return this.maxDistance;
     }
 }

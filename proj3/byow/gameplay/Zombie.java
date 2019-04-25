@@ -40,8 +40,11 @@ class Zombie extends GameCharacter {
     @Override
     void reduceHealth(int amount) {
         super.reduceHealth(amount);
+        player.addPoints(10);
         if (this.getHealth() <= 0) {
             Wave.aliveZombies.remove(this);
+            tiles[location.getX()][location.getY()] = Tileset.FLOOR;
+            player.addPoints(100);
         }
     }
 }

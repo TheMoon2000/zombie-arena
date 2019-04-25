@@ -6,21 +6,19 @@ import byow.InputDemo.StringInputDevice;
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
-import byow.utils.InputHistory;
+import byow.gameplay.Bullet;
 import byow.gameplay.Player;
 import byow.gameplay.Shop;
+import byow.gameplay.Wave;
 import byow.utils.Direction;
+import byow.utils.InputHistory;
 import byow.utils.NearTree;
 import byow.utils.Point;
 import edu.princeton.cs.introcs.StdDraw;
 
-import java.awt.Font;
-import java.awt.Color;
-import java.util.Random;
-import java.util.ArrayList;
+import java.awt.*;
 import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class Engine {
@@ -211,6 +209,25 @@ public class Engine {
     }
 
     /**
+     * Helper method that renders the game
+     */
+    private static void renderGame(boolean keyBoardInput, TERenderer ter, TETile[][] tiles) {
+        if (keyBoardInput) {
+            ter.renderFrame(tiles);
+        }
+    }
+
+    /**
+     * Helper method that reloads the current weapon
+     */
+    private static void reload(Player player, ArrayList<Bullet> bullets) {
+        if (!player.currentWeapon().reload()) {
+            player.setMessage("Ammo is empty! Can't reload.");
+        }
+        Wave.update(player.getLocation());
+    }
+
+    /**
      * Reads an input source and do something about it
      *
      * @param source The input source
@@ -220,7 +237,7 @@ public class Engine {
         boolean startReadingSeed = false; long seed = 0;
         TETile[][] tiles = new TETile[WIDTH][HEIGHT]; Player player = null;
         InputSource tmpSource = new StringInputDevice(""); // temporarily stores real-time input
-
+        ArrayList<Bullet> bullets = new ArrayList<>();
         while (source.possibleNextInput()) {
             while (keyboardInput && !StdDraw.hasNextKeyTyped() && player != null) {
                 sleep(10); renewDisplayBar(player);
@@ -259,14 +276,15 @@ public class Engine {
                                 Tileset.WEAPON_BOX, 1)) { // display the shop's message
                             player.setMessage(Shop.displayMessage());
                         }
-                        if (keyboardInput) {
-                            ter.renderFrame(tiles);
-                            renewDisplayBar(player);
-                        }
+                        renderGame(keyboardInput, ter, tiles);
                     }
                     break;
                 case ' ':
-                    break;
+                    Wave.addBullet(new Bullet(player));
+                    renderGame(keyboardInput, ter, tiles); break;
+                case 'R':
+                    reload(player, bullets);
+                    renderGame(keyboardInput, ter, tiles); break;
                 case 'L':
                     if (!InputHistory.reloading() && InputHistory.hasValidInput()) {
                         tmpSource = source; keyboardInput = false; // treat file input as string
@@ -277,8 +295,7 @@ public class Engine {
                         player.setMessage("Welcome back to Zombie Arena!");
                         renewDisplayBar(player); locate(player);
                     }
-                    InputHistory.setReloading(!InputHistory.reloading());
-                    break;
+                    InputHistory.setReloading(!InputHistory.reloading()); break;
                 case 'B': //buy a weapon from the store
                     if (player != null && hasNearby(player.getTiles(), player.getLocation(),
                             Tileset.WEAPON_BOX, 1)) {
@@ -296,7 +313,6 @@ public class Engine {
         }
         return tiles;
     }
-
 
     /**
      * Test feature that returns the shortest path of two random points

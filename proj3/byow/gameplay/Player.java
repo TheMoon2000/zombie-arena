@@ -21,7 +21,7 @@ public class Player extends GameCharacter {
     public Player(TETile[][] tiles, Point location, TERenderer renderer) {
         super(tiles);
         this.addHealth(MAX_HEALTH);
-        points = 1200;
+        points = 0;
         weapons[0] = Weapon.makePistol();
         weapons[1] = Weapon.makeSword();
         Wave.init(this, tiles);
@@ -84,7 +84,6 @@ public class Player extends GameCharacter {
         }
 
         Wave.update(previousLocation);
-        message = Wave.message();
 
     }
 
@@ -147,5 +146,7 @@ public class Player extends GameCharacter {
     public void setMessage(String message) {
         this.message = message;
     }
+
+    public Direction getOrientation () {return this.orientation;}
 
 }

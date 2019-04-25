@@ -5,10 +5,7 @@ import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 import byow.utils.Point;
 
-import java.util.ArrayDeque;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Queue;
+import java.util.*;
 
 public class Wave {
 
@@ -22,12 +19,15 @@ public class Wave {
     static Set<Zombie> aliveZombies;
     private static int preparation; // How many steps the player can make before wave starts
 
+    private static ArrayList<Bullet> bullets;
+
     public static void init(Player myPlayer, TETile[][] myTiles) {
         Wave.player = myPlayer;
         Wave.tiles = myTiles;
         aliveZombies = new HashSet<>();
         waveZombies = new ArrayDeque<>();
         waveStarted = true;
+        bullets = new ArrayList<>();
         update(player.location);
     }
 
@@ -35,6 +35,17 @@ public class Wave {
      * The player takes a step
      */
     public static void update(Point location) {
+
+        //first deal with all the bullets
+        ArrayList<Bullet> removeList = new ArrayList<>();
+        for (Bullet b : bullets) {
+            if (b.advance()) {
+                removeList.add(b);
+            }
+        }
+        for (Bullet b : removeList) {
+            bullets.remove(b);
+        }
 
         // Scenario 1: game is during preparation phase
         if (preparation > 1) {
@@ -68,6 +79,7 @@ public class Wave {
                 alive.advance(location);
             }
         }
+        player.setMessage(message());
     }
 
     static boolean started() {
@@ -93,5 +105,10 @@ public class Wave {
             String z = zombiesRemaining() == 1 ? " zombie" : " zombies";
             return "Wave #" + wave + " in progress..." + zombiesRemaining() + z + " remaining!";
         }
+    }
+
+    public static void addBullet(Bullet bullet) {
+        bullets.add(bullet);
+        update(player.getLocation());
     }
 }
