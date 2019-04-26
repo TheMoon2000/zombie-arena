@@ -6,7 +6,6 @@ import byow.InputDemo.StringInputDevice;
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
-import byow.gameplay.Bullet;
 import byow.gameplay.Player;
 import byow.gameplay.Shop;
 import byow.gameplay.Wave;
@@ -16,7 +15,8 @@ import byow.utils.NearTree;
 import byow.utils.Point;
 import edu.princeton.cs.introcs.StdDraw;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Font;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -95,7 +95,7 @@ public class Engine {
      * @param tiles    the tile matrix
      */
 
-    private static boolean hasNearby(TETile[][] tiles, Point location, TETile p, int c) {
+    public static boolean hasNearby(TETile[][] tiles, Point location, TETile p, int c) {
 
         int count = 0;
         int x = location.getX(), y = location.getY();
@@ -211,20 +211,28 @@ public class Engine {
     /**
      * Helper method that renders the game
      */
-    private static void renderGame(boolean keyBoardInput, TERenderer ter, TETile[][] tiles) {
+    private void renderGame(boolean keyBoardInput,
+                                   TETile[][] tiles, Player player) {
         if (keyBoardInput) {
             ter.renderFrame(tiles);
+        }
+
+        if (player != null) {
+            renewDisplayBar(player);
         }
     }
 
     /**
      * Helper method that reloads the current weapon
      */
-    private static void reload(Player player, ArrayList<Bullet> bullets) {
-        if (!player.currentWeapon().reload()) {
-            player.setMessage("Ammo is empty! Can't reload.");
+    private static void reload(Player player) {
+        if (player == null) {
+            return;
         }
-        Wave.update(player.getLocation());
+        if (player.currentWeapon().reload()) {
+            Wave.update(player.getLocation(), true, true);
+            player.setMessage(player.currentWeapon().getName() + " is reloaded.");
+        }
     }
 
     /**
@@ -237,13 +245,11 @@ public class Engine {
         boolean startReadingSeed = false; long seed = 0;
         TETile[][] tiles = new TETile[WIDTH][HEIGHT]; Player player = null;
         InputSource tmpSource = new StringInputDevice(""); // temporarily stores real-time input
-        ArrayList<Bullet> bullets = new ArrayList<>();
         while (source.possibleNextInput()) {
             while (keyboardInput && !StdDraw.hasNextKeyTyped() && player != null) {
                 sleep(10); renewDisplayBar(player);
             }
             char next = source.getNextKey(); InputHistory.addInputChar(next);
-            System.out.print(next);
             switch (next) {
                 case ':': // if :Q then save and quit
                     if (source.getNextKey() == 'Q') {
@@ -258,53 +264,51 @@ public class Engine {
                     break;
                 case 'S': // start game
                     if (player == null && startReadingSeed) {
-                        r = new Random(seed); // sets global random generator
-                        generateWorld(tiles, seed);
+                        r = new Random(seed); generateWorld(tiles, seed);
                         startReadingSeed = false;
-                        player = new Player(tiles, randomPlacement(tiles), ter);
+                        player = new Player(tiles, randomPlacement(tiles), ter, r);
                         if (keyboardInput) {
-                            ter.initialize(WIDTH, HEIGHT + 3);
-                            ter.renderFrame(tiles);
-                            locate(player);
+                            ter.initialize(WIDTH, HEIGHT + 3); ter.renderFrame(tiles);
                         }
-                        break;
+                        locate(player); break;
                     } // fall through is 'S' refers to a direction
                 case 'W': case 'A': case 'D':
                     if (player != null) {
                         player.move(Direction.parse(next));
-                        if (hasNearby(player.getTiles(), player.getLocation(),
-                                Tileset.WEAPON_BOX, 1)) { // display the shop's message
-                            player.setMessage(Shop.displayMessage());
-                        }
-                        renderGame(keyboardInput, ter, tiles);
+                        renderGame(keyboardInput, tiles, player);
                     }
                     break;
                 case ' ':
-                    Wave.addBullet(new Bullet(player));
-                    renderGame(keyboardInput, ter, tiles); break;
+                    if (player != null) {
+                        player.fire(); renderGame(keyboardInput, tiles, player);
+                    }
+                    break;
                 case 'R':
-                    reload(player, bullets);
-                    renderGame(keyboardInput, ter, tiles); break;
+                    reload(player); renderGame(keyboardInput, tiles, player); break;
                 case 'L':
                     if (!InputHistory.reloading() && InputHistory.hasValidInput()) {
                         tmpSource = source; keyboardInput = false; // treat file input as string
                         source = InputHistory.source();
                     } else if (player != null) { // end of reloading
                         source = tmpSource; keyboardInput = kbInput;
+                        System.out.println("\nfinished reloading");
                         ter.initialize(WIDTH, HEIGHT + 3); ter.renderFrame(tiles);
                         player.setMessage("Welcome back to Zombie Arena!");
                         renewDisplayBar(player); locate(player);
                     }
                     InputHistory.setReloading(!InputHistory.reloading()); break;
                 case 'B': //buy a weapon from the store
-                    if (player != null && hasNearby(player.getTiles(), player.getLocation(),
-                            Tileset.WEAPON_BOX, 1)) {
-                        player.setMessage(Shop.openMenu(player, source, keyboardInput));
+                    if (player != null && player.atShop()) {
+                        String shopMsg = Shop.openMenu(player, source, keyboardInput);
+                        if (shopMsg == null) {
+                            return tiles;
+                        }
+                        player.setMessage(shopMsg);
                     }
                     break;
                 default:
                     if ((next == '1' || next == '2') && player != null) {
-                        player.switchWeapon();
+                        player.switchWeapon(); renderGame(keyboardInput, tiles, player);
                     } else if (startReadingSeed) {
                         seed = seed * 10 + Integer.parseInt(String.valueOf(next));
                         displaySeed(seed, keyboardInput);
@@ -313,34 +317,6 @@ public class Engine {
         }
         return tiles;
     }
-
-    /**
-     * Test feature that returns the shortest path of two random points
-     * @param tiles The world to run shortest-path finder
-     * @return a new version of tiles with the path included
-     */
-
-    private static TETile[][] test(TETile[][] tiles) {
-        Random random = new Random();
-
-        // Create two test points
-        Point p1 = randomPlacement(tiles);
-        Point p2 = randomPlacement(tiles);
-
-        // Create a new copy of tiles so that the original world won't be overwritten
-        TETile[][] tilesCopy = new TETile[WIDTH][HEIGHT];
-        for (int i = 0; i < WIDTH; i++) {
-            System.arraycopy(tiles[i], 0, tilesCopy[i], 0, HEIGHT);
-        }
-
-        List<Point> solution = Direction.shortestPath(p1, p2);
-        for (Point p : solution) {
-            tilesCopy[p.getX()][p.getY()] = Tileset.FLOWER;
-        }
-
-        return tilesCopy;
-    }
-
 
     /**
      * Helper method that generates a shop at a random position
@@ -441,7 +417,7 @@ public class Engine {
 
         //tile information
         StdDraw.setPenColor(StdDraw.WHITE);
-        StdDraw.text(5, HEIGHT + 2, tile);
+        StdDraw.text(6, HEIGHT + 2, tile);
 
         //health information
         StdDraw.setPenColor(StdDraw.RED);
@@ -504,25 +480,12 @@ public class Engine {
     }
 
     public static Point randomPlacement(TETile[][] tiles, Player player) {
-        int randomX = r.nextInt(WIDTH - 1);
-        int randomY = r.nextInt(HEIGHT - 1);
-        while (!tiles[randomX][randomY].equals(Tileset.FLOOR)
-               || hasNearby(tiles, player.getLocation(), player.getCurrentTile(), 1)) {
-            randomX = r.nextInt(WIDTH - 1);
-            randomY = r.nextInt(HEIGHT - 1);
+        Point randomPoint = new Point(r.nextInt(WIDTH - 1), r.nextInt(HEIGHT - 1));
+        while (!tiles[randomPoint.getX()][randomPoint.getY()].equals(Tileset.FLOOR)
+               || hasNearby(tiles, randomPoint, player.getCurrentTile(), 1)) {
+            randomPoint = new Point(r.nextInt(WIDTH - 1), r.nextInt(HEIGHT - 1));
         }
-        return new Point(randomX, randomY);
-    }
-
-    /**
-     * Draw a ring around the player's spawn point
-     * @param player the player
-     */
-
-    private static void locate(Player player) {
-        StdDraw.setPenColor(new Color(236, 96, 91));
-        StdDraw.setPenRadius(0.01);
-        StdDraw.circle(player.getLocation().getX() + 0.5, player.getLocation().getY() + 0.5, 1.5);
+        return randomPoint;
     }
 
     /**
@@ -543,6 +506,18 @@ public class Engine {
     }
 
     /**
+     * Draw a ring around the player's spawn point
+     */
+
+    public void locate(Player player) {
+        StdDraw.setPenColor(new Color(236, 96, 91));
+        StdDraw.setPenRadius(0.01);
+        StdDraw.circle(player.getLocation().getX() + 0.5,
+                player.getLocation().getY() + 0.5, 1.5);
+        StdDraw.show();
+    }
+
+    /**
      * Provides information about the tile at the given mouse position
      */
 
@@ -553,23 +528,8 @@ public class Engine {
         if (y >= HEIGHT) {
             return "Void";
         }
-        if ((new Point(x, y)).equals(player.getLocation())) {
-            return "Player";
-        }
-        if (player.getTiles()[x][y].equals(Tileset.FLOOR)) {
-            return "Floor";
-        }
-        if (player.getTiles()[x][y].equals(Tileset.NOTHING)) {
-            return "Void";
-        }
-        if (player.getTiles()[x][y].equals(Tileset.WEAPON_BOX)) {
-            return "Shop";
-        }
-        if (player.getTiles()[x][y].equals(Tileset.ZOMBIE)) {
-            return "Zombie";
-        }
 
-        return "Wall";
+        return player.getTiles()[x][y].description();
     }
 
     /**

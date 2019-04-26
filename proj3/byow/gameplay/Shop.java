@@ -17,7 +17,8 @@ public class Shop {
         Weapon.makeSword(),
         Weapon.makePistol(),
         Weapon.makeShotgun(),
-        Weapon.makeSniperRifle()
+        Weapon.makeSniperRifle(),
+        Weapon.makeMachineGun(),
     };
 
     private static final Color BGCOLOR = new Color(26, 26, 29);
@@ -29,7 +30,7 @@ public class Shop {
     public static String openMenu(Player player, InputSource source, boolean kb) {
 
         int selection = -1;
-        Wave.update(player.location);
+        Wave.update(player.location, true, true);
 
         while (source.possibleNextInput()) {
 
@@ -39,6 +40,11 @@ public class Shop {
             System.out.print(next);
 
             switch (next) {
+                case ':': // if :Q then save and quit
+                    if (source.getNextKey() == 'Q') {
+                        InputHistory.save(); return null;
+                    }
+                    break;
                 case ' ':
                     selection = (selection + 1) % UPGRADES_LIST.length;
                     renderMenu(selection, player.ter, kb);
@@ -86,14 +92,14 @@ public class Shop {
         StdDraw.clear(BGCOLOR);
         StdDraw.setPenColor(Color.darkGray);
         StdDraw.setPenRadius(0.005);
-        StdDraw.rectangle(centerX, centerY, 20, 16);
+        StdDraw.rectangle(centerX, centerY, 21, 18);
 
         Font title = new Font("Monaco", Font.PLAIN, 25);
         StdDraw.setFont(title);
         StdDraw.setPenColor(Color.GRAY);
-        StdDraw.text(centerX, centerY + 12.5, "Upgrades");
+        StdDraw.text(centerX, centerY + 14, "Upgrades");
 
-        double currentY = centerY + 8.5;
+        double currentY = centerY + 10;
         StdDraw.setFont(CELL_FONT);
 
         for (int i = 0; i < UPGRADES_LIST.length; i++) {
@@ -103,20 +109,20 @@ public class Shop {
             if (i == selection) {
                 StdDraw.setPenColor(new Color(50, 50, 52));
             }
-            StdDraw.filledRectangle(centerX, currentY, 19, 1.8);
+            StdDraw.filledRectangle(centerX, currentY, 19, 1.6);
 
             // Draw the text
             StdDraw.setPenColor(CELL_TEXT_COLOR);
             StdDraw.textLeft(centerX - 18, currentY - 0.02, UPGRADES_LIST[i].getName());
             StdDraw.textRight(centerX + 18, currentY - 0.02, "" + UPGRADES_LIST[i].getPrice());
 
-            currentY -= 4;
+            currentY -= 3.5;
         }
 
         // Draw the caption
         StdDraw.setFont(CAPTION_FONT);
         StdDraw.setPenColor(CAPTION_COLOR);
-        StdDraw.text(centerX, centerY - 15,
+        StdDraw.text(centerX, centerY - 16.9,
                 "Press 'P' to purchase, SPACE to select, 'B' to exit shop.");
 
         StdDraw.show();

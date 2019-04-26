@@ -1,10 +1,13 @@
 package byow.gameplay;
 
+import byow.Core.Engine;
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 import byow.utils.Point;
 import byow.utils.Direction;
+
+import java.util.Random;
 
 public class Player extends GameCharacter {
 
@@ -18,25 +21,26 @@ public class Player extends GameCharacter {
     static final int MAX_HEALTH = 100;
     private String message;
 
-    public Player(TETile[][] tiles, Point location, TERenderer renderer) {
+    public Player(TETile[][] tiles, Point location, TERenderer renderer, Random r) {
         super(tiles);
         this.addHealth(MAX_HEALTH);
-        points = 0;
+        points = 1000;
         weapons[0] = Weapon.makePistol();
         weapons[1] = Weapon.makeSword();
-        Wave.init(this, tiles);
+        Wave.init(this, tiles, r);
         message = Wave.message();
-        ter = renderer;
+        this.ter = renderer;
 
         // Make default orientation North
         this.location = location;
         tiles[location.getX()][location.getY()] = Tileset.PLAYER_NORTH;
-        orientation = Direction.North;
+        this.orientation = Direction.North;
     }
 
     public void move(Direction direction) {
         int x = location.getX(), y = location.getY();
         Point previousLocation = location;
+        Wave.update(location, true, false);
 
         switch (direction) {
             case North:
@@ -83,8 +87,16 @@ public class Player extends GameCharacter {
                 throw new IllegalArgumentException("Illegal movement direction: " + direction);
         }
 
-        Wave.update(previousLocation);
+        if (atShop()) {
+            message = Shop.displayMessage();
+        }
 
+        Wave.update(previousLocation, false, true);
+
+    }
+
+    public boolean atShop() {
+        return Engine.hasNearby(tiles, location, Tileset.WEAPON_BOX, 1);
     }
 
     public TETile getCurrentTile() {
@@ -117,6 +129,9 @@ public class Player extends GameCharacter {
         } else {
             this.message = "Current weapon: " + currentWeapon().getName() + "";
         }
+
+        // Unfortunately, switching weapon counts as one step
+        Wave.update(location, true, true);
     }
 
     public String ammoDescription() {
@@ -134,10 +149,27 @@ public class Player extends GameCharacter {
     public Weapon currentWeapon() {
         return weapons[currentWeapon];
     }
+    private Weapon otherWeapon() {
+        return weapons[1 - currentWeapon];
+    }
 
     void replaceWeapon(Weapon weapon) {
         weapons[currentWeapon] = weapon;
     }
+
+    public void fire() {
+        if (currentWeapon().shoot()) { // Whether the weapon can shoot
+            Wave.bullets.add(new Bullet(this));
+        }
+        Wave.update(location, true, true);
+    }
+
+    void waitTimeUpdate() {
+        currentWeapon().reduceWaitTime();
+        otherWeapon().reduceWaitTime();
+    }
+
+    // Auxiliary
 
     public String getMessage() {
         return message;

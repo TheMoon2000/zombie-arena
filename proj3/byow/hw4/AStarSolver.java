@@ -6,6 +6,7 @@ import edu.princeton.cs.algs4.Stopwatch;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 
 public class AStarSolver<Vertex> implements ShortestPathsSolver<Vertex> {
 
@@ -15,10 +16,9 @@ public class AStarSolver<Vertex> implements ShortestPathsSolver<Vertex> {
     private int numStatesExplored = 1;
     private double explorationTime;
 
-    private ArrayHeapMinPQ<Vertex> minPQ = new ArrayHeapMinPQ<>();
-    private HashMap<Vertex, Item> map = new HashMap<>();
-
-    public AStarSolver(AStarGraph<Vertex> input, Vertex start, Vertex end, double timeout) {
+    public AStarSolver(AStarGraph<Vertex> input, Vertex start, Vertex end, Random r) {
+        HashMap<Vertex, Item> map = new HashMap<>();
+        ArrayHeapMinPQ<Vertex> minPQ = new ArrayHeapMinPQ<>(r);
         Stopwatch s = new Stopwatch();
         boolean out = false;
         minPQ.add(start, input.estimatedDistanceToGoal(start, end) + 0);
@@ -26,7 +26,7 @@ public class AStarSolver<Vertex> implements ShortestPathsSolver<Vertex> {
         map.put(start, i);
         Vertex result = minPQ.getSmallest();
         while (!result.equals(end)) {
-            if (s.elapsedTime() > timeout) {
+            if (s.elapsedTime() > 1000) {
                 out = true;
                 break;
             }

@@ -17,13 +17,13 @@ import java.awt.Color;
  */
 
 public class Tileset {
-    private static final Color FLOOR_COLOR = new Color(34, 35, 38);
+    public static final Color FLOOR_COLOR = new Color(34, 35, 38);
     public static final TETile AVATAR = new TETile('@', Color.white, Color.black, "you");
     public static final TETile WALL = new TETile('#', new Color(216, 128, 128), Color.darkGray,
-            "wall");
+            "Wall");
     public static final TETile FLOOR = new TETile(' ', Color.black, FLOOR_COLOR,
-            "floor");
-    public static final TETile NOTHING = new TETile(' ', Color.black, Color.black, "nothing");
+            "Arena");
+    public static final TETile NOTHING = new TETile(' ', Color.black, Color.black, "Void");
     public static final TETile GRASS = new TETile('"', Color.green, Color.black, "grass");
     public static final TETile WATER = new TETile('≈', Color.blue, Color.black, "water");
     public static final TETile FLOWER = new TETile('❀', Color.magenta, Color.pink, "flower");
@@ -34,17 +34,12 @@ public class Tileset {
     public static final TETile SAND = new TETile('▒', Color.yellow, Color.black, "sand");
     public static final TETile MOUNTAIN = new TETile('▲', Color.gray, Color.black, "mountain");
     public static final TETile TREE = new TETile('♠', Color.green, Color.black, "tree");
-    public static final TETile PLAYER_NORTH = new TETile('▲', Color.gray, FLOOR_COLOR, "player_N");
-    public static final TETile PLAYER_SOUTH = new TETile('▼', Color.gray, FLOOR_COLOR, "player_S");
-    public static final TETile PLAYER_EAST = new TETile('▶', Color.gray, FLOOR_COLOR, "player_E");
-    public static final TETile PLAYER_WEST = new TETile('◀', Color.gray, FLOOR_COLOR, "player_W");
+    public static final TETile PLAYER_NORTH = new TETile('▲', Color.gray, FLOOR_COLOR, "You");
+    public static final TETile PLAYER_SOUTH = new TETile('▼', Color.gray, FLOOR_COLOR, "You");
+    public static final TETile PLAYER_EAST = new TETile('▶', Color.gray, FLOOR_COLOR, "You");
+    public static final TETile PLAYER_WEST = new TETile('◀', Color.gray, FLOOR_COLOR, "You");
     public static final TETile WEAPON_BOX = new TETile(' ', Color.white, new Color(232, 214, 72),
-            "weapon_box");
-    public static final TETile ZOMBIE = new TETile('x', Color.red, FLOOR_COLOR, "zombie");
-    public static final TETile PBULLET = new TETile('·', Color.white, FLOOR_COLOR,
-            "pistol bullet");
-    public static final TETile MBULLET = new TETile('•', new Color(236, 229, 179), FLOOR_COLOR,
-            "machine / sniper rifle bullet");
+            "Upgrades Station");
 }
 
 
