@@ -6,8 +6,10 @@ import byow.utils.Direction;
 import byow.utils.Point;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 class Zombie extends GameCharacter {
 
@@ -53,7 +55,7 @@ class Zombie extends GameCharacter {
                 tiles[destination.getX()][destination.getY()] = tile();
                 Wave.bullets.remove(damageSource);
                 this.location = destination;
-                reduceHealth(damageSource.currentDamage(), false);
+                reduceHealth(damageSource.currentDamage(), false,Wave.aliveZombies);
                 return getHealth() == 0;
             } else {
                 throw new RuntimeException("Internal inconsistency with bullet locations");
@@ -68,10 +70,13 @@ class Zombie extends GameCharacter {
         player.reduceHealth(10 + Wave.currentWave() * 3);
     }
 
-    void reduceHealth(int amount, boolean clearIfNeeded) {
+    void reduceHealth(int amount, boolean clearIfNeeded, Set<Zombie> aliveZombies) {
         super.reduceHealth(amount);
         isHurt = true;
         if (this.getHealth() <= 0) {
+            if (r.nextDouble() < 0.15) {
+                player.addHealth(20);
+            }
             if (clearIfNeeded) {
                 Wave.aliveZombies.remove(this);
             }
@@ -79,6 +84,17 @@ class Zombie extends GameCharacter {
             player.addPoints(100);
             if (explosive && Math.abs(location.getX() - player.getLocation().getX()) <= 1
                 && Math.abs(location.getY() - player.getLocation().getY()) <= 1) {
+                //find adjacent zombies first
+                ArrayList<Zombie> surroundingZombies = new ArrayList<>();
+                for (Zombie z : aliveZombies) {
+                    if (Math.abs(location.getX() - z.getLocation().getX()) <= 1
+                            && Math.abs(location.getY() - z.getLocation().getY()) <= 1) {
+                        surroundingZombies.add(z);
+                    }
+                }
+                for (Zombie z : surroundingZombies) {
+                    z.reduceHealth(20);
+                }
                 player.reduceHealth(20);
                 player.setMessage("Ouch! That was an explosive zombie!");
             }

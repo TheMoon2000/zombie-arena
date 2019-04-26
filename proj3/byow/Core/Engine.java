@@ -541,15 +541,15 @@ public class Engine {
 
     private void generateWorld(TETile[][] tiles, long seed) {
         Random random = new Random(seed);
-        final int numberOfRooms = random.nextInt(25) + 12;
+        final int numberOfRooms = random.nextInt(25) + 20;
 
         Map<Point, Point> originToSize = new HashMap<>();
 
         // Add some random rooms to the world
 
         while (originToSize.size() < numberOfRooms) {
-            int dx = RandomUtils.uniform(random, 2, 8);
-            int dy = RandomUtils.uniform(random, 2, 8);
+            int dx = RandomUtils.uniform(random, 2, 12);
+            int dy = RandomUtils.uniform(random, 2, 12);
             int x = random.nextInt(WIDTH - dx - 2) + 1;
             int y = random.nextInt(HEIGHT - dy - 2) + 1;
 

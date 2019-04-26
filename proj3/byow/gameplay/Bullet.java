@@ -62,7 +62,7 @@ public class Bullet {
                     }
                 }
                 if (zombie != null) {
-                    zombie.reduceHealth(currentDamage(), true);
+                    zombie.reduceHealth(currentDamage(), true, Wave.aliveZombies);
                     player.setMessage("You dealt " + currentDamage() + " damage to a zombie.");
                 }
 
@@ -77,6 +77,7 @@ public class Bullet {
         }
 
         if (distanceTravelled > weapon.getMaxDistance()) {
+
             return true;
         }
 
@@ -87,10 +88,14 @@ public class Bullet {
                 for (Zombie z : Wave.aliveZombies) {
                     if (z.location.equals(new Point(location.getX() + dx * i,
                             location.getY() + dy * i))) {
-                        z.reduceHealth(currentDamage(), true); //deal damage to the zombie
+                        z.reduceHealth(currentDamage(), true, Wave.aliveZombies); //deal damage to the zombie
                         player.setMessage("You dealt " + currentDamage()
                                 + " damage to zombie.");
-                        return true;
+                        if (!weapon.getName().equals("Sniper rifle")) {
+                            return true;
+                        } else {
+                            break;
+                        }
                     }
                 }
             }
