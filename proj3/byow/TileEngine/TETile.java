@@ -192,4 +192,23 @@ public class TETile {
 
         return copy;
     }
+
+    public Color getTextColor() {
+        return textColor;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj.getClass().equals(this.getClass())) {
+            TETile t = (TETile) obj;
+            return this.description.equals(t.description)
+                    && this.backgroundColor.equals(t.backgroundColor);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return description.hashCode() + backgroundColor.hashCode();
+    }
 }

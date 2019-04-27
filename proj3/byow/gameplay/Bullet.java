@@ -5,6 +5,11 @@ import byow.TileEngine.Tileset;
 import byow.utils.Direction;
 import byow.utils.Point;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Queue;
+
 public class Bullet {
 
     private Weapon weapon;
@@ -15,6 +20,8 @@ public class Bullet {
     private int distanceTravelled = 0; //how many blocks traveled
     private Player player;
     private Direction orientation;
+    int zombiesHarmed = 0;
+    public static Queue<Point> toBeCleared = new ArrayDeque<>();
 
     Bullet(Player player) {
         this.weapon = player.currentWeapon();
@@ -26,7 +33,7 @@ public class Bullet {
         this.damage = 0;
     }
 
-    public boolean advance() {
+    boolean advance() {
         switch (orientation) {
             case North: return advanceHelper(1, 0);
             case South: return advanceHelper(-1, 0);
@@ -41,7 +48,7 @@ public class Bullet {
     }
 
     int currentDamage() {
-        return weapon.calculateDamage(distanceTravelled);
+        return weapon.calculateDamage(distanceTravelled, zombiesHarmed);
     }
 
     /** Helper function to help bullets advance
@@ -77,30 +84,46 @@ public class Bullet {
         }
 
         if (distanceTravelled > weapon.getMaxDistance()) {
-
             return true;
         }
 
+        TETile trail = weapon.trailTiles[orientation.vertical() ? 1 : 0];
+
         for (int i = 1; i <= speed; i++) { // bullet may travel multiple tiles at once
             distanceTravelled++;
-            if (tiles[location.getX() + dx * i][location.getY() + dy * i]
-                    .description().toLowerCase().contains("zombie")) {
+            int targetX = location.getX() + dx * i, targetY = location.getY() + dy * i;
+            if (tiles[targetX][targetY].description().toLowerCase().contains("zombie")) {
+                List<Zombie> toBeDeleted = new ArrayList<>();
                 for (Zombie z : Wave.aliveZombies) {
-                    if (z.location.equals(new Point(location.getX() + dx * i,
-                            location.getY() + dy * i))) {
-                        z.reduceHealth(currentDamage(), true, Wave.aliveZombies); //deal damage to the zombie
-                        player.setMessage("You dealt " + currentDamage()
-                                + " damage to zombie.");
-                        if (!weapon.getName().equals("Sniper rifle")) {
-                            return true;
-                        } else {
-                            break;
+                    if (z.location.equals(new Point(targetX, targetY))) {
+                        z.reduceHealth(currentDamage(), false, Wave.aliveZombies);
+                        zombiesHarmed++;
+                        player.setMessage("You dealt " + currentDamage()  + " damage to zombie.");
+                        if (z.getHealth() == 0) {
+                            toBeDeleted.add(z);
                         }
                     }
                 }
+
+                for (Zombie dead: toBeDeleted) {
+                    dead.reduceHealth(1, true, Wave.aliveZombies);
+                }
             }
-            //if bullet doesn't hit a floor or a zombie, it has hit an obstacle.
-            if (tiles[location.getX() + dx * i][location.getY() + dy * i] != Tileset.FLOOR) {
+
+            if (tiles[targetX][targetY].equals(Tileset.FLOOR)) {
+                /*
+                int nextX = location.getX() + dx * (i + 1);
+                int nextY = location.getY() + dy * (i + 1);
+                if (tiles[nextX][nextY].equals(Tileset.WALL) ||
+                    tiles[nextX][nextY].equals(Tileset.WEAPON_BOX)) {
+                    tiles[targetX][targetY] = bulletTile();
+                } else {
+                    tiles[targetX][targetY] = trail;
+                }
+                */
+                tiles[targetX][targetY] = trail;
+                toBeCleared.add(new Point(targetX, targetY));
+            } else if (!tiles[targetX][targetY].description().toLowerCase().contains("zombie")) {
                 return true;
             }
         }

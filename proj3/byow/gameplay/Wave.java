@@ -1,8 +1,10 @@
 package byow.gameplay;
 
 import byow.Core.Engine;
+import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
+import byow.utils.Direction;
 import byow.utils.Point;
 
 import java.util.*;
@@ -19,7 +21,6 @@ public class Wave {
     private static Queue<Zombie> waveZombies;
     static Set<Zombie> aliveZombies;
     private static int preparation; // How many steps the player can make before wave starts
-
     static List<Bullet> bullets;
 
     public static void init(Player myPlayer, TETile[][] myTiles, Random random) {
@@ -63,7 +64,7 @@ public class Wave {
                 waveStarted = false;
                 if (wave < MAX_WAVE) {
                     wave++;
-                    preparation = wave == 1 ? 60 : 45;
+                    preparation = wave == 1 ? 50 : 60;
                 } else {
                     // Ends game, player wins
                 }
@@ -121,5 +122,33 @@ public class Wave {
             String z = zombiesRemaining() == 1 ? " zombie" : " zombies";
             return "Wave #" + wave + " in progress..." + zombiesRemaining() + z + " remaining!";
         }
+    }
+
+    public static void withPaths(TERenderer ter, boolean keyboard, Player player) {
+
+        if (player == null || !keyboard) {
+            return;
+        }
+
+        // Create a new copy of tiles so that the original world won't be overwritten
+        TETile[][] tilesCopy = TETile.copyOf(tiles);
+
+        for (Zombie z: aliveZombies) {
+            TETile pathTile = new TETile('·', z.tile().getTextColor(), Tileset.FLOOR_COLOR,
+                    "Path");
+            List<Point> path = Direction.shortestPath(z.location, player.location, r);
+            path.remove(0);
+            path.remove(path.size() - 1);
+            for (Point p: path) {
+                if (tilesCopy[p.getX()][p.getY()].equals(pathTile)) {
+                    return; // redrawing paths do nothing
+                }
+                if (tilesCopy[p.getX()][p.getY()].equals(Tileset.FLOOR)) {
+                    tilesCopy[p.getX()][p.getY()] = pathTile;
+                }
+            }
+        }
+
+        ter.renderFrame(tilesCopy);
     }
 }

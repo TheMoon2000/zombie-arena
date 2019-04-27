@@ -7,7 +7,6 @@ import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.util.concurrent.TimeUnit;
 
 public class Shop {
 
@@ -37,7 +36,6 @@ public class Shop {
             renderMenu(selection, player.ter, kb);
             char next = source.getNextKey();
             InputHistory.addInputChar(next);
-            System.out.print(next);
 
             switch (next) {
                 case ':': // if :Q then save and quit
@@ -126,18 +124,5 @@ public class Shop {
                 "Press 'P' to purchase, SPACE to select, 'B' to exit shop.");
 
         StdDraw.show();
-    }
-
-
-    /**
-     * Pause for a moment
-     * @param n (in milliseconds) the time to wait
-     */
-    private static void sleep(int n) {
-        try {
-            TimeUnit.MILLISECONDS.sleep(n);
-        } catch (InterruptedException e) {
-            System.out.print("\ndelay failed");
-        }
     }
 }

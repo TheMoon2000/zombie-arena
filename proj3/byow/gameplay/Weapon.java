@@ -4,7 +4,7 @@ import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 import byow.utils.Direction;
 
-import java.awt.*;
+import java.awt.Color;
 
 public class Weapon implements ShopItem {
 
@@ -14,9 +14,10 @@ public class Weapon implements ShopItem {
     private int clip, ammo;
     private int clipCapacity, ammoCapacity;
     private int price;
-    private int speed;
-    private int waitTime; // how long the play needs to wait before shooting again
-    int currentWaitTime; // how many more rounds the player needs to wait
+    private int speed; private int waitTime; // how long to wait before firing again
+    private int currentWaitTime; // how many more rounds the player needs to wait
+    private double penetration;
+    TETile[] trailTiles = {Tileset.FLOOR, Tileset.FLOOR};
 
     private Weapon(String name) {
         this.name = name;
@@ -52,25 +53,31 @@ public class Weapon implements ShopItem {
         pistol.maxDistance = 8;
         pistol.clip = 10;
         pistol.clipCapacity = 10;
-        pistol.ammo = 15;
-        pistol.ammoCapacity = 20;
+        pistol.ammo = 20;
+        pistol.ammoCapacity = 40;
         pistol.price = 500;
         pistol.speed = 1;
         pistol.waitTime = 3;
+        pistol.penetration = 0.1;
         return pistol;
     }
 
     static Weapon makeShotgun() {
         Weapon shotgun = new Weapon("Shotgun");
-        shotgun.damage = 50;
+        shotgun.damage = 60;
         shotgun.maxDistance = 6;
         shotgun.clip = 6;
         shotgun.clipCapacity = 6;
-        shotgun.ammo = 12;
-        shotgun.ammoCapacity = 18;
+        shotgun.ammo = 18;
+        shotgun.ammoCapacity = 24;
         shotgun.price = 1200;
         shotgun.speed = 2;
         shotgun.waitTime = 3;
+        shotgun.penetration = 0.7;
+        shotgun.trailTiles = new TETile[] {
+                new TETile('⋯', new Color(226, 193, 142), Tileset.FLOOR_COLOR, "Arena"),
+                new TETile('⋮', new Color(226, 193, 142), Tileset.FLOOR_COLOR, "Arena")
+        };
         return shotgun;
     }
 
@@ -80,11 +87,16 @@ public class Weapon implements ShopItem {
         sniperRifle.maxDistance = 100;
         sniperRifle.clip = 5;
         sniperRifle.clipCapacity = 5;
-        sniperRifle.ammo = 15;
-        sniperRifle.ammoCapacity = 20;
+        sniperRifle.ammo = 20;
+        sniperRifle.ammoCapacity = 25;
         sniperRifle.price = 1500;
-        sniperRifle.speed = 12;
-        sniperRifle.waitTime = 4;
+        sniperRifle.speed = 15;
+        sniperRifle.waitTime = 3;
+        sniperRifle.penetration = 0.9;
+        sniperRifle.trailTiles = new TETile[] {
+            new TETile('⋯', new Color(178, 215, 193), Tileset.FLOOR_COLOR, "Arena"),
+            new TETile('⋮', new Color(178, 215, 193), Tileset.FLOOR_COLOR, "Arena")
+        };
         return sniperRifle;
     }
 
@@ -94,11 +106,16 @@ public class Weapon implements ShopItem {
         machineGun.maxDistance = 25;
         machineGun.clip = 20;
         machineGun.clipCapacity = 30;
-        machineGun.ammo = 40;
-        machineGun.ammoCapacity = 60;
+        machineGun.ammo = 60;
+        machineGun.ammoCapacity = 120;
         machineGun.price = 2000;
-        machineGun.speed = 2;
+        machineGun.speed = 3;
         machineGun.waitTime = 1;
+        machineGun.penetration = 0.8;
+        machineGun.trailTiles = new TETile[] {
+                new TETile('⋯', new Color(220, 214, 167), Tileset.FLOOR_COLOR, "Arena"),
+                new TETile('⋮', new Color(220, 214, 167), Tileset.FLOOR_COLOR, "Arena")
+        };
         return machineGun;
     }
 
@@ -111,25 +128,25 @@ public class Weapon implements ShopItem {
         return sword;
     }
 
-    public int damage(int distance) {
+    public int damage(int distance, int z) {
         if (maxDistance < distance) {
             return 0;
         } else if (name.equals("Shotgun")) {
-            return distance > 5 ? 0 : damage / distance;
+            return (int) (Math.max(0.0, damage - distance * 2) * Math.pow(penetration, z));
         } else {
-            return Math.max(0, damage - distance);
+            return (int) (Math.max(0, damage - distance) * Math.pow(penetration, z));
         }
     }
 
-    public int calculateDamage(int distance) {
+    int calculateDamage(int distance, int zombiesHit) {
         if (name.equals("Sword")) {
             return damage;
         } else {
-            return damage(distance);
+            return damage(distance, zombiesHit);
         }
     }
 
-    public boolean shoot() {
+    boolean shoot() {
         if (name.equals("Sword") && currentWaitTime == 0) {
             currentWaitTime = waitTime;
             return true;
@@ -168,13 +185,14 @@ public class Weapon implements ShopItem {
                         "Pistol bullet");
             case "Machine gun":
                 char c = orientation.vertical() ? '⋮' : '⋯';
-                return new TETile(c, new Color(236, 229, 179),
+                return new TETile('∗', new Color(236, 229, 179),
                         Tileset.FLOOR_COLOR, "Machine gun bullet");
             case "Sniper rifle":
                 return new TETile('•', new Color(190, 230, 206),
                         Tileset.FLOOR_COLOR, "Sniper rifle bullet");
             case "Shotgun":
-                return new TETile('⦿', new Color(242, 205, 143),
+//                char rocket = '⦿';
+                return new TETile('⠶', new Color(242, 205, 143),
                         Tileset.FLOOR_COLOR, "Shotgun bullet");
             default:
                 throw new RuntimeException(name + " tile is not considered");

@@ -1,6 +1,7 @@
 package byow.gameplay;
 
 import byow.Core.Engine;
+import byow.InputDemo.KeyboardInputSource;
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
@@ -16,20 +17,22 @@ public class Player extends GameCharacter {
     private Direction orientation;
     private int points;
     TERenderer ter;
+    private boolean keyboardInput;
 
     private static final int PREP_STEPS = 30;
     static final int MAX_HEALTH = 100;
     private String message;
 
-    public Player(TETile[][] tiles, Point location, TERenderer renderer, Random r) {
+    public Player(TETile[][] tiles, Point location, TERenderer renderer, Random r, boolean kb) {
         super(tiles);
         this.addHealth(MAX_HEALTH);
-        points = 1000;
+        points = 10000;
         weapons[0] = Weapon.makePistol();
         weapons[1] = Weapon.makeSword();
         Wave.init(this, tiles, r);
         message = Wave.message();
-        this.ter = renderer;
+        ter = renderer;
+        keyboardInput = kb;
 
         // Make default orientation North
         this.location = location;
@@ -51,6 +54,7 @@ public class Player extends GameCharacter {
                     tiles[x][y + 1] = Tileset.PLAYER_NORTH;
                     tiles[x][y] = Tileset.FLOOR;
                     location = new Point(x, y + 1);
+                    Zombie.recalculatePath = true;
                 }
                 break;
             case South:
@@ -61,6 +65,7 @@ public class Player extends GameCharacter {
                     tiles[x][y - 1] = Tileset.PLAYER_SOUTH;
                     tiles[x][y] = Tileset.FLOOR;
                     location = new Point(x, y - 1);
+                    Zombie.recalculatePath = true;
                 }
                 break;
             case West:
@@ -71,6 +76,7 @@ public class Player extends GameCharacter {
                     tiles[x - 1][y] = Tileset.PLAYER_WEST;
                     tiles[x][y] = Tileset.FLOOR;
                     location = new Point(x - 1, y);
+                    Zombie.recalculatePath = true;
                 }
                 break;
             case East:
@@ -87,12 +93,11 @@ public class Player extends GameCharacter {
                 throw new IllegalArgumentException("Illegal movement direction: " + direction);
         }
 
+        Wave.update(previousLocation, false, true);
+
         if (atShop()) {
             message = Shop.displayMessage();
         }
-
-        Wave.update(previousLocation, false, true);
-
     }
 
     public boolean atShop() {
@@ -179,6 +184,14 @@ public class Player extends GameCharacter {
         this.message = message;
     }
 
-    public Direction getOrientation () {return this.orientation;}
+    Direction getOrientation () {return this.orientation;}
 
+    @Override
+    void reduceHealth(int amount) {
+        super.reduceHealth(amount);
+        if (getHealth() == 0 && keyboardInput) {
+            GameEndingMenu menu = new GameEndingMenu(this, "Game Over");
+            menu.open(new KeyboardInputSource());
+        }
+    }
 }

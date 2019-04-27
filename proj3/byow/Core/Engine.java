@@ -6,6 +6,7 @@ import byow.InputDemo.StringInputDevice;
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
+import byow.gameplay.Bullet;
 import byow.gameplay.Player;
 import byow.gameplay.Shop;
 import byow.gameplay.Wave;
@@ -17,7 +18,6 @@ import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.util.List;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -211,11 +211,19 @@ public class Engine {
     /**
      * Helper method that renders the game
      */
-    private void renderGame(boolean keyBoardInput,
-                                   TETile[][] tiles, Player player) {
+    private void renderGame(boolean keyBoardInput, TETile[][] tiles, Player player) {
         if (keyBoardInput) {
             ter.renderFrame(tiles);
         }
+
+        for (Point p: Bullet.toBeCleared) {
+            if (tiles[p.getX()][p.getY()].equals(Tileset.FLOOR)
+                || tiles[p.getX()][p.getY()].description().toLowerCase().contains("bullet")) {
+                tiles[p.getX()][p.getY()] = Tileset.FLOOR;
+            }
+        }
+
+        Bullet.toBeCleared.clear();
 
         if (player != null) {
             renewDisplayBar(player);
@@ -237,8 +245,8 @@ public class Engine {
 
     /**
      * Reads an input source and do something about it
-     *
      * @param source The input source
+     * @param keyboardInput Whether the source is keyboard mode
      */
 
     private TETile[][] interact(InputSource source, boolean keyboardInput) {
@@ -266,7 +274,7 @@ public class Engine {
                     if (player == null && startReadingSeed) {
                         r = new Random(seed); generateWorld(tiles, seed);
                         startReadingSeed = false;
-                        player = new Player(tiles, randomPlacement(tiles), ter, r);
+                        player = new Player(tiles, randomPlacement(tiles), ter, r, keyboardInput);
                         if (keyboardInput) {
                             ter.initialize(WIDTH, HEIGHT + 3); ter.renderFrame(tiles);
                         }
@@ -285,6 +293,7 @@ public class Engine {
                     break;
                 case 'R':
                     reload(player); renderGame(keyboardInput, tiles, player); break;
+                case 'T': Wave.withPaths(ter, keyboardInput, player); break;
                 case 'L':
                     if (!InputHistory.reloading() && InputHistory.hasValidInput()) {
                         tmpSource = source; keyboardInput = false; // treat file input as string
@@ -329,7 +338,7 @@ public class Engine {
                 if (tiles[x][y] == Tileset.FLOOR
                         && hasNearby(tiles, new Point(x, y), Tileset.FLOOR, 7)) {
                     if (r.nextDouble() < 0.5) { //construct a vertical shop
-                        if (hasNearby(tiles, new Point(x, y - 1), Tileset.FLOOR, 7)) {
+                        if (hasNearby(tiles, new Point(x, y - 1), Tileset.FLOOR, 8)) {
                             l1.add(new Point(x, y));
                             l2.add(new Point(x, y - 1));
                         }
@@ -509,7 +518,7 @@ public class Engine {
      * Draw a ring around the player's spawn point
      */
 
-    public void locate(Player player) {
+    private void locate(Player player) {
         StdDraw.setPenColor(new Color(236, 96, 91));
         StdDraw.setPenRadius(0.01);
         StdDraw.circle(player.getLocation().getX() + 0.5,
@@ -541,15 +550,15 @@ public class Engine {
 
     private void generateWorld(TETile[][] tiles, long seed) {
         Random random = new Random(seed);
-        final int numberOfRooms = random.nextInt(25) + 20;
+        final int numberOfRooms = random.nextInt(25) + 17;
 
         Map<Point, Point> originToSize = new HashMap<>();
 
         // Add some random rooms to the world
 
         while (originToSize.size() < numberOfRooms) {
-            int dx = RandomUtils.uniform(random, 2, 12);
-            int dy = RandomUtils.uniform(random, 2, 12);
+            int dx = RandomUtils.uniform(random, 3, 10);
+            int dy = RandomUtils.uniform(random, 3, 10);
             int x = random.nextInt(WIDTH - dx - 2) + 1;
             int y = random.nextInt(HEIGHT - dy - 2) + 1;
 
@@ -564,7 +573,6 @@ public class Engine {
         }
 
         NearTree points = new NearTree(originToSize.keySet());
-
 
         // Connect the rooms together
 

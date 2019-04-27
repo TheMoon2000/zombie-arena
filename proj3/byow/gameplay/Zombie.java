@@ -17,6 +17,7 @@ class Zombie extends GameCharacter {
     private Random r;
     private boolean isHurt = false;
     boolean explosive = false;
+    static boolean recalculatePath = true;
 
     Zombie(Player player, Point location, Random random) {
         super(player.tiles);
@@ -55,7 +56,7 @@ class Zombie extends GameCharacter {
                 tiles[destination.getX()][destination.getY()] = tile();
                 Wave.bullets.remove(damageSource);
                 this.location = destination;
-                reduceHealth(damageSource.currentDamage(), false,Wave.aliveZombies);
+                reduceHealth(damageSource.currentDamage(), false, Wave.aliveZombies);
                 return getHealth() == 0;
             } else {
                 throw new RuntimeException("Internal inconsistency with bullet locations");
@@ -67,7 +68,7 @@ class Zombie extends GameCharacter {
     }
 
     private void attack() {
-        player.reduceHealth(10 + Wave.currentWave() * 3);
+        player.reduceHealth(Math.min(10 + Wave.currentWave() * 3, getHealth()));
     }
 
     void reduceHealth(int amount, boolean clearIfNeeded, Set<Zombie> aliveZombies) {
@@ -75,7 +76,7 @@ class Zombie extends GameCharacter {
         isHurt = true;
         if (this.getHealth() <= 0) {
             if (r.nextDouble() < 0.15) {
-                player.addHealth(20);
+                player.addHealth((int) (r.nextDouble() * 10));
             }
             if (clearIfNeeded) {
                 Wave.aliveZombies.remove(this);
@@ -92,10 +93,10 @@ class Zombie extends GameCharacter {
                         surroundingZombies.add(z);
                     }
                 }
-                for (Zombie z : surroundingZombies) {
+                for (Zombie z: surroundingZombies) {
                     z.reduceHealth(20);
                 }
-                player.reduceHealth(20);
+                player.reduceHealth(19);
                 player.setMessage("Ouch! That was an explosive zombie!");
             }
         } else {
