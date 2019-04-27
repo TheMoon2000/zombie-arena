@@ -4,11 +4,16 @@ import byow.Core.Engine;
 import byow.InputDemo.InputSource;
 import byow.TileEngine.TERenderer;
 import byow.utils.InputHistory;
+import edu.princeton.cs.introcs.In;
 import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.*;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 
-class GameEndingMenu {
+public class GameEndingMenu {
 
     private static final Color BGCOLOR = new Color(26, 26, 29);
     private static final Font CELL_FONT = new Font("Monaco", Font.PLAIN, 15);
@@ -22,6 +27,8 @@ class GameEndingMenu {
 
     private TERenderer renderer;
 
+    public static boolean reset = false;
+
     GameEndingMenu(Player player, String myTitle) {
         renderer = player.ter;
         titleText = myTitle;
@@ -29,7 +36,8 @@ class GameEndingMenu {
 
     void open(InputSource source) {
         renderMenu(renderer);
-        while (source.possibleNextInput()) {
+        boolean replay = false;
+        while (source.possibleNextInput() && !replay) {
             renderMenu(renderer);
             char next = source.getNextKey();
             InputHistory.addInputChar(next);
@@ -41,6 +49,22 @@ class GameEndingMenu {
                     break;
                 case '1':
                     // Restart the world
+                    String newWorld = "" + "N" + Engine.seed + "SL";
+                    try {
+                        //create an empty new file that replaces the old one
+                        new PrintWriter("SaveFile.txt", StandardCharsets.UTF_8);
+                    } catch (IOException e) {
+                        System.out.println("Unable to create SaveFile.txt!");
+                    }
+                    try {
+                        FileWriter fw = new FileWriter("SaveFile.txt");
+                        fw.write(newWorld);
+                        fw.close();
+                    } catch (IOException e) {
+                        System.out.println("Unable to write to disk");
+                    }
+                    replay = true;
+                    reset = true;
                     break;
                 case '2':
                     Engine engine = new Engine();

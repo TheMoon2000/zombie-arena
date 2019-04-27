@@ -6,10 +6,7 @@ import byow.InputDemo.StringInputDevice;
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
-import byow.gameplay.Bullet;
-import byow.gameplay.Player;
-import byow.gameplay.Shop;
-import byow.gameplay.Wave;
+import byow.gameplay.*;
 import byow.utils.Direction;
 import byow.utils.InputHistory;
 import byow.utils.NearTree;
@@ -28,6 +25,7 @@ public class Engine {
     private TERenderer ter = new TERenderer();
     private static Random r;
     private boolean kbInput = false;
+    public static long seed = 0;
 
     /**
      * Fill up a rectangular region in the given tiles matrix
@@ -250,10 +248,16 @@ public class Engine {
      */
 
     private TETile[][] interact(InputSource source, boolean keyboardInput) {
-        boolean startReadingSeed = false; long seed = 0;
+        boolean startReadingSeed = false;
         TETile[][] tiles = new TETile[WIDTH][HEIGHT]; Player player = null;
         InputSource tmpSource = new StringInputDevice(""); // temporarily stores real-time input
         while (source.possibleNextInput()) {
+            if (GameEndingMenu.reset) {
+                tiles = new TETile[WIDTH][HEIGHT]; r = new Random(seed); generateWorld(tiles, seed);
+                player = new Player(tiles, randomPlacement(tiles), ter, r, keyboardInput);
+                locate(player); ter.initialize(WIDTH, HEIGHT + 3); ter.renderFrame(tiles);
+            }
+            if (player != null) {GameEndingMenu.reset = false;}
             while (keyboardInput && !StdDraw.hasNextKeyTyped() && player != null) {
                 sleep(10); renewDisplayBar(player);
             }
@@ -309,9 +313,7 @@ public class Engine {
                 case 'B': //buy a weapon from the store
                     if (player != null && player.atShop()) {
                         String shopMsg = Shop.openMenu(player, source, keyboardInput);
-                        if (shopMsg == null) {
-                            return tiles;
-                        }
+                        if (shopMsg == null) { return tiles; }
                         player.setMessage(shopMsg);
                     }
                     break;
@@ -610,4 +612,6 @@ public class Engine {
         generateShop(tiles);
         Direction.initPathFinder(tiles, randomPlacement(tiles));
     }
+
+
 }

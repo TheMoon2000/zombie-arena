@@ -24,6 +24,7 @@ public class Wave {
     static List<Bullet> bullets;
 
     public static void init(Player myPlayer, TETile[][] myTiles, Random random) {
+        wave = 0;
         Wave.player = myPlayer;
         Wave.tiles = myTiles;
         aliveZombies = new HashSet<>();
@@ -33,6 +34,8 @@ public class Wave {
         update(player.location, true, true);
         r = random;
     }
+
+
 
     /**
      * The player takes a step
@@ -141,7 +144,7 @@ public class Wave {
             path.remove(path.size() - 1);
             for (Point p: path) {
                 if (tilesCopy[p.getX()][p.getY()].equals(pathTile)) {
-                    return; // redrawing paths do nothing
+                    continue; // redrawing paths do nothing
                 }
                 if (tilesCopy[p.getX()][p.getY()].equals(Tileset.FLOOR)) {
                     tilesCopy[p.getX()][p.getY()] = pathTile;
