@@ -324,7 +324,7 @@ public class Engine {
                 GameEndingMenu.reset = false; InputHistory.setReloading(false);
                 return interact(loadSrc(), keyboardInput, GameEndingMenu.m);
             }
-            sleep(180); // for debugging only
+            //sleep(180); // for debugging only
         }
         return tiles;
     }
@@ -494,7 +494,7 @@ public class Engine {
         return new Point(randomX, randomY);
     }
 
-    public static Point randomPlacement(TETile[][] tiles, Player player) {
+    public static Point randomPlacement(TETile[][] tiles, Player player, Random r) {
         Point randomPoint = new Point(r.nextInt(WIDTH - 1), r.nextInt(HEIGHT - 1));
         while (!tiles[randomPoint.getX()][randomPoint.getY()].equals(Tileset.FLOOR)
                || hasNearby(tiles, randomPoint, player.getCurrentTile(), 1)) {

@@ -33,8 +33,9 @@ public class Wave {
         waveZombies = new ArrayDeque<>();
         waveStarted = true;
         bullets = new ArrayList<>();
-        update(player.location, true, true);
         r = random;
+        update(player.location, true, true);
+
     }
 
 
@@ -79,10 +80,9 @@ public class Wave {
             } else if (zombiesRemaining() == 0) {
                 waveStarted = true;
                 // Scenario 3: player's preparation time is over, begin wave
-
                 // Add zombies here...
                 for (int i = 0; i < 10 + currentWave() * 5; i++) {
-                    Zombie z = new Zombie(player, Engine.randomPlacement(tiles, player), r);
+                    Zombie z = new Zombie(player, Engine.randomPlacement(tiles, player,r), r);
                     z.explosive = r.nextDouble() > 0.9; // chance that the zombie is explosive
                     waveZombies.add(z);
                 }
