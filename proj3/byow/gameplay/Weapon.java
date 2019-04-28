@@ -134,7 +134,7 @@ public class Weapon implements ShopItem {
         } else if (name.equals("Shotgun")) {
             return (int) (Math.max(0.0, damage - distance * 2) * Math.pow(penetration, z));
         } else {
-            return (int) (Math.max(0, damage - distance) * Math.pow(penetration, z));
+            return (int) (Math.max(0.0, damage - distance) * Math.pow(penetration, z));
         }
     }
 

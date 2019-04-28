@@ -6,10 +6,8 @@ import byow.utils.Direction;
 import byow.utils.Point;
 
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Random;
-import java.util.Set;
 
 class Zombie extends GameCharacter {
 
@@ -17,7 +15,6 @@ class Zombie extends GameCharacter {
     private Random r;
     private boolean isHurt = false;
     boolean explosive = false;
-    static boolean recalculatePath = true;
 
     Zombie(Player player, Point location, Random random) {
         super(player.tiles);
@@ -32,15 +29,15 @@ class Zombie extends GameCharacter {
         return 25 + Wave.currentWave() * 5;
     }
 
-    public boolean advance(Point target) {
+    public void advance(Point target) {
         List<Point> sPath = Direction.shortestPath(this.location, target, r);
-        Point destination = sPath.get(1);
+        Point destination = sPath.get(0);
         TETile desTile = tiles[destination.getX()][destination.getY()];
 
         if (desTile.equals(Tileset.FLOOR) && !isHurt)  {
             tiles[location.getX()][location.getY()] = Tileset.FLOOR;
             tiles[destination.getX()][destination.getY()] = tile();
-            this.location = destination;
+            this.location = sPath.remove(0);
         } else if (destination.equals(player.location)) {
             attack();
         } else if (desTile.description().toLowerCase().contains("bullet") && !isHurt) {
@@ -55,31 +52,27 @@ class Zombie extends GameCharacter {
                 tiles[location.getX()][location.getY()] = Tileset.FLOOR;
                 tiles[destination.getX()][destination.getY()] = tile();
                 Wave.bullets.remove(damageSource);
-                this.location = destination;
-                reduceHealth(damageSource.currentDamage(), false, Wave.aliveZombies);
-                return getHealth() == 0;
+                this.location = sPath.remove(0);
+                reduceHealth(damageSource.currentDamage());
             } else {
                 throw new RuntimeException("Internal inconsistency with bullet locations");
             }
         } else {
             isHurt = false;
         }
-        return false;
     }
 
     private void attack() {
-        player.reduceHealth(Math.min(10 + Wave.currentWave() * 3, getHealth()));
+        player.reduceHealth(Math.min(10 + Wave.currentWave() * 3, getHealth() + 1));
     }
 
-    void reduceHealth(int amount, boolean clearIfNeeded, Set<Zombie> aliveZombies) {
+    @Override
+    void reduceHealth(int amount) {
         super.reduceHealth(amount);
         isHurt = true;
-        if (this.getHealth() <= 0) {
+        if (this.getHealth() == 0) {
             if (r.nextDouble() < 0.15) {
                 player.addHealth((int) (r.nextDouble() * 10));
-            }
-            if (clearIfNeeded) {
-                Wave.aliveZombies.remove(this);
             }
             tiles[location.getX()][location.getY()] = Tileset.FLOOR;
             player.addPoints(100);
@@ -87,14 +80,16 @@ class Zombie extends GameCharacter {
                 && Math.abs(location.getY() - player.getLocation().getY()) <= 1) {
                 //find adjacent zombies first
                 ArrayList<Zombie> surroundingZombies = new ArrayList<>();
-                for (Zombie z : aliveZombies) {
+                for (Zombie z : Wave.aliveZombies) {
                     if (Math.abs(location.getX() - z.getLocation().getX()) <= 1
                             && Math.abs(location.getY() - z.getLocation().getY()) <= 1) {
                         surroundingZombies.add(z);
                     }
                 }
                 for (Zombie z: surroundingZombies) {
-                    z.reduceHealth(20);
+                    if (!surroundingZombies.equals(this)) {
+                        z.reduceHealth(20);
+                    }
                 }
                 player.reduceHealth(19);
                 player.setMessage("Ouch! That was an explosive zombie!");

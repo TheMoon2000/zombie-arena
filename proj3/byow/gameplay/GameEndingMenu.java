@@ -17,27 +17,28 @@ public class GameEndingMenu {
 
     private static final Color BGCOLOR = new Color(26, 26, 29);
     private static final Font CELL_FONT = new Font("Monaco", Font.PLAIN, 15);
-    private static final Font CAPTION_FONT = new Font("Monaco", Font.PLAIN, 11);
     private static final double CELL_HEIGHT = 1.8;
-    private static String[] rows = {"Replay Map (1)", "Back to Menu (2)"};
+    private static String[] rows = {"Restart Map (1)", "Replay (2)", "Back to Menu (3)"};
     private static final Color CELL_TEXT_COLOR = new Color(200, 200, 200);
-    private static final Color CAPTION_COLOR = new Color(190, 190, 190);
 
     private String titleText;
-
+    private boolean keyboard;
     private TERenderer renderer;
 
     public static boolean reset = false;
+    public static boolean m = false;
+    public static boolean replay = true;
 
-    GameEndingMenu(Player player, String myTitle) {
+    GameEndingMenu(Player player, String myTitle, boolean keyboardInput) {
         renderer = player.ter;
         titleText = myTitle;
+        keyboard = keyboardInput;
     }
 
     void open(InputSource source) {
+        System.out.print("User opened end of game menu, title='" + titleText + "'");
         renderMenu(renderer);
-        boolean replay = false;
-        while (source.possibleNextInput() && !replay) {
+        while (source.possibleNextInput()) {
             renderMenu(renderer);
             char next = source.getNextKey();
             InputHistory.addInputChar(next);
@@ -49,32 +50,29 @@ public class GameEndingMenu {
                     break;
                 case '1':
                     // Restart the world
-                    String newWorld = "" + "N" + Engine.seed + "SL";
-                    try {
-                        //create an empty new file that replaces the old one
-                        new PrintWriter("SaveFile.txt", StandardCharsets.UTF_8);
-                    } catch (IOException e) {
-                        System.out.println("Unable to create SaveFile.txt!");
-                    }
-                    try {
-                        FileWriter fw = new FileWriter("SaveFile.txt");
-                        fw.write(newWorld);
-                        fw.close();
-                    } catch (IOException e) {
-                        System.out.println("Unable to write to disk");
-                    }
-                    replay = true;
+                    String newWorld = "N" + Engine.seed + "S";
+                    InputHistory.createNewFile(newWorld);
                     reset = true;
-                    break;
+                    return;
                 case '2':
-                    Engine engine = new Engine();
-                    engine.interactWithKeyboard();
+                    replay = true;
+                    InputHistory.save();
+                    return;
+                case '3':
+                    InputHistory.createNewFile();
+                    reset = true;
+                    m = true;
+                    return;
                 default:
             }
         }
     }
 
     private void renderMenu(TERenderer ter) {
+
+        if (!keyboard) {
+            return;
+        }
 
         double centerX = ((double) ter.getWidth()) / 2.0;
         double centerY = ((double) ter.getHeight()) / 2.0;
@@ -89,7 +87,7 @@ public class GameEndingMenu {
         StdDraw.setPenColor(Color.GRAY);
         StdDraw.text(centerX, centerY + 12, titleText);
 
-        double currentY = centerY + 8;
+        double currentY = centerY + 6;
         StdDraw.setFont(CELL_FONT);
 
         for (int i = 0; i < rows.length; i++) {

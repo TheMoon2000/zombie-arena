@@ -1,10 +1,12 @@
 package byow.gameplay;
 
 import byow.Core.Engine;
+import byow.InputDemo.KeyboardInputSource;
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 import byow.utils.Direction;
+import byow.utils.InputHistory;
 import byow.utils.Point;
 
 import java.util.*;
@@ -70,6 +72,9 @@ public class Wave {
                     preparation = wave == 1 ? 50 : 60;
                 } else {
                     // Ends game, player wins
+                    GameEndingMenu menu = new GameEndingMenu(player, "You Win!",
+                            player.keyboardInput);
+                    menu.open(new KeyboardInputSource());
                 }
             } else if (zombiesRemaining() == 0) {
                 waveStarted = true;
@@ -85,13 +90,18 @@ public class Wave {
             } else {
                 // Scenario 4: game is ongoing
 
+                long start = System.nanoTime();
                 Queue<Zombie> toBeRemoved = new ArrayDeque<>();
 
                 for (Zombie alive: aliveZombies) {
-                    if (alive.advance(location)) {
+                    if (alive.getHealth() == 0) {
                         toBeRemoved.add(alive);
+                    } else {
+                        alive.advance(location);
                     }
                 }
+
+//                System.out.println("Update took "  + (System.nanoTime() - start) + " ns");
 
                 for (Zombie deadZombie: toBeRemoved) {
                     aliveZombies.remove(deadZombie);
@@ -129,7 +139,7 @@ public class Wave {
 
     public static void withPaths(TERenderer ter, boolean keyboard, Player player) {
 
-        if (player == null || !keyboard) {
+        if (player == null) {
             return;
         }
 
@@ -151,7 +161,8 @@ public class Wave {
                 }
             }
         }
-
-        ter.renderFrame(tilesCopy);
+        if (keyboard) {
+            ter.renderFrame(tilesCopy);
+        }
     }
 }

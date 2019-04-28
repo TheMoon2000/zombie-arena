@@ -165,8 +165,8 @@ public class Engine {
         InputSource inputSource = new KeyboardInputSource();
 
         kbInput = true;
-        makeMenu();
-        interact(inputSource, true);
+        seed = 0;
+        interact(inputSource, true, true);
 
         System.exit(0);
     }
@@ -203,11 +203,12 @@ public class Engine {
 
         InputSource source = new StringInputDevice(input.toUpperCase());
 
-        return interact(source, false);
+        return interact(source, false, false);
     }
 
     /**
      * Helper method that renders the game
+     *
      */
     private void renderGame(boolean keyBoardInput, TETile[][] tiles, Player player) {
         if (keyBoardInput) {
@@ -245,23 +246,19 @@ public class Engine {
      * Reads an input source and do something about it
      * @param source The input source
      * @param keyboardInput Whether the source is keyboard mode
+     * @param m Whether to load the opening menu
      */
 
-    private TETile[][] interact(InputSource source, boolean keyboardInput) {
-        boolean startReadingSeed = false;
+    private TETile[][] interact(InputSource source, boolean keyboardInput, boolean m) {
+        makeMenu(m); seed = 0; boolean startReadingSeed = false;
         TETile[][] tiles = new TETile[WIDTH][HEIGHT]; Player player = null;
         InputSource tmpSource = new StringInputDevice(""); // temporarily stores real-time input
         while (source.possibleNextInput()) {
-            if (GameEndingMenu.reset) {
-                tiles = new TETile[WIDTH][HEIGHT]; r = new Random(seed); generateWorld(tiles, seed);
-                player = new Player(tiles, randomPlacement(tiles), ter, r, keyboardInput);
-                locate(player); ter.initialize(WIDTH, HEIGHT + 3); ter.renderFrame(tiles);
-            }
-            if (player != null) {GameEndingMenu.reset = false;}
-            while (keyboardInput && !StdDraw.hasNextKeyTyped() && player != null) {
+            while (!GameEndingMenu.replay && keyboardInput && !StdDraw.hasNextKeyTyped()) {
                 sleep(10); renewDisplayBar(player);
             }
             char next = source.getNextKey(); InputHistory.addInputChar(next);
+            System.out.print(next);
             switch (next) {
                 case ':': // if :Q then save and quit
                     if (source.getNextKey() == 'Q') {
@@ -276,9 +273,9 @@ public class Engine {
                     break;
                 case 'S': // start game
                     if (player == null && startReadingSeed) {
-                        r = new Random(seed); generateWorld(tiles, seed);
+                        r = new Random(seed); generateWorld(tiles);
                         startReadingSeed = false;
-                        player = new Player(tiles, randomPlacement(tiles), ter, r, keyboardInput);
+                        player = new Player(tiles, randomPlacement(tiles), ter, r, kbInput);
                         if (keyboardInput) {
                             ter.initialize(WIDTH, HEIGHT + 3); ter.renderFrame(tiles);
                         }
@@ -299,17 +296,15 @@ public class Engine {
                     reload(player); renderGame(keyboardInput, tiles, player); break;
                 case 'T': Wave.withPaths(ter, keyboardInput, player); break;
                 case 'L':
-                    if (!InputHistory.reloading() && InputHistory.hasValidInput()) {
-                        tmpSource = source; keyboardInput = false; // treat file input as string
-                        source = InputHistory.source();
+                    if (!InputHistory.reloaded() && InputHistory.hasValidInput()) {
+                        tmpSource = source; keyboardInput = GameEndingMenu.replay;
+                        source = InputHistory.source(); InputHistory.setReloading(true);
                     } else if (player != null) { // end of reloading
-                        source = tmpSource; keyboardInput = kbInput;
-                        System.out.println("\nfinished reloading");
+                        keyboardInput = kbInput;
+                        source = kbInput ? new KeyboardInputSource() : tmpSource;
                         ter.initialize(WIDTH, HEIGHT + 3); ter.renderFrame(tiles);
-                        player.setMessage("Welcome back to Zombie Arena!");
                         renewDisplayBar(player); locate(player);
                     }
-                    InputHistory.setReloading(!InputHistory.reloading()); break;
                 case 'B': //buy a weapon from the store
                     if (player != null && player.atShop()) {
                         String shopMsg = Shop.openMenu(player, source, keyboardInput);
@@ -325,8 +320,17 @@ public class Engine {
                         displaySeed(seed, keyboardInput);
                     }
             }
+            if (GameEndingMenu.reset) {
+                GameEndingMenu.reset = false; InputHistory.setReloading(false);
+                return interact(loadSrc(), keyboardInput, GameEndingMenu.m);
+            }
+            sleep(180); // for debugging only
         }
         return tiles;
+    }
+
+    private InputSource loadSrc() {
+        return new StringInputDevice("L");
     }
 
     /**
@@ -377,8 +381,8 @@ public class Engine {
     /**
      * Helper method that generates the main menu
      */
-    private void makeMenu() {
-        if (!kbInput) {
+    private void makeMenu(boolean m) {
+        if (!kbInput || !m) {
             return;
         }
 
@@ -547,22 +551,20 @@ public class Engine {
      * Generate a random world based on a seed
      *
      * @param tiles the tiles matrix
-     * @param seed  the seed for the random generator instance
      */
 
-    private void generateWorld(TETile[][] tiles, long seed) {
-        Random random = new Random(seed);
-        final int numberOfRooms = random.nextInt(25) + 17;
+    private void generateWorld(TETile[][] tiles) {
+        final int numberOfRooms = r.nextInt(25) + 17;
 
         Map<Point, Point> originToSize = new HashMap<>();
 
         // Add some random rooms to the world
 
         while (originToSize.size() < numberOfRooms) {
-            int dx = RandomUtils.uniform(random, 3, 10);
-            int dy = RandomUtils.uniform(random, 3, 10);
-            int x = random.nextInt(WIDTH - dx - 2) + 1;
-            int y = random.nextInt(HEIGHT - dy - 2) + 1;
+            int dx = RandomUtils.uniform(r, 3, 10);
+            int dy = RandomUtils.uniform(r, 3, 10);
+            int x = r.nextInt(WIDTH - dx - 2) + 1;
+            int y = r.nextInt(HEIGHT - dy - 2) + 1;
 
             if (!hasNearby(tiles, new Point(x, y), Tileset.FLOOR, 1)
                     && !hasNearby(tiles, new Point(x + dx, y + dy), Tileset.FLOOR, 1)
@@ -595,7 +597,7 @@ public class Engine {
             int maxX = Math.max(s.getX(), t.getX());
             int maxY = Math.max(s.getY(), t.getY());
 
-            if (random.nextBoolean()) {
+            if (r.nextBoolean()) {
                 // First go vertically then horizontally
                 fill(s.getX(), minY, 0, maxY - minY, tiles, Tileset.FLOOR);
                 fill(minX, t.getY(), maxX - minX, 0, tiles, Tileset.FLOOR);

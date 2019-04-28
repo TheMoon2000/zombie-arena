@@ -1,123 +1,100 @@
 package byow.hw4;
 
 import byow.proj2ab.ArrayHeapMinPQ;
-import edu.princeton.cs.algs4.Stopwatch;
-
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import byow.proj2ab.ExtrinsicMinPQ;
+import java.util.Map;
+import java.util.LinkedList;
 
 public class AStarSolver<Vertex> implements ShortestPathsSolver<Vertex> {
 
-    private SolverOutcome outcome = SolverOutcome.SOLVED;
-    private List<Vertex> solution = new ArrayList<>();
-    private double solutionWeight = 0;
-    private int numStatesExplored = 1;
-    private double explorationTime;
+    private SolverOutcome solverOutcome;
+    private LinkedList<Vertex> solution;
+    private double solutionWeight;
+    private double timeSpent;
+    private int statesExplored;
+
+    private AStarGraph<Vertex> inputGraph;
 
     public AStarSolver(AStarGraph<Vertex> input, Vertex start, Vertex end, Random r) {
-        HashMap<Vertex, Item> map = new HashMap<>();
-        ArrayHeapMinPQ<Vertex> minPQ = new ArrayHeapMinPQ<>(r);
-        Stopwatch s = new Stopwatch();
-        boolean out = false;
-        minPQ.add(start, input.estimatedDistanceToGoal(start, end) + 0);
-        Item i = new Item(0, null, 0);
-        map.put(start, i);
-        Vertex result = minPQ.getSmallest();
-        while (!result.equals(end)) {
-            if (s.elapsedTime() > 1000) {
-                out = true;
+        this.inputGraph = input;
+
+        ExtrinsicMinPQ<Vertex> pq = new ArrayHeapMinPQ<>(r);
+        Map<Vertex, Double> distTo = new HashMap<>();
+        Map<Vertex, Vertex> edgeTo = new HashMap<>();
+
+        pq.add(start, h(start, end));
+        distTo.put(start, 0.0);
+        solverOutcome = SolverOutcome.UNSOLVABLE;
+
+        while (pq.size() > 0) {
+
+            Vertex current = pq.removeSmallest();
+
+            if (current.equals(end)) {
+                solverOutcome = SolverOutcome.SOLVED;
+                solutionWeight = distTo.get(current);
                 break;
             }
-            List<WeightedEdge<Vertex>> edges = input.neighbors(result);
-            for (WeightedEdge<Vertex> e : edges) {
-                relax(input, end, e, result, minPQ, map);
+
+            statesExplored += 1;
+
+            double d = distTo.get(current);
+            for (WeightedEdge<Vertex> E: input.neighbors(current)) {
+                if (d + E.weight() < distTo.getOrDefault(E.to(), Double.POSITIVE_INFINITY)) {
+                    distTo.put(E.to(), d + E.weight());
+                    edgeTo.put(E.to(), current);
+                    if (pq.contains(E.to())) {
+                        pq.changePriority(E.to(), d + E.weight() + h(E.to(), end));
+                    } else {
+                        pq.add(E.to(), d + E.weight() + h(E.to(), end));
+                    }
+                }
             }
-            if (minPQ.size() == 0) {
-                outcome = SolverOutcome.UNSOLVABLE;
-                break;
+        }
+
+        solution = new LinkedList<>();
+
+        if (solverOutcome == SolverOutcome.SOLVED) {
+            Vertex v = end;
+            while (edgeTo.getOrDefault(v, null) != null) {
+                solution.addFirst(v);
+                v = edgeTo.get(v);
             }
-            result = minPQ.removeSmallest();
-            numStatesExplored++;
+//            solution.addFirst(start);
         }
-        if (out) {
-            outcome = SolverOutcome.TIMEOUT;
-            solutionWeight = 0;
-            solution = new ArrayList<>();
-        }
-        if (outcome.equals(SolverOutcome.SOLVED)) {
-            listOfVertice(map, start, end, solution);
-        }
-        explorationTime = s.elapsedTime();
     }
 
+    @Override
     public SolverOutcome outcome() {
-        return outcome;
+        return solverOutcome;
     }
 
+    @Override
     public List<Vertex> solution() {
         return solution;
     }
 
+    @Override
     public double solutionWeight() {
         return solutionWeight;
     }
 
+    @Override
     public int numStatesExplored() {
-        return numStatesExplored;
+        return statesExplored;
     }
 
+    @Override
     public double explorationTime() {
-        return explorationTime;
+        return timeSpent;
     }
 
+    // Simplification
 
-    private void relax(AStarGraph<Vertex> input, Vertex end, WeightedEdge<Vertex> e, Vertex v,
-                       ArrayHeapMinPQ<Vertex> minPQLocal, HashMap<Vertex, Item> mapLocal) {
-        Vertex w = e.to();
-        double oldScore;
-        if (mapLocal.containsKey(w)) {
-            oldScore = mapLocal.get(w).distTo;
-        } else {
-            oldScore = Double.POSITIVE_INFINITY;
-        }
-        double newScore = mapLocal.get(v).distTo + e.weight();
-        if (newScore < oldScore) {
-            if (minPQLocal.contains(w)) {
-                minPQLocal.changePriority(w, newScore + input.estimatedDistanceToGoal(w, end));
-            } else {
-                minPQLocal.add(w, newScore + input.estimatedDistanceToGoal(w, end));
-            }
-            if (mapLocal.containsKey(w)) {
-                mapLocal.replace(w, new Item(newScore, v, e.weight()));
-            } else {
-                mapLocal.put(w, new Item(newScore, v, e.weight()));
-            }
-        }
-    }
-
-    private void listOfVertice(HashMap<Vertex, Item> mapLocal,
-                               Vertex start, Vertex end, List<Vertex> l) {
-        if (end.equals(start)) {
-            l.add(start);
-        } else {
-            Vertex v = mapLocal.get(end).edgeTo;
-            solutionWeight += mapLocal.get(end).weight;
-            listOfVertice(mapLocal, start, v, l);
-            l.add(end);
-        }
-    }
-
-    private class Item {
-        double distTo;
-        Vertex edgeTo;
-        double weight;
-
-        Item(double d, Vertex e, double w) {
-            distTo = d;
-            edgeTo = e;
-            weight = w;
-        }
+    private double h(Vertex s, Vertex t) {
+        return inputGraph.estimatedDistanceToGoal(s, t);
     }
 }

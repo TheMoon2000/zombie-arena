@@ -16,7 +16,7 @@ public class WeightedUndirectedGraph implements AStarGraph<Point> {
 
     public double estimatedDistanceToGoal(Point s, Point goal) {
         return Math.sqrt(Math.pow(s.getX() - goal.getX(), 2.0)
-                + Math.pow(s.getY() - goal.getY(), 2));
+                + Math.pow(s.getY() - goal.getY(), 2.0));
     }
 
     public void addEdge(Point point1, Point point2) {

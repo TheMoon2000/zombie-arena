@@ -17,9 +17,7 @@ public class Player extends GameCharacter {
     private Direction orientation;
     private int points;
     TERenderer ter;
-    private boolean keyboardInput;
-
-    private static final int PREP_STEPS = 30;
+    boolean keyboardInput;
     static final int MAX_HEALTH = 100;
     private String message;
 
@@ -44,7 +42,6 @@ public class Player extends GameCharacter {
         int x = location.getX(), y = location.getY();
         Point previousLocation = location;
         Wave.update(location, true, false);
-
         switch (direction) {
             case North:
                 if (!orientation.equals(Direction.North)) {
@@ -54,7 +51,6 @@ public class Player extends GameCharacter {
                     tiles[x][y + 1] = Tileset.PLAYER_NORTH;
                     tiles[x][y] = Tileset.FLOOR;
                     location = new Point(x, y + 1);
-                    Zombie.recalculatePath = true;
                 }
                 break;
             case South:
@@ -65,7 +61,6 @@ public class Player extends GameCharacter {
                     tiles[x][y - 1] = Tileset.PLAYER_SOUTH;
                     tiles[x][y] = Tileset.FLOOR;
                     location = new Point(x, y - 1);
-                    Zombie.recalculatePath = true;
                 }
                 break;
             case West:
@@ -76,7 +71,6 @@ public class Player extends GameCharacter {
                     tiles[x - 1][y] = Tileset.PLAYER_WEST;
                     tiles[x][y] = Tileset.FLOOR;
                     location = new Point(x - 1, y);
-                    Zombie.recalculatePath = true;
                 }
                 break;
             case East:
@@ -189,9 +183,11 @@ public class Player extends GameCharacter {
     @Override
     void reduceHealth(int amount) {
         super.reduceHealth(amount);
-        if (getHealth() == 0 && keyboardInput) {
-            GameEndingMenu menu = new GameEndingMenu(this, "Game Over");
+        System.out.println("Player health reduced by " + amount + " to " + getHealth() + ".");
+        if (getHealth() == 0) {
+            GameEndingMenu menu = new GameEndingMenu(this, "Game Over", keyboardInput);
             menu.open(new KeyboardInputSource());
+            System.out.println("menu closed");
         }
     }
 }

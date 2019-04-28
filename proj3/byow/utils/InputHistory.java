@@ -20,6 +20,12 @@ public class InputHistory {
         }
     }
 
+    public static void deleteLast() {
+        if (input.length() > 0) {
+            input.deleteCharAt(input.length() - 1);
+        }
+    }
+
     public static void save() {
         try {
             FileWriter fw = new FileWriter("SaveFile.txt", false);
@@ -46,6 +52,20 @@ public class InputHistory {
         }
     }
 
+    public static void createNewFile(String content) {
+        if (isReloading) {
+            return;
+        }
+
+        try {
+            FileWriter fw = new FileWriter("SaveFile.txt", false);
+            fw.write(content + "L"); //appends the string to the file
+            fw.close();
+        } catch (IOException e) {
+            System.out.println("Unable to write to disk");
+        }
+    }
+
     public static boolean hasValidInput() {
         In myInput = new In("SaveFile.txt");
         String all = myInput.readAll();
@@ -66,7 +86,7 @@ public class InputHistory {
         return new StringInputDevice(fileInput.toString());
     }
 
-    public static boolean reloading() {
+    public static boolean reloaded() {
         return isReloading;
     }
 

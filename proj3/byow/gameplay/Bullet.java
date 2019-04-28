@@ -69,7 +69,7 @@ public class Bullet {
                     }
                 }
                 if (zombie != null) {
-                    zombie.reduceHealth(currentDamage(), true, Wave.aliveZombies);
+                    zombie.reduceHealth(currentDamage());
                     player.setMessage("You dealt " + currentDamage() + " damage to a zombie.");
                 }
 
@@ -96,7 +96,7 @@ public class Bullet {
                 List<Zombie> toBeDeleted = new ArrayList<>();
                 for (Zombie z : Wave.aliveZombies) {
                     if (z.location.equals(new Point(targetX, targetY))) {
-                        z.reduceHealth(currentDamage(), false, Wave.aliveZombies);
+                        z.reduceHealth(currentDamage());
                         zombiesHarmed++;
                         player.setMessage("You dealt " + currentDamage()  + " damage to zombie.");
                         if (z.getHealth() == 0) {
@@ -106,7 +106,7 @@ public class Bullet {
                 }
 
                 for (Zombie dead: toBeDeleted) {
-                    dead.reduceHealth(1, true, Wave.aliveZombies);
+                    Wave.aliveZombies.remove(dead);
                 }
             }
 
@@ -123,13 +123,17 @@ public class Bullet {
                 */
                 tiles[targetX][targetY] = trail;
                 toBeCleared.add(new Point(targetX, targetY));
-            } else if (!tiles[targetX][targetY].description().toLowerCase().contains("zombie")) {
+            } else if (!tiles[targetX][targetY].description().toLowerCase().contains("zombie")
+                        && !tiles[targetX][targetY].description().endsWith("bullet")) {
                 return true;
             }
         }
         //if bullet hasn't hit anything, show its new position, return false to keep track of it
-        tiles[location.getX() + dx * speed][location.getY() + dy * speed] = bulletTile();
-        location = new Point(location.getX() + dx * speed, location.getY() + dy * speed);
+        int endX = location.getX() + dx * speed, endY = location.getY() + dy * speed;
+        if (tiles[endX][endY].equals(Tileset.FLOOR)) {
+            tiles[endX][endY] = bulletTile();
+        }
+        location = new Point(endX, endY);
 
         return false;
     }
