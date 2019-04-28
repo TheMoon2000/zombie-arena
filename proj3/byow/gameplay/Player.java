@@ -185,7 +185,7 @@ public class Player extends GameCharacter {
         super.reduceHealth(amount);
         System.out.println("Player health reduced by " + amount + " to " + getHealth() + ".");
         if (getHealth() == 0) {
-            GameEndingMenu menu = new GameEndingMenu(this, "Game Over", keyboardInput);
+            EndMenu menu = new EndMenu(this, "Game Over", keyboardInput);
             menu.open(new KeyboardInputSource());
             System.out.println("menu closed");
         }

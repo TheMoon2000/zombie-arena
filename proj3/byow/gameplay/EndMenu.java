@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 
-public class GameEndingMenu {
+public class EndMenu {
 
     private static final Color BGCOLOR = new Color(26, 26, 29);
     private static final Font CELL_FONT = new Font("Monaco", Font.PLAIN, 15);
@@ -25,11 +25,10 @@ public class GameEndingMenu {
     private boolean keyboard;
     private TERenderer renderer;
 
-    public static boolean reset = false;
-    public static boolean m = false;
-    public static boolean replay = true;
+    private static boolean reset = false;
+    public static boolean replay = false;
 
-    GameEndingMenu(Player player, String myTitle, boolean keyboardInput) {
+    EndMenu(Player player, String myTitle, boolean keyboardInput) {
         renderer = player.ter;
         titleText = myTitle;
         keyboard = keyboardInput;
@@ -51,17 +50,22 @@ public class GameEndingMenu {
                 case '1':
                     // Restart the world
                     String newWorld = "N" + Engine.seed + "S";
+                    InputHistory.reloaded = false;
                     InputHistory.createNewFile(newWorld);
-                    reset = true;
+                    reset = true; replay = false;
                     return;
                 case '2':
-                    replay = true;
+                    if (keyboard) {
+                        replay = true;
+                        StdDraw.clear(StdDraw.BLACK);
+                    }
+                    InputHistory.reloaded = false;
                     InputHistory.save();
                     return;
                 case '3':
+                    InputHistory.reloaded = false;
                     InputHistory.createNewFile();
-                    reset = true;
-                    m = true;
+                    reset = true; replay = false;
                     return;
                 default:
             }
@@ -104,5 +108,17 @@ public class GameEndingMenu {
         }
 
         StdDraw.show();
+    }
+
+    public static boolean replay() {
+        boolean tmp = replay;
+        replay = false;
+        return tmp;
+    }
+
+    public static boolean reset() {
+        boolean tmp = reset;
+        reset = false;
+        return tmp;
     }
 }
