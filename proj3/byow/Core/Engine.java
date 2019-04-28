@@ -250,7 +250,7 @@ public class Engine {
      */
 
     private TETile[][] interact(InputSource source, boolean keyboardInput, boolean m) {
-        makeMenu(m); seed = 0; boolean startReadingSeed = false;
+        makeMenu(m); seed = 0; boolean startReadingSeed = false; boolean playing = false;
         TETile[][] tiles = new TETile[WIDTH][HEIGHT]; Player player = null;
         InputSource tmpSource = new StringInputDevice(""); // temporarily stores real-time input
         while (source.possibleNextInput()) {
@@ -299,11 +299,11 @@ public class Engine {
                     if (!InputHistory.reloaded() && InputHistory.hasValidInput()) {
                         tmpSource = source; keyboardInput = GameEndingMenu.replay;
                         source = InputHistory.source(); InputHistory.setReloading(true);
-                    } else if (player != null) { // end of reloading
+                    } else if (player != null && !playing) { // end of reloading
                         keyboardInput = kbInput;
                         source = kbInput ? new KeyboardInputSource() : tmpSource;
                         ter.initialize(WIDTH, HEIGHT + 3); ter.renderFrame(tiles);
-                        renewDisplayBar(player); locate(player);
+                        renewDisplayBar(player); locate(player); playing = true;
                     }
                 case 'B': //buy a weapon from the store
                     if (player != null && player.atShop()) {

@@ -87,7 +87,7 @@ class Zombie extends GameCharacter {
                     }
                 }
                 for (Zombie z: surroundingZombies) {
-                    if (!surroundingZombies.equals(this)) {
+                    if (!z.equals(this)) {
                         z.reduceHealth(20);
                     }
                 }
