@@ -11,7 +11,7 @@ public class ArrayHeapMinPQ<T> implements ExtrinsicMinPQ<T> {
 
     public ArrayHeapMinPQ(Random random) {
         array.add(null);
-        r = random;
+//        r = random;
     }
 
     /* Adds an item with the given priority value. Throws an
@@ -95,7 +95,7 @@ public class ArrayHeapMinPQ<T> implements ExtrinsicMinPQ<T> {
         while (parentIndex != 0) {
             T parent = array.get(parentIndex);
             double parentPriority = hash.get(parent).priority;
-            if (priority >= parentPriority && (r.nextBoolean() || priority > parentPriority)) {
+            if (priority >= parentPriority /*&& (r.nextBoolean() || priority > parentPriority)*/) {
                 break;
             } else {
                 Collections.swap(array, currentIndex, parentIndex);
@@ -114,11 +114,11 @@ public class ArrayHeapMinPQ<T> implements ExtrinsicMinPQ<T> {
         while (leftChildIndex < array.size() && rightChildIndex < array.size()) {
             double leftPriority = hash.get(array.get(leftChildIndex)).priority;
             double rightPriority = hash.get(array.get(rightChildIndex)).priority;
-            if (priority <= leftPriority && priority <= rightPriority && r.nextBoolean()) {
+            if (priority <= leftPriority && priority <= rightPriority /*&& r.nextBoolean()*/) {
                 break;
             }
-            int minIndex = (leftPriority <= rightPriority && (r.nextBoolean()
-                    || leftPriority < rightPriority)) ? leftChildIndex : rightChildIndex;
+            int minIndex = (leftPriority <= rightPriority /*&& (r.nextBoolean()
+                    || leftPriority < rightPriority)*/) ? leftChildIndex : rightChildIndex;
             Collections.swap(array, currentIndex, minIndex);
             hash.get(array.get(currentIndex)).index = currentIndex;
             hash.get(array.get(minIndex)).index = minIndex;

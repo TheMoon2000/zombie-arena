@@ -12,7 +12,7 @@ import java.nio.charset.StandardCharsets;
 public class InputHistory {
 
     private static StringBuilder input = new StringBuilder();
-    private static boolean isReloading = false;
+    public static boolean reloaded = false;
 
     public static void addInputChar(char c) {
         if (c != ':' && c != 'L') {
@@ -40,7 +40,7 @@ public class InputHistory {
      * Helper method that creates a new save file
      */
     public static void createNewFile() {
-        if (isReloading) {
+        if (reloaded) {
             return;
         }
 
@@ -53,7 +53,7 @@ public class InputHistory {
     }
 
     public static void createNewFile(String content) {
-        if (isReloading) {
+        if (reloaded) {
             return;
         }
 
@@ -84,13 +84,5 @@ public class InputHistory {
         System.out.println("\nRead the following string from SaveFile.txt:");
         System.out.println(fileInput.toString());
         return new StringInputDevice(fileInput.toString());
-    }
-
-    public static boolean reloaded() {
-        return isReloading;
-    }
-
-    public static void setReloading(boolean reloading) {
-        isReloading = reloading;
     }
 }

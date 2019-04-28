@@ -72,7 +72,7 @@ public class Wave {
                     preparation = wave == 1 ? 50 : 60;
                 } else {
                     // Ends game, player wins
-                    GameEndingMenu menu = new GameEndingMenu(player, "You Win!",
+                    EndMenu menu = new EndMenu(player, "You Win!",
                             player.keyboardInput);
                     menu.open(new KeyboardInputSource());
                 }

@@ -149,9 +149,11 @@ public class Engine {
      *
      * @param n (in milliseconds) the time to wait
      */
-    private static void sleep(int n) {
+    private static void sleep(int n, boolean replay) {
         try {
-            TimeUnit.MILLISECONDS.sleep(n);
+            if (n < 50 || replay) {
+                TimeUnit.MILLISECONDS.sleep(n);
+            }
         } catch (InterruptedException e) {
             System.out.print("\ndelay failed");
         }
@@ -166,7 +168,7 @@ public class Engine {
 
         kbInput = true;
         seed = 0;
-        interact(inputSource, true, true);
+        interact(inputSource, true, false);
 
         System.exit(0);
     }
@@ -224,7 +226,7 @@ public class Engine {
 
         Bullet.toBeCleared.clear();
 
-        if (player != null) {
+        if (keyBoardInput) {
             renewDisplayBar(player);
         }
     }
@@ -246,19 +248,17 @@ public class Engine {
      * Reads an input source and do something about it
      * @param source The input source
      * @param keyboardInput Whether the source is keyboard mode
-     * @param m Whether to load the opening menu
      */
 
-    private TETile[][] interact(InputSource source, boolean keyboardInput, boolean m) {
-        makeMenu(m); seed = 0; boolean startReadingSeed = false; boolean playing = false;
+    private TETile[][] interact(InputSource source, boolean keyboardInput, boolean replay) {
+        makeMenu(replay); seed = 0; boolean startReadingSeed = false;
         TETile[][] tiles = new TETile[WIDTH][HEIGHT]; Player player = null;
         InputSource tmpSource = new StringInputDevice(""); // temporarily stores real-time input
         while (source.possibleNextInput()) {
-            while (!GameEndingMenu.replay && keyboardInput && !StdDraw.hasNextKeyTyped()) {
-                sleep(10); renewDisplayBar(player);
+            while (!replay && keyboardInput && !StdDraw.hasNextKeyTyped()) {
+                sleep(10, false); renewDisplayBar(player);
             }
             char next = source.getNextKey(); InputHistory.addInputChar(next);
-            System.out.print(next);
             switch (next) {
                 case ':': // if :Q then save and quit
                     if (source.getNextKey() == 'Q') {
@@ -296,14 +296,15 @@ public class Engine {
                     reload(player); renderGame(keyboardInput, tiles, player); break;
                 case 'T': Wave.withPaths(ter, keyboardInput, player); break;
                 case 'L':
-                    if (!InputHistory.reloaded() && InputHistory.hasValidInput()) {
-                        tmpSource = source; keyboardInput = GameEndingMenu.replay;
-                        source = InputHistory.source(); InputHistory.setReloading(true);
-                    } else if (player != null && !playing) { // end of reloading
-                        keyboardInput = kbInput;
+                    if (!InputHistory.reloaded && InputHistory.hasValidInput()) {
+                        tmpSource = source; keyboardInput = replay; loadingMenu(replay);
+                        source = InputHistory.source(); InputHistory.reloaded = true;
+                    } else if (player != null) { // end of reloading
+                        System.out.print("finished loading");
+                        keyboardInput = kbInput; replay = false;
                         source = kbInput ? new KeyboardInputSource() : tmpSource;
                         ter.initialize(WIDTH, HEIGHT + 3); ter.renderFrame(tiles);
-                        renewDisplayBar(player); locate(player); playing = true;
+                        renewDisplayBar(player); locate(player);
                     }
                 case 'B': //buy a weapon from the store
                     if (player != null && player.atShop()) {
@@ -320,11 +321,10 @@ public class Engine {
                         displaySeed(seed, keyboardInput);
                     }
             }
-            if (GameEndingMenu.reset) {
-                GameEndingMenu.reset = false; InputHistory.setReloading(false);
-                return interact(loadSrc(), keyboardInput, GameEndingMenu.m);
+            if (EndMenu.reset() || EndMenu.replay) {
+                return interact(loadSrc(), kbInput, EndMenu.replay());
             }
-            sleep(180); // for debugging only
+            sleep(130, replay); // for debugging only
         }
         return tiles;
     }
@@ -381,8 +381,8 @@ public class Engine {
     /**
      * Helper method that generates the main menu
      */
-    private void makeMenu(boolean m) {
-        if (!kbInput || !m) {
+    private void makeMenu(boolean replay) {
+        if (!kbInput || replay) {
             return;
         }
 
@@ -407,6 +407,26 @@ public class Engine {
         StdDraw.setFont(font2);
         StdDraw.setPenColor(StdDraw.WHITE);
         StdDraw.text(0.5, 0.2, "QUIT (Q)");
+
+        StdDraw.show();
+    }
+
+    /**
+     * Make a loading menu
+     */
+
+    private void loadingMenu(boolean replay) {
+        if (!kbInput || replay) {
+            return;
+        }
+
+        StdDraw.setCanvasSize(WIDTH * 16, HEIGHT * 16);
+        StdDraw.clear(StdDraw.BLACK);
+
+        Font font = new Font("Arial", Font.BOLD, 50);
+        StdDraw.setFont(font);
+        StdDraw.setPenColor(StdDraw.WHITE);
+        StdDraw.text(0.5, 0.5, "Loading...");
 
         StdDraw.show();
     }
