@@ -308,7 +308,7 @@ public class Engine {
                     }
                 case 'B': //buy a weapon from the store
                     if (player != null && player.atShop()) {
-                        String shopMsg = Shop.openMenu(player, source, keyboardInput);
+                        String shopMsg = Shop.openMenu(player, source, keyboardInput, r);
                         if (shopMsg == null) { return tiles; }
                         player.setMessage(shopMsg);
                     }
@@ -477,9 +477,9 @@ public class Engine {
 
         //Ammo information
         StdDraw.setPenColor(new Color(207, 127, 56));
-        StdDraw.filledRectangle(49, HEIGHT + 2, 2, 1);
+        StdDraw.filledRectangle(49, HEIGHT + 2, 2.5, 1);
         StdDraw.setPenColor(StdDraw.WHITE);
-        StdDraw.text(52.5, HEIGHT + 2, "Ammo");
+        StdDraw.text(53, HEIGHT + 2, "Ammo");
         StdDraw.text(49, HEIGHT + 2, player.ammoDescription());
 
         //Wave information

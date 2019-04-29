@@ -7,6 +7,7 @@ import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.util.Random;
 
 public class Shop {
 
@@ -16,8 +17,8 @@ public class Shop {
         Weapon.makeSword(),
         Weapon.makePistol(),
         Weapon.makeShotgun(),
-        Weapon.makeSniperRifle(),
         Weapon.makeMachineGun(),
+        new RandomWeapon()
     };
 
     private static final Color BGCOLOR = new Color(26, 26, 29);
@@ -26,9 +27,11 @@ public class Shop {
     private static final Color CELL_TEXT_COLOR = new Color(200, 200, 200);
     private static final Color CAPTION_COLOR = new Color(190, 190, 190);
 
-    public static String openMenu(Player player, InputSource source, boolean kb) {
+    public static String openMenu(Player player, InputSource source, boolean kb, Random r) {
 
         int selection = -1;
+        ((RandomWeapon) UPGRADES_LIST[UPGRADES_LIST.length - 1]).random = r;
+
         Wave.update(player.location, true, true);
 
         while (source.possibleNextInput()) {

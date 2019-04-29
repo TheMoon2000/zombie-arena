@@ -43,7 +43,8 @@ class Zombie extends GameCharacter {
             this.location = sPath.remove(0);
         } else if (destination.equals(player.location)) {
             attack();
-        } else if (desTile.description().toLowerCase().contains("bullet") && !isHurt) {
+        } else if ((desTile.description().toLowerCase().contains("bullet")
+                || desTile.description().equals("Flame")) && !isHurt) {
             Bullet damageSource = null;
             for (Bullet b: Wave.bullets) {
                 if (b.location.equals(destination)) {
@@ -51,17 +52,29 @@ class Zombie extends GameCharacter {
                 }
             }
 
-            if (damageSource != null) {
-                tiles[location.getX()][location.getY()] = Tileset.FLOOR;
-                tiles[destination.getX()][destination.getY()] = tile();
-                Wave.bullets.remove(damageSource);
-                this.location = sPath.remove(0);
-                reduceHealth(damageSource.currentDamage());
-            } else {
-                throw new RuntimeException("Internal inconsistency with bullet locations");
+            if (damageSource == null) {
+                throw new RuntimeException("Bullet location inconsistency!");
             }
+
+            tiles[location.getX()][location.getY()] = Tileset.FLOOR;
+            tiles[destination.getX()][destination.getY()] = tile();
+            refreshTile(location, tiles);
+            this.location = sPath.remove(0);
+            reduceHealth(damageSource.currentDamage());
+            refreshTile(destination, tiles);
         } else {
             isHurt = false;
+        }
+    }
+
+    private static void refreshTile(Point p, TETile[][] tiles) {
+        if (!tiles[p.getX()][p.getY()].equals(Tileset.FLOOR)) {
+            return;
+        }
+        for (Bullet bullet: Wave.bullets) {
+            if (bullet.location.equals(p)) {
+                tiles[p.getX()][p.getY()] = bullet.bulletTile();
+            }
         }
     }
 

@@ -24,7 +24,7 @@ public class Player extends GameCharacter {
     public Player(TETile[][] tiles, Point location, TERenderer renderer, Random r, boolean kb) {
         super(tiles);
         this.addHealth(MAX_HEALTH);
-        points = 200;
+        points = 2000;
         weapons[0] = Weapon.makePistol();
         weapons[1] = Weapon.makeSword();
         Wave.init(this, tiles, r);
@@ -158,7 +158,21 @@ public class Player extends GameCharacter {
 
     public void fire() {
         if (currentWeapon().shoot()) { // Whether the weapon can shoot
-            Wave.bullets.add(new Bullet(this));
+            Wave.bullets.add(new Bullet(this, location, currentWeapon()));
+            if (currentWeapon().getName().equals("Flamethrower")) {
+                switch (orientation) {
+                    case North:
+                    case South:
+                        Wave.bullets.add(new Bullet(this, location.left(), Weapon.flame()));
+                        Wave.bullets.add(new Bullet(this, location.right(), Weapon.flame()));
+                        break;
+                    case East:
+                    case West:
+                        Wave.bullets.add(new Bullet(this, location.top(), Weapon.flame()));
+                        Wave.bullets.add(new Bullet(this, location.bottom(), Weapon.flame()));
+                        break;
+                }
+            }
         }
         Wave.update(location, true, true);
     }

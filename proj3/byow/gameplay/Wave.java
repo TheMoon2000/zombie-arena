@@ -13,7 +13,7 @@ import java.util.*;
 
 public class Wave {
 
-    private static final int MAX_WAVE = 10;
+    private static final int MAX_WAVE = 12;
 
     private static int wave = 0;
     private static Random r;
@@ -112,8 +112,9 @@ public class Wave {
 
             }
         }
-
-        player.setMessage(message());
+        if (player.getMessage() != null && !player.getMessage().contains("kill")) {
+            player.setMessage(message());
+        }
     }
 
     static int currentWave() {

@@ -1,7 +1,9 @@
 package byow.gameplay;
 
+import byow.Core.Engine;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
+import byow.hw4.ShortestPathsSolver;
 import byow.utils.Direction;
 import byow.utils.Point;
 
@@ -22,10 +24,10 @@ public class Bullet {
     private int zombiesHarmed = 0;
     public static Queue<Point> toBeCleared = new ArrayDeque<>();
 
-    Bullet(Player player) {
-        this.weapon = player.currentWeapon();
+    Bullet(Player player, Point start, Weapon w) {
+        this.weapon = w;
         this.tiles = player.tiles;
-        this.location = player.getLocation();
+        this.location = start;
         this.player = player;
         this.orientation = player.getOrientation();
         this.speed = weapon.getSpeed();
@@ -41,7 +43,7 @@ public class Bullet {
         }
     }
 
-    private TETile bulletTile() {
+    TETile bulletTile() {
         return weapon.bulletTile(orientation, distanceTravelled);
     }
 
@@ -55,7 +57,6 @@ public class Bullet {
      * @return Whether the bullet should be removed from the map after this step
      */
     public boolean advanceHelper(int dy, int dx) {
-
         if (weapon.getName().equals("Sword")) {
             if (tiles[location.getX() + dx][location.getY() + dy]
                     .description().toLowerCase().contains("zombie")) {
@@ -76,16 +77,29 @@ public class Bullet {
         }
 
 
+        if (tiles[location.getX()][location.getY()].equals(Tileset.WEAPON_BOX)
+            || tiles[location.getX()][location.getY()].equals(Tileset.WALL)) {
+            return true;
+        }
+
         if (distanceTravelled > 0) { // if bullet has started to travel,
                                      // first change its current location to floor
             tiles[location.getX()][location.getY()] = Tileset.FLOOR;
         }
 
+
         if (distanceTravelled > weapon.getMaxDistance()) {
             return true;
         }
+        /*else if (location.getX() < 0 || location.getX() >= Engine.WIDTH) {
+            return true;
+        } else if (location.getY() < 0 || location.getY() >= Engine.HEIGHT) {
+            return true;
+        }*/
 
         TETile trail = weapon.trailTiles[orientation.vertical() ? 1 : 0];
+
+        int killCount = 0;
 
         for (int i = 1; i <= speed; i++) { // bullet may travel multiple tiles at once
             distanceTravelled++;
@@ -99,6 +113,7 @@ public class Bullet {
                         System.out.println("You dealt " + currentDamage()  + " damage!");
                         if (z.getHealth() == 0) {
                             toBeDeleted.add(z);
+                            killCount++;
                         }
                     }
                 }
@@ -121,14 +136,21 @@ public class Bullet {
                 */
                 tiles[targetX][targetY] = trail;
                 toBeCleared.add(new Point(targetX, targetY));
-            } else if (!tiles[targetX][targetY].description().toLowerCase().contains("zombie")
-                        && !tiles[targetX][targetY].description().endsWith("bullet")) {
+            } else if (tiles[targetX][targetY].equals(Tileset.WEAPON_BOX)
+                    || tiles[targetX][targetY].equals(Tileset.WALL)) {
                 return true;
             }
         }
+
+        if (killCount > 1) {
+            player.addPoints(50);
+            player.setMessage("Multikill! You get 50 points!");
+        }
+
         //if bullet hasn't hit anything, show its new position, return false to keep track of it
         int endX = location.getX() + dx * speed, endY = location.getY() + dy * speed;
-        if (tiles[endX][endY].equals(Tileset.FLOOR)) {
+        if (tiles[endX][endY].equals(Tileset.FLOOR)
+                || tiles[endX][endY].description().equals("Flame")) {
             tiles[endX][endY] = bulletTile();
         }
         location = new Point(endX, endY);
