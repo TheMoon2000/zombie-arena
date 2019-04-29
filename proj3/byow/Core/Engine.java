@@ -168,7 +168,7 @@ public class Engine {
 
         kbInput = true;
         seed = 0;
-        interact(inputSource, true, false);
+        interact(inputSource, true, false,false);
 
         System.exit(0);
     }
@@ -205,7 +205,7 @@ public class Engine {
 
         InputSource source = new StringInputDevice(input.toUpperCase());
 
-        return interact(source, false, false);
+        return interact(source, false, false,false);
     }
 
     /**
@@ -250,12 +250,12 @@ public class Engine {
      * @param keyboardInput Whether the source is keyboard mode
      */
 
-    private TETile[][] interact(InputSource source, boolean keyboardInput, boolean replay) {
+    private TETile[][] interact(InputSource source, boolean keyboardInput, boolean replay, boolean reset) {
         makeMenu(replay); seed = 0; boolean startReadingSeed = false;
         TETile[][] tiles = new TETile[WIDTH][HEIGHT]; Player player = null;
         InputSource tmpSource = new StringInputDevice(""); // temporarily stores real-time input
         while (source.possibleNextInput()) {
-            while (!replay && keyboardInput && !StdDraw.hasNextKeyTyped()) {
+            while (!replay && keyboardInput && !StdDraw.hasNextKeyTyped() && !reset) {
                 sleep(10, false); renewDisplayBar(player);
             }
             char next = source.getNextKey(); InputHistory.addInputChar(next);
@@ -322,7 +322,7 @@ public class Engine {
                     }
             }
             if (EndMenu.reset() || EndMenu.replay) {
-                return interact(loadSrc(), kbInput, EndMenu.replay());
+                return interact(loadSrc(), kbInput, EndMenu.replay(), !EndMenu.reset());
             }
             sleep(130, replay); // for debugging only
         }
