@@ -58,6 +58,7 @@ public class EndMenu {
                     if (keyboard) {
                         replay = true;
                         StdDraw.clear(StdDraw.BLACK);
+                        StdDraw.show();
                     }
                     InputHistory.reloaded = false;
                     InputHistory.save();

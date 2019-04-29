@@ -31,6 +31,9 @@ class Zombie extends GameCharacter {
 
     public void advance(Point target) {
         List<Point> sPath = Direction.shortestPath(this.location, target, r);
+        if (sPath.isEmpty() || getHealth() == 0) {
+            return; // The zombie is already dead
+        }
         Point destination = sPath.get(0);
         TETile desTile = tiles[destination.getX()][destination.getY()];
 
@@ -71,11 +74,11 @@ class Zombie extends GameCharacter {
         super.reduceHealth(amount);
         isHurt = true;
         if (this.getHealth() == 0) {
-            if (r.nextDouble() < 0.15) {
-                player.addHealth((int) (r.nextDouble() * 10));
+            if (r.nextDouble() < 0.2) {
+                player.addHealth((int) (r.nextDouble() * 10) + 1);
             }
             tiles[location.getX()][location.getY()] = Tileset.FLOOR;
-            player.addPoints(100);
+            player.addPoints(80);
             if (explosive && Math.abs(location.getX() - player.getLocation().getX()) <= 1
                 && Math.abs(location.getY() - player.getLocation().getY()) <= 1) {
                 //find adjacent zombies first
@@ -95,19 +98,19 @@ class Zombie extends GameCharacter {
                 player.setMessage("Ouch! That was an explosive zombie!");
             }
         } else {
-            player.addPoints(10);
+            player.addPoints(5);
             tiles[location.getX()][location.getY()] = tile();
         }
     }
 
     TETile tile() {
         double healthPercentage = (double) getHealth() / (double) fullHealth();
-        int red = (int) Math.round(200.0 * healthPercentage) + 50;
+        int red = (int) Math.round(190.0 * healthPercentage) + 60;
         double greenBase = explosive ? 150.0 : 30.0;
-        int greenMin = explosive ? 40 : 10;
+        int greenMin = explosive ? 45 : 15;
         String desc = (explosive ? "Explosive zombie" : "Zombie") + " (" + getHealth() + ")";
         int green = (int) Math.round(greenBase * healthPercentage) + greenMin;
-        int blue = (int) Math.round(30.0 * healthPercentage) + 10;
+        int blue = (int) Math.round(30.0 * healthPercentage) + 12;
 
         return new TETile('x', new Color(red, green, blue), Tileset.FLOOR_COLOR, desc);
     }

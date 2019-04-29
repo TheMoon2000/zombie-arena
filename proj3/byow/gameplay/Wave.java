@@ -90,18 +90,14 @@ public class Wave {
             } else {
                 // Scenario 4: game is ongoing
 
-                long start = System.nanoTime();
                 Queue<Zombie> toBeRemoved = new ArrayDeque<>();
 
                 for (Zombie alive: aliveZombies) {
+                    alive.advance(location);
                     if (alive.getHealth() == 0) {
                         toBeRemoved.add(alive);
-                    } else {
-                        alive.advance(location);
                     }
                 }
-
-//                System.out.println("Update took "  + (System.nanoTime() - start) + " ns");
 
                 for (Zombie deadZombie: toBeRemoved) {
                     aliveZombies.remove(deadZombie);
@@ -150,7 +146,6 @@ public class Wave {
             TETile pathTile = new TETile('·', z.tile().getTextColor(), Tileset.FLOOR_COLOR,
                     "Path");
             List<Point> path = Direction.shortestPath(z.location, player.location, r);
-            path.remove(0);
             path.remove(path.size() - 1);
             for (Point p: path) {
                 if (tilesCopy[p.getX()][p.getY()].equals(pathTile)) {

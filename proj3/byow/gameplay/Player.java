@@ -24,7 +24,7 @@ public class Player extends GameCharacter {
     public Player(TETile[][] tiles, Point location, TERenderer renderer, Random r, boolean kb) {
         super(tiles);
         this.addHealth(MAX_HEALTH);
-        points = 10000;
+        points = 200;
         weapons[0] = Weapon.makePistol();
         weapons[1] = Weapon.makeSword();
         Wave.init(this, tiles, r);

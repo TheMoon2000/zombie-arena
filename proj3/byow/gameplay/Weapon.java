@@ -49,7 +49,7 @@ public class Weapon implements ShopItem {
 
     static Weapon makePistol() {
         Weapon pistol = new Weapon("Pistol");
-        pistol.damage = 20;
+        pistol.damage = 22;
         pistol.maxDistance = 8;
         pistol.clip = 10;
         pistol.clipCapacity = 10;
@@ -58,7 +58,7 @@ public class Weapon implements ShopItem {
         pistol.price = 500;
         pistol.speed = 1;
         pistol.waitTime = 3;
-        pistol.penetration = 0.1;
+        pistol.penetration = 0.2;
         return pistol;
     }
 
@@ -70,10 +70,10 @@ public class Weapon implements ShopItem {
         shotgun.clipCapacity = 6;
         shotgun.ammo = 18;
         shotgun.ammoCapacity = 24;
-        shotgun.price = 1200;
+        shotgun.price = 1500;
         shotgun.speed = 2;
         shotgun.waitTime = 3;
-        shotgun.penetration = 0.7;
+        shotgun.penetration = 0.65;
         shotgun.trailTiles = new TETile[] {
                 new TETile('⋯', new Color(226, 193, 142), Tileset.FLOOR_COLOR, "Arena"),
                 new TETile('⋮', new Color(226, 193, 142), Tileset.FLOOR_COLOR, "Arena")
@@ -89,10 +89,10 @@ public class Weapon implements ShopItem {
         sniperRifle.clipCapacity = 5;
         sniperRifle.ammo = 20;
         sniperRifle.ammoCapacity = 25;
-        sniperRifle.price = 1500;
+        sniperRifle.price = 3000;
         sniperRifle.speed = 15;
         sniperRifle.waitTime = 3;
-        sniperRifle.penetration = 0.9;
+        sniperRifle.penetration = 0.85;
         sniperRifle.trailTiles = new TETile[] {
             new TETile('⋯', new Color(178, 215, 193), Tileset.FLOOR_COLOR, "Arena"),
             new TETile('⋮', new Color(178, 215, 193), Tileset.FLOOR_COLOR, "Arena")
@@ -102,7 +102,7 @@ public class Weapon implements ShopItem {
 
     static Weapon makeMachineGun() {
         Weapon machineGun = new Weapon("Machine gun");
-        machineGun.damage = 40;
+        machineGun.damage = 42;
         machineGun.maxDistance = 25;
         machineGun.clip = 20;
         machineGun.clipCapacity = 30;
@@ -111,7 +111,7 @@ public class Weapon implements ShopItem {
         machineGun.price = 2000;
         machineGun.speed = 3;
         machineGun.waitTime = 1;
-        machineGun.penetration = 0.8;
+        machineGun.penetration = 0.75;
         machineGun.trailTiles = new TETile[] {
                 new TETile('⋯', new Color(220, 214, 167), Tileset.FLOOR_COLOR, "Arena"),
                 new TETile('⋮', new Color(220, 214, 167), Tileset.FLOOR_COLOR, "Arena")
@@ -171,6 +171,13 @@ public class Weapon implements ShopItem {
         int refill = Math.min(ammo, clipCapacity - clip);
         ammo -= refill;
         clip += refill;
+
+        // Reload time
+        if (name.equals("Machine gun")) {
+            currentWaitTime = 3;
+        } else if (name.equals("Sniper rifle")) {
+            currentWaitTime = 2;
+        }
         return true;
     }
 

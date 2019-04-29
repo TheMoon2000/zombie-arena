@@ -16,11 +16,10 @@ public class Bullet {
     Point location; //current location of the bullet
     private TETile[][] tiles;
     private int speed;
-    private int damage;
     private int distanceTravelled = 0; //how many blocks traveled
     private Player player;
     private Direction orientation;
-    int zombiesHarmed = 0;
+    private int zombiesHarmed = 0;
     public static Queue<Point> toBeCleared = new ArrayDeque<>();
 
     Bullet(Player player) {
@@ -30,7 +29,6 @@ public class Bullet {
         this.player = player;
         this.orientation = player.getOrientation();
         this.speed = weapon.getSpeed();
-        this.damage = 0;
     }
 
     boolean advance() {
@@ -98,7 +96,7 @@ public class Bullet {
                     if (z.location.equals(new Point(targetX, targetY))) {
                         z.reduceHealth(currentDamage());
                         zombiesHarmed++;
-                        player.setMessage("You dealt " + currentDamage()  + " damage to zombie.");
+                        System.out.println("You dealt " + currentDamage()  + " damage!");
                         if (z.getHealth() == 0) {
                             toBeDeleted.add(z);
                         }

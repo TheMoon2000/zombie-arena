@@ -210,6 +210,7 @@ public class Engine {
 
     /**
      * Helper method that renders the game
+     * Deletes bullet trails but doesn't render the frame yet!
      *
      */
     private void renderGame(boolean keyBoardInput, TETile[][] tiles, Player player) {
@@ -300,7 +301,6 @@ public class Engine {
                         tmpSource = source; keyboardInput = replay; loadingMenu(replay);
                         source = InputHistory.source(); InputHistory.reloaded = true;
                     } else if (player != null) { // end of reloading
-                        System.out.print("finished loading");
                         keyboardInput = kbInput; replay = false;
                         source = kbInput ? new KeyboardInputSource() : tmpSource;
                         ter.initialize(WIDTH, HEIGHT + 3); ter.renderFrame(tiles);
@@ -324,7 +324,7 @@ public class Engine {
             if (EndMenu.reset() || EndMenu.replay) {
                 return interact(loadSrc(), kbInput, EndMenu.replay(), !EndMenu.reset());
             }
-            sleep(130, replay); // for debugging only
+            sleep(100, replay); // for debugging only
         }
         return tiles;
     }
