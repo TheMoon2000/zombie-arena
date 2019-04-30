@@ -184,6 +184,20 @@ public class Weapon implements ShopItem {
         return submachineGun;
     }
 
+    static Weapon rocketLauncher() {
+        Weapon rocketLauncher = new Weapon("RPG");
+        rocketLauncher.damage = 120;
+        rocketLauncher.maxDistance = 20;
+        rocketLauncher.clip = 3;
+        rocketLauncher.clipCapacity = 3;
+        rocketLauncher.ammo = 9;
+        rocketLauncher.speed = 1;
+        rocketLauncher.waitTime = 3;
+        rocketLauncher.penetration = 1;
+        rocketLauncher.reloadTime = 3;
+        return rocketLauncher;
+    }
+
     static Weapon flamethrower() {
         Weapon flamethrower = new Weapon("Flamethrower");
         flamethrower.damage = 75;
@@ -200,7 +214,7 @@ public class Weapon implements ShopItem {
     }
 
     static Weapon flame() {
-        Weapon flame = new Weapon("Flamethrower");
+        Weapon flame = new Weapon("Flame");
         flame.damage = 45;
         flame.maxDistance = 5;
         flame.speed = 1;
@@ -213,7 +227,7 @@ public class Weapon implements ShopItem {
             return 0;
         } else if (name.equals("Shotgun")) {
             return (int) (Math.max(0.0, damage - distance * 2) * Math.pow(penetration, z));
-        } else if (name.equals("Flamethrower")) {
+        } else if (name.contains("Flame")) {
             return Math.max(0, damage - distance * distance - z * 5);
         } else {
             return (int) (Math.max(0.0, damage - distance) * Math.pow(penetration, z));
@@ -299,6 +313,8 @@ public class Weapon implements ShopItem {
                 blue = (int) (60.0 / Math.pow(1.35, (double) distanceTravelled - 1)) + 1;
                 return new TETile('✧', new Color(red, green, blue),
                         Tileset.FLOOR_COLOR, "Flame");
+            case "RPG":
+                return new TETile('O',new Color(255,100,0), Tileset.FLOOR_COLOR, "RPG rocket");
             default:
                 throw new RuntimeException(name + " tile is not considered");
         }

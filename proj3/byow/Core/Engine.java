@@ -17,6 +17,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class Engine {
     /* Feel free to change the width and height. */
@@ -259,7 +260,7 @@ public class Engine {
             while (!replay && keyboardInput && !StdDraw.hasNextKeyTyped() && !reset) {
                 sleep(10, false); renewDisplayBar(player);
             }
-            char next = source.getNextKey(); InputHistory.addInputChar(next);
+            char next = source.getNextKey(); InputHistory.addInputChar(next); dealWithRPGexplosion(tiles);
             switch (next) {
                 case ':': // if :Q then save and quit
                     if (source.getNextKey() == 'Q') {
@@ -310,7 +311,7 @@ public class Engine {
                     if (player != null && player.atShop()) {
                         String shopMsg = Shop.openMenu(player, source, keyboardInput, r);
                         if (shopMsg == null) { return tiles; }
-                        player.setMessage(shopMsg);
+                        player.setMessage(shopMsg); renewDisplayBar(player);
                     }
                     break;
                 default:
@@ -331,6 +332,17 @@ public class Engine {
 
     private InputSource loadSrc() {
         return new StringInputDevice("L");
+    }
+
+    /**
+     * Helper method to return to previous tile state
+     */
+
+    private void dealWithRPGexplosion(TETile[][] tiles) {
+        for (Point p : Bullet.RPGexplosion) {
+            tiles[p.getX()][p.getY()] = Tileset.FLOOR;
+        }
+        Bullet.RPGexplosion = new ArrayList<>();
     }
 
     /**

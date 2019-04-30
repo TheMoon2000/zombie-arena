@@ -33,7 +33,8 @@ public class RandomWeapon implements ShopItem {
                 Weapon.makeMachinePistol(),
                 Weapon.makeMinigun(),
                 Weapon.makeSubmachineGun(),
-                Weapon.flamethrower()
+                Weapon.flamethrower(),
+                Weapon.rocketLauncher()
         };
 
         if (player.getPoints() >= PRICE) {

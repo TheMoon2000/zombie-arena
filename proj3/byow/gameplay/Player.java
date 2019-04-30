@@ -26,7 +26,7 @@ public class Player extends GameCharacter {
         this.addHealth(MAX_HEALTH);
         points = 2000;
         weapons[0] = Weapon.makePistol();
-        weapons[1] = Weapon.makeSword();
+        weapons[1] = Weapon.rocketLauncher();
         Wave.init(this, tiles, r);
         message = Wave.message();
         ter = renderer;
@@ -47,7 +47,7 @@ public class Player extends GameCharacter {
                 if (!orientation.equals(Direction.North)) {
                     orientation = Direction.North;
                     tiles[x][y] = Tileset.PLAYER_NORTH;
-                } else if (y + 1 < tiles[0].length && tiles[x][y + 1].equals(Tileset.FLOOR)) {
+                } else if (y + 1 < tiles[0].length && tiles[x][y + 1].equals(Tileset.FLOOR) || Bullet.RPGexplosion.contains(new Point(x, y + 1))) {
                     tiles[x][y + 1] = Tileset.PLAYER_NORTH;
                     tiles[x][y] = Tileset.FLOOR;
                     location = new Point(x, y + 1);
@@ -57,7 +57,7 @@ public class Player extends GameCharacter {
                 if (!orientation.equals(Direction.South)) {
                     orientation = Direction.South;
                     tiles[x][y] = Tileset.PLAYER_SOUTH;
-                } else if (y > 0 && tiles[x][y - 1].equals(Tileset.FLOOR)) {
+                } else if (y > 0 && tiles[x][y - 1].equals(Tileset.FLOOR) || Bullet.RPGexplosion.contains(new Point(x, y - 1))) {
                     tiles[x][y - 1] = Tileset.PLAYER_SOUTH;
                     tiles[x][y] = Tileset.FLOOR;
                     location = new Point(x, y - 1);
@@ -67,7 +67,7 @@ public class Player extends GameCharacter {
                 if (!orientation.equals(Direction.West)) {
                     orientation = Direction.West;
                     tiles[x][y] = Tileset.PLAYER_WEST;
-                } else if (x > 0 && tiles[x - 1][y].equals(Tileset.FLOOR)) {
+                } else if (x > 0 && tiles[x - 1][y].equals(Tileset.FLOOR) || Bullet.RPGexplosion.contains(new Point(x - 1, y))) {
                     tiles[x - 1][y] = Tileset.PLAYER_WEST;
                     tiles[x][y] = Tileset.FLOOR;
                     location = new Point(x - 1, y);
@@ -77,7 +77,7 @@ public class Player extends GameCharacter {
                 if (!orientation.equals(Direction.East)) {
                     orientation = Direction.East;
                     tiles[x][y] = Tileset.PLAYER_EAST;
-                } else if (x + 1 < tiles.length && tiles[x + 1][y].equals(Tileset.FLOOR)) {
+                } else if (x + 1 < tiles.length && tiles[x + 1][y].equals(Tileset.FLOOR) || Bullet.RPGexplosion.contains(new Point(x + 1, y))) {
                     tiles[x + 1][y] = Tileset.PLAYER_EAST;
                     tiles[x][y] = Tileset.FLOOR;
                     location = new Point(x + 1, y);

@@ -7,6 +7,7 @@ import byow.hw4.ShortestPathsSolver;
 import byow.utils.Direction;
 import byow.utils.Point;
 
+import java.awt.*;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +24,7 @@ public class Bullet {
     private Direction orientation;
     private int zombiesHarmed = 0;
     public static Queue<Point> toBeCleared = new ArrayDeque<>();
+    public static ArrayList<Point> RPGexplosion = new ArrayList<>();
 
     Bullet(Player player, Point start, Weapon w) {
         this.weapon = w;
@@ -105,21 +107,25 @@ public class Bullet {
             distanceTravelled++;
             int targetX = location.getX() + dx * i, targetY = location.getY() + dy * i;
             if (tiles[targetX][targetY].description().toLowerCase().contains("zombie")) {
-                List<Zombie> toBeDeleted = new ArrayList<>();
-                for (Zombie z : Wave.aliveZombies) {
-                    if (z.location.equals(new Point(targetX, targetY))) {
-                        z.reduceHealth(currentDamage());
-                        zombiesHarmed++;
-                        System.out.println("You dealt " + currentDamage()  + " damage!");
-                        if (z.getHealth() == 0) {
-                            toBeDeleted.add(z);
-                            killCount++;
+                if (this.weapon.getName().equals("RPG")) {
+                    return handleRPGCase(targetX,targetY);
+                } else {
+                    List<Zombie> toBeDeleted = new ArrayList<>();
+                    for (Zombie z : Wave.aliveZombies) {
+                        if (z.location.equals(new Point(targetX, targetY))) {
+                            z.reduceHealth(currentDamage());
+                            zombiesHarmed++;
+                            System.out.println("You dealt " + currentDamage() + " damage!");
+                            if (z.getHealth() == 0) {
+                                toBeDeleted.add(z);
+                                killCount++;
+                            }
                         }
                     }
-                }
 
-                for (Zombie dead: toBeDeleted) {
-                    Wave.aliveZombies.remove(dead);
+                    for (Zombie dead : toBeDeleted) {
+                        Wave.aliveZombies.remove(dead);
+                    }
                 }
             }
 
@@ -138,6 +144,9 @@ public class Bullet {
                 toBeCleared.add(new Point(targetX, targetY));
             } else if (tiles[targetX][targetY].equals(Tileset.WEAPON_BOX)
                     || tiles[targetX][targetY].equals(Tileset.WALL)) {
+                if (this.weapon.getName().equals("RPG")) {
+                    return handleRPGCase(targetX,targetY);
+                }
                 return true;
             }
         }
@@ -156,6 +165,62 @@ public class Bullet {
         location = new Point(endX, endY);
 
         return false;
+    }
+
+    private boolean handleRPGCase(int targetX, int targetY) {
+        List<Zombie> toBeDeleted = new ArrayList<>();
+        for (Zombie z : Wave.aliveZombies) {
+            if (z.location.equals(new Point(targetX, targetY))) {
+                z.reduceHealth(currentDamage());
+                zombiesHarmed++;
+                System.out.println("You dealt " + currentDamage() + " damage!");
+                if (z.getHealth() == 0) {
+                    toBeDeleted.add(z);
+                }
+            }
+            if (Math.abs(z.location.getX() - targetX) <= 1 && Math.abs(z.location.getY() - targetY) <= 1) {
+                z.reduceHealth(currentDamage());
+                zombiesHarmed++;
+                System.out.println("You dealt " + currentDamage() / 1.5 + " damage!");
+                if (z.getHealth() == 0) {
+                    toBeDeleted.add(z);
+                }
+            }
+            if (Math.abs(z.location.getX() - targetX) <= 2 && Math.abs(z.location.getY() - targetY) <= 2) {
+                z.reduceHealth(currentDamage());
+                zombiesHarmed++;
+                System.out.println("You dealt " + currentDamage() / 2 + " damage!");
+                if (z.getHealth() == 0) {
+                    toBeDeleted.add(z);
+                }
+            }
+            if (Math.abs(z.location.getX() - targetX) <= 3 && Math.abs(z.location.getY() - targetY) <= 3) {
+                z.reduceHealth(currentDamage());
+                zombiesHarmed++;
+                System.out.println("You dealt " + currentDamage() / 2.5 + " damage!");
+                if (z.getHealth() == 0) {
+                    toBeDeleted.add(z);
+                }
+            }
+        }
+        for (Zombie dead : toBeDeleted) {
+            Wave.aliveZombies.remove(dead);
+        }
+
+        for (int i = targetX - 2; i <= targetX + 2; i ++) {
+            for (int j = targetY - 2; j <= targetY + 2; j ++) {
+                if (tiles[i][j] == Tileset.FLOOR && !(i == player.getLocation().getX() && j == player.getLocation().getY())) {
+                    double distance = Math.sqrt(Math.abs(i - targetX) ^ 2 + Math.abs(j - targetY) ^ 2);
+                    int red = (int) (255.0 / Math.pow(1.5, distance));
+                    int green = (int) (120.0 / Math.pow(1.25, distance));
+                    int blue = (int) (80.0 / Math.pow(1.3, distance));
+                    tiles[i][j] = new TETile('✦', new Color(red, green, blue),Tileset.FLOOR_COLOR, "Flame");
+                    RPGexplosion.add(new Point(i,j));
+                }
+            }
+        }
+
+        return true;
     }
 
 }
