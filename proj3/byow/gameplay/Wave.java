@@ -83,7 +83,7 @@ public class Wave {
                     wave++; preparation = wave == 1 ? 50 : 60;
                 } else {
                     // Ends game, player wins
-                    EndMenu menu = new EndMenu(player, "You Win!", player.keyboardInput);
+                    EndMenu menu = new EndMenu(player, "You Win!");
                     menu.open(new KeyboardInputSource());
                 }
             } else if (zombiesRemaining() == 0) {
