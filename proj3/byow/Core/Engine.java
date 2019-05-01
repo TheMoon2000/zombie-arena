@@ -81,13 +81,10 @@ public class Engine implements Serializable {
                 return (Engine) os.readObject();
             } catch (FileNotFoundException e) {
                 System.out.println("file not found");
-                System.exit(0);
             } catch (IOException e) {
                 System.out.println(e);
-                System.exit(0);
             } catch (ClassNotFoundException e) {
                 System.out.println("class not found");
-                System.exit(0);
             }
         }
 
@@ -179,7 +176,7 @@ public class Engine implements Serializable {
             switch (next) {
                 case ':': // if :Q then save and quit
                     if (src.getNextKey() == 'Q') {
-                        save(); System.exit(0);
+                        save(); // System.exit(0);
                     }
                     break;
                 case 'N': // new world
