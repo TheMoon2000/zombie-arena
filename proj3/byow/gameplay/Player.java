@@ -32,7 +32,7 @@ public class Player extends GameCharacter {
         ter = renderer;
         keyboardInput = kb;
 
-        // Make default orientation North
+        // Make default orientation North:Q
         this.location = location;
         tiles[location.getX()][location.getY()] = Tileset.PLAYER_NORTH;
         this.orientation = Direction.North;

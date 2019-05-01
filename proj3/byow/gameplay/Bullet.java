@@ -206,7 +206,11 @@ public class Bullet {
         for (int i = targetX - 2; i <= targetX + 2; i++) {
             for (int j = targetY - 2; j <= targetY + 2; j++) {
                 Point current = new Point(i, j);
-                if (tiles[i][j] == Tileset.FLOOR || (i == targetX && j == targetY)) {
+                if (!((i >= 0 && i < tiles.length) && (j >= 0 && j < tiles[i].length))) {
+                    continue;
+                }
+                if ((tiles[i][j] == Tileset.FLOOR || (i == targetX && j == targetY)) && !tiles[i][j].description().equals("Wall")) {
+                    System.out.println(tiles[targetX][targetY].description());
                     double distance = Point.distance(source, current);
                     int red = (int) (255.0 / Math.pow(1.4, distance));
                     int green = (int) (120.0 / Math.pow(1.35, distance));
