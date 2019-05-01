@@ -27,16 +27,16 @@ public class RandomWeapon implements ShopItem {
             throw new RuntimeException("Random is not defined in shop!");
         }
         Weapon[] list = {
-                Weapon.makeSword(),
-                Weapon.makePistol(),
-                Weapon.makeShotgun(),
-                Weapon.makeSniperRifle(),
-                Weapon.makeMachineGun(),
-                Weapon.makeMachinePistol(),
-                Weapon.makeMinigun(),
-                Weapon.makeSubmachineGun(),
-                Weapon.flamethrower(),
-                Weapon.rocketLauncher()
+            Weapon.makeSword(),
+            Weapon.makePistol(),
+            Weapon.makeShotgun(),
+            Weapon.makeSniperRifle(),
+            Weapon.makeMachineGun(),
+            Weapon.makeMachinePistol(),
+            Weapon.makeMinigun(),
+            Weapon.makeSubmachineGun(),
+            Weapon.flamethrower(),
+            Weapon.rocketLauncher()
         };
 
         if (player.getPoints() >= PRICE) {

@@ -578,11 +578,13 @@ public class Engine {
      */
 
     private void locate(Player player) {
-        StdDraw.setPenColor(new Color(236, 96, 91));
-        StdDraw.setPenRadius(0.01);
-        StdDraw.circle(player.getLocation().getX() + 0.5,
-                player.getLocation().getY() + 0.5, 1.5);
-        StdDraw.show();
+        if (kbInput) {
+            StdDraw.setPenColor(new Color(236, 96, 91));
+            StdDraw.setPenRadius(0.01);
+            StdDraw.circle(player.getLocation().getX() + 0.5,
+                    player.getLocation().getY() + 0.5, 1.5);
+            StdDraw.show();
+        }
     }
 
     /**

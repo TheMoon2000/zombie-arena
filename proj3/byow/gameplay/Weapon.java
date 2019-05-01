@@ -78,8 +78,8 @@ public class Weapon implements ShopItem {
         shotgun.penetration = 0.65;
         shotgun.reloadTime = 2;
         shotgun.trailTiles = new TETile[] {
-                new TETile('⋯', new Color(226, 193, 142), Tileset.FLOOR_COLOR, "Arena"),
-                new TETile('⋮', new Color(226, 193, 142), Tileset.FLOOR_COLOR, "Arena")
+            new TETile('⋯', new Color(226, 193, 142), Tileset.FLOOR_COLOR, "Arena"),
+            new TETile('⋮', new Color(226, 193, 142), Tileset.FLOOR_COLOR, "Arena")
         };
         return shotgun;
     }
@@ -163,8 +163,8 @@ public class Weapon implements ShopItem {
         minigun.penetration = 0.8;
         minigun.reloadTime = 6;
         minigun.trailTiles = new TETile[] {
-                new TETile('⋯', new Color(226, 220, 214), Tileset.FLOOR_COLOR, "Arena"),
-                new TETile('⋮', new Color(226, 220, 214), Tileset.FLOOR_COLOR, "Arena")
+             new TETile('⋯', new Color(226, 220, 214), Tileset.FLOOR_COLOR, "Arena"),
+             new TETile('⋮', new Color(226, 220, 214), Tileset.FLOOR_COLOR, "Arena")
         };
         return minigun;
     }
@@ -223,7 +223,7 @@ public class Weapon implements ShopItem {
         return flame;
     }
 
-    public int damage(int distance, int z) {
+    int damage(int distance, int z) {
         if (maxDistance < distance) {
             return 0;
         } else if (name.equals("Shotgun")) {
@@ -321,7 +321,7 @@ public class Weapon implements ShopItem {
         }
     }
 
-    public String ammoDescription() {
+    String ammoDescription() {
         return clip + " / " + ammo;
     }
 
@@ -340,7 +340,7 @@ public class Weapon implements ShopItem {
         return this.getName().hashCode();
     }
 
-    public int getMaxDistance() {
+    int getMaxDistance() {
         return this.maxDistance;
     }
 }
