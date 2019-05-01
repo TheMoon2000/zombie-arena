@@ -13,7 +13,6 @@ import byow.gameplay.Wave;
 import byow.gameplay.Bullet;
 import byow.hw4.WeightedUndirectedGraph;
 import byow.utils.Direction;
-import byow.utils.InputHistory;
 import byow.utils.NearTree;
 import byow.utils.Point;
 import edu.princeton.cs.introcs.StdDraw;
@@ -46,7 +45,7 @@ public class Engine implements Serializable {
     private boolean kbInput = false;
     private long seed = 0;
     private TETile[][] tiles;
-    private Queue<Point> toBeCleared = new ArrayDeque<>();
+    private Queue<Point> toBeCleared;
     private Player player = null;
     private Wave wave;
     private WeightedUndirectedGraph arena;
@@ -167,9 +166,8 @@ public class Engine implements Serializable {
      * @param src The input source
      */
 
-    private TETile[][] interact(InputSource src, boolean replay) {
-        if (replay) { player = null; tiles = null; }
-        makeMenu(); seed = 0; boolean startReadingSeed = false;
+    public TETile[][] interact(InputSource src, boolean replay) {
+        makeMenu(); seed = 0; boolean startReadingSeed = false; toBeCleared = new ArrayDeque<>();
         while (src.possibleNextInput()) {
             while (kbInput && !replay && !StdDraw.hasNextKeyTyped()) {
                 sleep(10, false); renewDisplayBar();
@@ -206,6 +204,7 @@ public class Engine implements Serializable {
                         this.tiles = potential.tiles; this.ter = potential.ter;
                         this.player = potential.player; this.wave = potential.wave;
                         this.r = potential.r; this.seed = potential.seed;
+                        this.toBeCleared = potential.toBeCleared;
                         this.arena = potential.arena;
                         if (kbInput) {
                             ter.initialize(WIDTH, HEIGHT + 3);
@@ -219,7 +218,7 @@ public class Engine implements Serializable {
                     if (player != null && player.atShop()) {
                         String shopMsg = Shop.openMenu(this, src, history);
                         if (shopMsg == null) {
-                            InputHistory.save(); return tiles;
+                            return tiles;
                         }
                         player.setMessage(shopMsg); renewDisplayBar();
                     }
@@ -246,7 +245,7 @@ public class Engine implements Serializable {
      */
 
     public void startNewWorld(InputSource src) {
-        r = new Random(seed); //history = new StringBuilder();
+        r = new Random(seed);
         tiles = new TETile[WIDTH][HEIGHT]; generateWorld();
         player = new Player(randomPlacement(), this);
         if (kbInput) {
@@ -297,8 +296,7 @@ public class Engine implements Serializable {
         }
 
         for (Point p: toBeCleared) {
-            if (tiles[p.getX()][p.getY()].equals(Tileset.FLOOR)
-                    || tiles[p.getX()][p.getY()].description().toLowerCase().contains("bullet")) {
+            if (tiles[p.getX()][p.getY()].equals(Tileset.FLOOR)) {
                 tiles[p.getX()][p.getY()] = Tileset.FLOOR;
             }
         }
@@ -306,13 +304,6 @@ public class Engine implements Serializable {
         toBeCleared.clear();
         renewDisplayBar();
     }
-
-    public void activatePlayback() {
-        System.out.println(history.toString());
-        String newString = history.toString();
-        interact(new StringInputDevice(newString.toUpperCase()),true);
-    }
-
 
     /**
      * Pause for a moment
@@ -802,8 +793,12 @@ public class Engine implements Serializable {
         return ter;
     }
 
-    public StringBuilder getHistory() {
-        return history;
+    public void setKbInput(boolean kb) {
+        this.kbInput = kb;
+    }
+
+    public String getHistory() {
+        return history.toString();
     }
 
     public void setBackToMenu() {

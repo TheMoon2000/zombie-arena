@@ -71,15 +71,16 @@ public class Bullet implements Serializable {
             }
             return true;
         }
+        if (distanceTravelled > 0
+                && tiles[location.getX()][location.getY()].equals(bulletTile())) {
+            tiles[location.getX()][location.getY()] = Tileset.FLOOR;
+        }
         if (tiles[location.getX()][location.getY()].equals(Tileset.WEAPON_BOX)
             || tiles[location.getX()][location.getY()].equals(Tileset.WALL)
             || distanceTravelled > weapon.getMaxDistance()) {
             return true;
         }
-        if (distanceTravelled > 0
-                && tiles[location.getX()][location.getY()].equals(bulletTile())) {
-            tiles[location.getX()][location.getY()] = Tileset.FLOOR;
-        }
+
         TETile trail = weapon.trailTiles[orientation.vertical() ? 1 : 0];
         int kills = 0;
 

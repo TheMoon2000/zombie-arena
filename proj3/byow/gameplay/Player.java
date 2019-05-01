@@ -32,7 +32,7 @@ public class Player extends GameCharacter {
 
         points = 2000;
         weapons[0] = Weapon.makePistol();
-        weapons[1] = Weapon.rocketLauncher();
+        weapons[1] = Weapon.makeSword();
 
         this.wave = new Wave(this, tiles, e.getR());
         e.setWave(this.wave);

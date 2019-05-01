@@ -2,8 +2,8 @@ package byow.gameplay;
 
 import byow.Core.Engine;
 import byow.InputDemo.InputSource;
+import byow.InputDemo.StringInputDevice;
 import byow.TileEngine.TERenderer;
-import byow.utils.InputHistory;
 import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.Font;
@@ -30,8 +30,6 @@ public class EndMenu {
         keyboard = player.engine.isKbInput();
         this.engine = player.engine;
         engine.save();
-        InputHistory.save();
-        InputHistory.clear();
     }
 
     public void open(InputSource source) {
@@ -39,7 +37,6 @@ public class EndMenu {
         while (source.possibleNextInput()) {
             renderMenu(renderer);
             char next = source.getNextKey();
-            engine.getHistory().deleteCharAt(engine.getHistory().length() - 1);
             switch (next) {
                 case ':': // if :Q then save and quit
                     if (source.getNextKey() == 'Q') {
@@ -51,7 +48,11 @@ public class EndMenu {
                     engine.startNewWorld(source);
                     return;
                 case '2':
-                    engine.activatePlayback();
+                    String input = engine.getHistory();
+                    System.out.println("\n" + input);
+                    Engine tmp = new Engine();
+                    tmp.setKbInput(engine.isKbInput());
+                    tmp.interact(new StringInputDevice(input),true);
                     break;
                 case '3':
                     engine.setBackToMenu();

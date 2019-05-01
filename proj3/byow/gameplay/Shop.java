@@ -3,7 +3,6 @@ package byow.gameplay;
 import byow.Core.Engine;
 import byow.InputDemo.InputSource;
 import byow.TileEngine.TERenderer;
-import byow.utils.InputHistory;
 import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.Color;

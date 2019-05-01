@@ -92,7 +92,7 @@ public class Weapon implements ShopItem, Serializable {
         sniperRifle.clip = 5;
         sniperRifle.clipCapacity = 5;
         sniperRifle.ammo = 20;
-        sniperRifle.ammoCapacity = 25;
+        sniperRifle.ammoCapacity = 30;
         sniperRifle.price = 3000;
         sniperRifle.speed = 15;
         sniperRifle.waitTime = 3;
