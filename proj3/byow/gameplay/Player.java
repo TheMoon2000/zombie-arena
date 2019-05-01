@@ -213,7 +213,6 @@ public class Player extends GameCharacter {
         if (getHealth() == 0) {
             EndMenu menu = new EndMenu(this, "Game Over");
             menu.open(source);
-            System.out.println("menu closed");
         }
     }
 }

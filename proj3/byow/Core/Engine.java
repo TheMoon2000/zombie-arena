@@ -33,6 +33,7 @@ public class Engine {
     private static Random r;
     private boolean kbInput = false;
     private static long seed = 0;
+    private boolean locatePlayer = false;
 
     /**
      * Fill up a rectangular region in the given tiles matrix
@@ -317,7 +318,7 @@ public class Engine {
                     if (player != null && player.atShop()) {
                         String shopMsg = Shop.openMenu(player, src, kb, r);
                         if (shopMsg == null) {
-                            return tiles;
+                            InputHistory.save(); return tiles;
                         }
                         player.setMessage(shopMsg); renewDisplayBar(player);
                     }
@@ -363,7 +364,9 @@ public class Engine {
 
     private void renderRPG(TETile[][] tiles) {
         for (Point p: Bullet.getRpgExplosion().keySet()) {
-            tiles[p.getX()][p.getY()] = Tileset.FLOOR;
+            if (tiles[p.getX()][p.getY()].description().equals("Flame")) {
+                tiles[p.getX()][p.getY()] = Tileset.FLOOR;
+            }
         }
         Bullet.getRpgExplosion().clear();
     }
@@ -580,7 +583,7 @@ public class Engine {
      */
 
     private void locate(Player player) {
-        if (kbInput) {
+        if (kbInput && locatePlayer) {
             StdDraw.setPenColor(new Color(236, 96, 91));
             StdDraw.setPenRadius(0.01);
             StdDraw.circle(player.getLocation().getX() + 0.5,

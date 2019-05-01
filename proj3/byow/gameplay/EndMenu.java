@@ -33,7 +33,6 @@ public class EndMenu {
     }
 
     void open(InputSource source) {
-        System.out.print("User opened end of game menu, title='" + titleText + "'");
         renderMenu(renderer);
         while (source.possibleNextInput()) {
             renderMenu(renderer);

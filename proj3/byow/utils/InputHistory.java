@@ -79,7 +79,6 @@ public class InputHistory {
         while (myInput.hasNextChar()) {
             fileInput.append(myInput.readChar());
         }
-        System.out.println("\nRead the following string from SaveFile.txt:");
         System.out.println(fileInput.toString());
         return new StringInputDevice(fileInput.toString());
     }
