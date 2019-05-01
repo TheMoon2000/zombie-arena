@@ -205,8 +205,10 @@ public class Engine implements Serializable {
                         this.player = potential.player; this.wave = potential.wave;
                         this.r = potential.r; this.seed = potential.seed;
                         this.arena = potential.arena;
-                        ter.initialize(WIDTH, HEIGHT + 3);
-                        renderGame(src); locate(); renewDisplayBar();
+                        if (kbInput) {
+                            ter.initialize(WIDTH, HEIGHT + 3);
+                            renderGame(src); locate(); renewDisplayBar();
+                        }
                         Direction.setArena(potential.arena);
                     }
                     break;
