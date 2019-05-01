@@ -40,7 +40,8 @@ public class EndMenu {
             switch (next) {
                 case ':': // if :Q then save and quit
                     if (source.getNextKey() == 'Q') {
-                        System.exit(0);
+                        engine.save();
+                        // System.exit(0);
                     }
                     break;
                 case '1':

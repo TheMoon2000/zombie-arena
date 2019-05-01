@@ -176,7 +176,7 @@ public class Engine implements Serializable {
             switch (next) {
                 case ':': // if :Q then save and quit
                     if (src.getNextKey() == 'Q') {
-                        save(); System.exit(0);
+                        save(); // System.exit(0);
                     }
                     break;
                 case 'N': // new world
