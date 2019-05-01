@@ -20,10 +20,8 @@ public class InputHistory {
         }
     }
 
-    public static void deleteLast() {
-        if (input.length() > 0) {
-            input.deleteCharAt(input.length() - 1);
-        }
+    public static void clear() {
+        input = new StringBuilder();
     }
 
     public static void save() {

@@ -46,6 +46,8 @@ public class Wave {
      */
     public static void update(Point location, boolean updateBullets, boolean updateZombies) {
 
+        String oldMessage = player.getMessage();
+
         if (updateBullets) {
             //first deal with all the bullets
             ArrayList<Bullet> removeList = new ArrayList<>();
@@ -59,6 +61,10 @@ public class Wave {
             }
 
             player.waitTimeUpdate();
+
+            if (player.getMessage() == null || player.getMessage().equals(oldMessage)) {
+                player.setMessage(message());
+            }
         }
 
         if (updateZombies) {
@@ -81,15 +87,14 @@ public class Wave {
                 waveStarted = true;
                 // Scenario 3: player's preparation time is over, begin wave
                 // Add zombies here...
-                for (int i = 0; i < 10 + currentWave() * 5; i++) {
-                    Zombie z = new Zombie(player, Engine.randomPlacement(tiles, player,r), r);
-                    z.explosive = r.nextDouble() > 0.9; // chance that the zombie is explosive
+                for (int i = 0; i < 15 + currentWave() * 5; i++) {
+                    Zombie z = new Zombie(player, Engine.randomPlacement(tiles, player));
+                    z.explosive = r.nextDouble() > 0.9;
                     waveZombies.add(z);
                 }
                 update(location, false, true);
             } else {
                 // Scenario 4: game is ongoing
-
                 Queue<Zombie> toBeRemoved = new ArrayDeque<>();
 
                 for (Zombie alive: aliveZombies) {
@@ -103,6 +108,13 @@ public class Wave {
                     aliveZombies.remove(deadZombie);
                 }
 
+                for (Point exp: Bullet.RPGexplosion.keySet()) {
+                    if (tiles[exp.getX()][exp.getY()].equals(Tileset.FLOOR)
+                        || tiles[exp.getX()][exp.getY()].description().contains("RPG")) {
+                        tiles[exp.getX()][exp.getY()] = Bullet.RPGexplosion.get(exp);
+                    }
+                }
+
                 while (!waveZombies.isEmpty() && aliveZombies.size() < 20) {
                     Zombie z = waveZombies.remove(); // dequeue a zombie from the waiting list
                     aliveZombies.add(z);
@@ -111,10 +123,12 @@ public class Wave {
                 }
 
             }
+
+            if (player.getMessage() == null || player.getMessage().equals(oldMessage)) {
+                player.setMessage(message());
+            }
         }
-        if (player.getMessage() != null && !player.getMessage().contains("kill")) {
-            player.setMessage(message());
-        }
+
     }
 
     static int currentWave() {
@@ -146,7 +160,7 @@ public class Wave {
         for (Zombie z: aliveZombies) {
             TETile pathTile = new TETile('·', z.tile().getTextColor(), Tileset.FLOOR_COLOR,
                     "Path");
-            List<Point> path = Direction.shortestPath(z.location, player.location, r);
+            List<Point> path = Direction.shortestPath(z.location, player.location);
             path.remove(path.size() - 1);
             for (Point p: path) {
                 if (tilesCopy[p.getX()][p.getY()].equals(pathTile)) {

@@ -186,11 +186,12 @@ public class Weapon implements ShopItem {
 
     static Weapon rocketLauncher() {
         Weapon rocketLauncher = new Weapon("RPG");
-        rocketLauncher.damage = 120;
+        rocketLauncher.damage = 100;
         rocketLauncher.maxDistance = 20;
-        rocketLauncher.clip = 3;
-        rocketLauncher.clipCapacity = 3;
-        rocketLauncher.ammo = 9;
+        rocketLauncher.clip = 1;
+        rocketLauncher.clipCapacity = 1;
+        rocketLauncher.ammo = 10;
+        rocketLauncher.ammoCapacity = 15;
         rocketLauncher.speed = 1;
         rocketLauncher.waitTime = 3;
         rocketLauncher.penetration = 1;
@@ -269,7 +270,7 @@ public class Weapon implements ShopItem {
         clip += refill;
 
         // Reload time
-        currentWaitTime += reloadTime;
+        currentWaitTime = reloadTime;
         return true;
     }
 
@@ -314,7 +315,7 @@ public class Weapon implements ShopItem {
                 return new TETile('✧', new Color(red, green, blue),
                         Tileset.FLOOR_COLOR, "Flame");
             case "RPG":
-                return new TETile('O',new Color(255,100,0), Tileset.FLOOR_COLOR, "RPG rocket");
+                return new TETile('⊙', new Color(231, 86, 88), Tileset.FLOOR_COLOR, "RPG bullet");
             default:
                 throw new RuntimeException(name + " tile is not considered");
         }

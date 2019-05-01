@@ -17,7 +17,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 public class Engine {
     /* Feel free to change the width and height. */
@@ -260,7 +259,7 @@ public class Engine {
             while (!replay && keyboardInput && !StdDraw.hasNextKeyTyped() && !reset) {
                 sleep(10, false); renewDisplayBar(player);
             }
-            char next = source.getNextKey(); InputHistory.addInputChar(next); dealWithRPGexplosion(tiles);
+            char next = source.getNextKey(); InputHistory.addInputChar(next); renderRPG(tiles);
             switch (next) {
                 case ':': // if :Q then save and quit
                     if (source.getNextKey() == 'Q') {
@@ -317,7 +316,7 @@ public class Engine {
                 default:
                     if ((next == '1' || next == '2') && player != null) {
                         player.switchWeapon(); renderGame(keyboardInput, tiles, player);
-                    } else if (startReadingSeed) {
+                    } else if (startReadingSeed && validDigit(next)) {
                         seed = seed * 10 + Integer.parseInt(String.valueOf(next));
                         displaySeed(seed, keyboardInput);
                     }
@@ -334,15 +333,24 @@ public class Engine {
         return new StringInputDevice("L");
     }
 
+    private boolean validDigit(char c) {
+        try {
+            Integer.parseInt(c + "");
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
     /**
      * Helper method to return to previous tile state
      */
 
-    private void dealWithRPGexplosion(TETile[][] tiles) {
-        for (Point p : Bullet.RPGexplosion) {
+    private void renderRPG(TETile[][] tiles) {
+        for (Point p: Bullet.RPGexplosion.keySet()) {
             tiles[p.getX()][p.getY()] = Tileset.FLOOR;
         }
-        Bullet.RPGexplosion = new ArrayList<>();
+        Bullet.RPGexplosion.clear();
     }
 
     /**
@@ -526,7 +534,7 @@ public class Engine {
         return new Point(randomX, randomY);
     }
 
-    public static Point randomPlacement(TETile[][] tiles, Player player, Random r) {
+    public static Point randomPlacement(TETile[][] tiles, Player player) {
         Point randomPoint = new Point(r.nextInt(WIDTH - 1), r.nextInt(HEIGHT - 1));
         while (!tiles[randomPoint.getX()][randomPoint.getY()].equals(Tileset.FLOOR)
                || hasNearby(tiles, randomPoint, player.getCurrentTile(), 1)) {

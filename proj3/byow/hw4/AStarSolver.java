@@ -3,7 +3,6 @@ package byow.hw4;
 import byow.proj2ab.ArrayHeapMinPQ;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Random;
 import byow.proj2ab.ExtrinsicMinPQ;
 import java.util.Map;
 import java.util.LinkedList;
@@ -13,15 +12,14 @@ public class AStarSolver<Vertex> implements ShortestPathsSolver<Vertex> {
     private SolverOutcome solverOutcome;
     private LinkedList<Vertex> solution;
     private double solutionWeight;
-    private double timeSpent;
     private int statesExplored;
 
     private AStarGraph<Vertex> inputGraph;
 
-    public AStarSolver(AStarGraph<Vertex> input, Vertex start, Vertex end, Random r) {
+    public AStarSolver(AStarGraph<Vertex> input, Vertex start, Vertex end) {
         this.inputGraph = input;
 
-        ExtrinsicMinPQ<Vertex> pq = new ArrayHeapMinPQ<>(r);
+        ExtrinsicMinPQ<Vertex> pq = new ArrayHeapMinPQ<>();
         Map<Vertex, Double> distTo = new HashMap<>();
         Map<Vertex, Vertex> edgeTo = new HashMap<>();
 
@@ -89,7 +87,7 @@ public class AStarSolver<Vertex> implements ShortestPathsSolver<Vertex> {
 
     @Override
     public double explorationTime() {
-        return timeSpent;
+        return 100;
     }
 
     // Simplification

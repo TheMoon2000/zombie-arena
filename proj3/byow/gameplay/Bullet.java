@@ -1,17 +1,12 @@
 package byow.gameplay;
 
-import byow.Core.Engine;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
-import byow.hw4.ShortestPathsSolver;
 import byow.utils.Direction;
 import byow.utils.Point;
 
-import java.awt.*;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
+import java.awt.Color;
+import java.util.*;
 
 public class Bullet {
 
@@ -24,7 +19,7 @@ public class Bullet {
     private Direction orientation;
     private int zombiesHarmed = 0;
     public static Queue<Point> toBeCleared = new ArrayDeque<>();
-    public static ArrayList<Point> RPGexplosion = new ArrayList<>();
+    public static HashMap<Point, TETile> RPGexplosion = new HashMap<>();
 
     Bullet(Player player, Point start, Weapon w) {
         this.weapon = w;
@@ -71,7 +66,6 @@ public class Bullet {
                 }
                 if (zombie != null) {
                     zombie.reduceHealth(currentDamage());
-                    player.setMessage("You dealt " + currentDamage() + " damage to a zombie.");
                 }
 
             }
@@ -101,24 +95,25 @@ public class Bullet {
 
         TETile trail = weapon.trailTiles[orientation.vertical() ? 1 : 0];
 
-        int killCount = 0;
+        int kills = 0;
 
         for (int i = 1; i <= speed; i++) { // bullet may travel multiple tiles at once
             distanceTravelled++;
             int targetX = location.getX() + dx * i, targetY = location.getY() + dy * i;
             if (tiles[targetX][targetY].description().toLowerCase().contains("zombie")) {
                 if (this.weapon.getName().equals("RPG")) {
-                    return handleRPGCase(targetX,targetY);
+                    handleRPGCase(targetX, targetY, true);
+                    return true;
                 } else {
                     List<Zombie> toBeDeleted = new ArrayList<>();
-                    for (Zombie z : Wave.aliveZombies) {
+                    for (Zombie z: Wave.aliveZombies) {
                         if (z.location.equals(new Point(targetX, targetY))) {
                             z.reduceHealth(currentDamage());
                             zombiesHarmed++;
                             System.out.println("You dealt " + currentDamage() + " damage!");
                             if (z.getHealth() == 0) {
                                 toBeDeleted.add(z);
-                                killCount++;
+                                kills++;
                             }
                         }
                     }
@@ -145,13 +140,19 @@ public class Bullet {
             } else if (tiles[targetX][targetY].equals(Tileset.WEAPON_BOX)
                     || tiles[targetX][targetY].equals(Tileset.WALL)) {
                 if (this.weapon.getName().equals("RPG")) {
-                    return handleRPGCase(targetX,targetY);
+                    handleRPGCase(targetX, targetY, true);
                 }
+
+                if (kills > 1) {
+                    player.addPoints(50);
+                    player.setMessage("Multikill! You get 50 points!");
+                }
+
                 return true;
             }
         }
 
-        if (killCount > 1) {
+        if (kills > 1) {
             player.addPoints(50);
             player.setMessage("Multikill! You get 50 points!");
         }
@@ -167,60 +168,55 @@ public class Bullet {
         return false;
     }
 
-    private boolean handleRPGCase(int targetX, int targetY) {
+    static int computeRPGDamage(Point source, Point target, double damage) {
+        if (source.equals(target)) {
+            return (int) damage;
+        } else if (Point.distance(source, target) < 6) {
+            return (int) (damage / Math.pow(Point.distance(source, target), 1.3));
+        } else {
+            return 0;
+        }
+    }
+
+    void handleRPGCase(int targetX, int targetY, boolean clearDead) {
+        Point source = new Point(targetX, targetY); // center of explosion
         List<Zombie> toBeDeleted = new ArrayList<>();
-        for (Zombie z : Wave.aliveZombies) {
-            if (z.location.equals(new Point(targetX, targetY))) {
-                z.reduceHealth(currentDamage());
+        for (Zombie z: Wave.aliveZombies) {
+            int damage = computeRPGDamage(source, z.location, currentDamage());
+            if (damage > 0) {
                 zombiesHarmed++;
-                System.out.println("You dealt " + currentDamage() + " damage!");
-                if (z.getHealth() == 0) {
-                    toBeDeleted.add(z);
-                }
+                z.reduceHealth(damage);
             }
-            if (Math.abs(z.location.getX() - targetX) <= 1 && Math.abs(z.location.getY() - targetY) <= 1) {
-                z.reduceHealth(currentDamage());
-                zombiesHarmed++;
-                System.out.println("You dealt " + currentDamage() / 1.5 + " damage!");
-                if (z.getHealth() == 0) {
-                    toBeDeleted.add(z);
-                }
-            }
-            if (Math.abs(z.location.getX() - targetX) <= 2 && Math.abs(z.location.getY() - targetY) <= 2) {
-                z.reduceHealth(currentDamage());
-                zombiesHarmed++;
-                System.out.println("You dealt " + currentDamage() / 2 + " damage!");
-                if (z.getHealth() == 0) {
-                    toBeDeleted.add(z);
-                }
-            }
-            if (Math.abs(z.location.getX() - targetX) <= 3 && Math.abs(z.location.getY() - targetY) <= 3) {
-                z.reduceHealth(currentDamage());
-                zombiesHarmed++;
-                System.out.println("You dealt " + currentDamage() / 2.5 + " damage!");
-                if (z.getHealth() == 0) {
-                    toBeDeleted.add(z);
-                }
-            }
-        }
-        for (Zombie dead : toBeDeleted) {
-            Wave.aliveZombies.remove(dead);
-        }
-
-        for (int i = targetX - 2; i <= targetX + 2; i ++) {
-            for (int j = targetY - 2; j <= targetY + 2; j ++) {
-                if (tiles[i][j] == Tileset.FLOOR && !(i == player.getLocation().getX() && j == player.getLocation().getY())) {
-                    double distance = Math.sqrt(Math.abs(i - targetX) ^ 2 + Math.abs(j - targetY) ^ 2);
-                    int red = (int) (255.0 / Math.pow(1.5, distance));
-                    int green = (int) (120.0 / Math.pow(1.25, distance));
-                    int blue = (int) (80.0 / Math.pow(1.3, distance));
-                    tiles[i][j] = new TETile('✦', new Color(red, green, blue),Tileset.FLOOR_COLOR, "Flame");
-                    RPGexplosion.add(new Point(i,j));
-                }
+            if (z.getHealth() == 0) {
+                toBeDeleted.add(z);
             }
         }
 
-        return true;
+        if (toBeDeleted.size() > 1) {
+            player.addPoints(50);
+            player.setMessage("Multikill! You get 50 points!");
+        }
+
+        if (clearDead) {
+            for (Zombie dead : toBeDeleted) {
+                Wave.aliveZombies.remove(dead);
+            }
+        }
+
+        for (int i = targetX - 2; i <= targetX + 2; i++) {
+            for (int j = targetY - 2; j <= targetY + 2; j++) {
+                Point current = new Point(i, j);
+                if (tiles[i][j] == Tileset.FLOOR || (i == targetX && j == targetY)) {
+                    double distance = Point.distance(source, current);
+                    int red = (int) (255.0 / Math.pow(1.4, distance));
+                    int green = (int) (120.0 / Math.pow(1.35, distance));
+                    int blue = (int) (80.0 / Math.pow(1.35, distance));
+                    tiles[i][j] = new TETile('✦', new Color(red, green, blue),
+                            Tileset.FLOOR_COLOR, "Flame");
+                    RPGexplosion.put(current, tiles[i][j]);
+                }
+            }
+        }
     }
 
 }

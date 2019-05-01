@@ -1,17 +1,19 @@
 package byow.proj2ab;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.NoSuchElementException;
+
 
 public class ArrayHeapMinPQ<T> implements ExtrinsicMinPQ<T> {
 
     private ArrayList<T> array = new ArrayList<>();
     private int size = 0;
     private HashMap<T, Values> hash = new HashMap<>();
-    private Random r;
 
-    public ArrayHeapMinPQ(Random random) {
+    public ArrayHeapMinPQ() {
         array.add(null);
-//        r = random;
     }
 
     /* Adds an item with the given priority value. Throws an

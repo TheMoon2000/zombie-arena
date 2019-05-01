@@ -19,12 +19,10 @@ public class Point {
     }
 
     /**
-     * Returns the euclidean distance (L2 norm) squared between two points
-     * (x1, y1) and (x2, y2). Note: This is the square of the Euclidean distance,
-     * i.e. there's no square root.
+     * Returns the true distance between two points
      */
     private static double distance(int x1, int x2, int y1, int y2) {
-        return Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2);
+        return Math.sqrt(Math.pow(x1 - x2, 2.0) + Math.pow(y1 - y2, 2.0));
     }
 
     /**
@@ -32,7 +30,7 @@ public class Point {
      * Note: This is the square of the Euclidean distance, i.e.
      * there's no square root.
      */
-    static double distance(Point p1, Point p2) {
+    public static double distance(Point p1, Point p2) {
         return distance(p1.getX(), p2.getX(), p1.getY(), p2.getY());
     }
 

@@ -5,7 +5,6 @@ import byow.TileEngine.Tileset;
 import byow.hw4.AStarSolver;
 import byow.hw4.WeightedUndirectedGraph;
 
-import java.util.Random;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
@@ -77,8 +76,8 @@ public enum Direction {
         }
     }
 
-    public static List<Point> shortestPath(Point s, Point t, Random r) {
-        AStarSolver<Point> solver = new AStarSolver<>(arena, s, t, r);
+    public static List<Point> shortestPath(Point s, Point t) {
+        AStarSolver<Point> solver = new AStarSolver<>(arena, s, t);
         return solver.solution();
     }
 }

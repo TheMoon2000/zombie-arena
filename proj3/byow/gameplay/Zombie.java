@@ -1,36 +1,35 @@
 package byow.gameplay;
 
+import byow.Core.Engine;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 import byow.utils.Direction;
 import byow.utils.Point;
 
-import java.awt.*;
-import java.util.*;
+import java.awt.Color;
 import java.util.List;
+import java.util.ArrayList;
 
 class Zombie extends GameCharacter {
 
     private Player player;
-    private Random r;
     private boolean isHurt = false;
     boolean explosive = false;
 
-    Zombie(Player player, Point location, Random random) {
+    Zombie(Player player, Point location) {
         super(player.tiles);
         this.location = location;
         this.player = player;
-        r = random;
 
         addHealth(fullHealth());
     }
 
     private int fullHealth() {
-        return 25 + Wave.currentWave() * 5;
+        return 25 + Wave.currentWave() * 6;
     }
 
     public void advance(Point target) {
-        List<Point> sPath = Direction.shortestPath(this.location, target, r);
+        List<Point> sPath = Direction.shortestPath(this.location, target);
         if (sPath.isEmpty() || getHealth() == 0) {
             return; // The zombie is already dead
         }
@@ -45,23 +44,32 @@ class Zombie extends GameCharacter {
             attack();
         } else if ((desTile.description().toLowerCase().contains("bullet")
                 || desTile.description().equals("Flame")) && !isHurt) {
-            Bullet damageSource = null;
+            int damage = 0;
+            Bullet needRemovalRPGBullet = null;
             for (Bullet b: Wave.bullets) {
                 if (b.location.equals(destination)) {
-                    damageSource = b;
+                    damage = b.currentDamage();
+                    if (b.bulletTile().description().contains("RPG")) {
+                        b.handleRPGCase(destination.getX(), destination.getY(), false);
+                        needRemovalRPGBullet = b;
+                    }
+                } else if (Bullet.RPGexplosion.keySet().contains(destination)) {
+                    damage = Bullet.computeRPGDamage(b.location, location, b.currentDamage());
                 }
             }
 
-            if (damageSource == null) {
-                throw new RuntimeException("Bullet location inconsistency!");
+            if (needRemovalRPGBullet != null) {
+                Wave.bullets.remove(needRemovalRPGBullet);
             }
 
-            tiles[location.getX()][location.getY()] = Tileset.FLOOR;
-            tiles[destination.getX()][destination.getY()] = tile();
-            refreshTile(location, tiles);
-            this.location = sPath.remove(0);
-            reduceHealth(damageSource.currentDamage());
-            refreshTile(destination, tiles);
+            if (damage > 0) {
+                tiles[location.getX()][location.getY()] = Tileset.FLOOR;
+                tiles[destination.getX()][destination.getY()] = tile();
+                refreshTile(location, tiles);
+                this.location = sPath.remove(0);
+                reduceHealth(damage);
+                refreshTile(destination, tiles);
+            }
         } else {
             isHurt = false;
         }
@@ -87,9 +95,6 @@ class Zombie extends GameCharacter {
         super.reduceHealth(amount);
         isHurt = true;
         if (this.getHealth() == 0) {
-            if (r.nextDouble() < 0.2) {
-                player.addHealth((int) (r.nextDouble() * 10) + 1);
-            }
             tiles[location.getX()][location.getY()] = Tileset.FLOOR;
             player.addPoints(80);
             if (explosive && Math.abs(location.getX() - player.getLocation().getX()) <= 1

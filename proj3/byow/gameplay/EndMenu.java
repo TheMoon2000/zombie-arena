@@ -32,6 +32,8 @@ public class EndMenu {
         renderer = player.ter;
         titleText = myTitle;
         keyboard = keyboardInput;
+        InputHistory.save();
+        InputHistory.clear();
     }
 
     void open(InputSource source) {
@@ -61,7 +63,6 @@ public class EndMenu {
                         StdDraw.show();
                     }
                     InputHistory.reloaded = false;
-                    InputHistory.save();
                     return;
                 case '3':
                     InputHistory.reloaded = false;
