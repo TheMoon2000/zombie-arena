@@ -6,10 +6,15 @@ import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 import byow.utils.Direction;
-import byow.utils.InputHistory;
 import byow.utils.Point;
 
-import java.util.*;
+import java.util.Random;
+import java.util.List;
+import java.util.Queue;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 
 public class Wave {
 
@@ -24,6 +29,7 @@ public class Wave {
     static Set<Zombie> aliveZombies;
     private static int preparation; // How many steps the player can make before wave starts
     static List<Bullet> bullets;
+    private static boolean pathEnabled = false;
 
     public static void init(Player myPlayer, TETile[][] myTiles, Random random) {
         wave = 0;
@@ -35,7 +41,6 @@ public class Wave {
         bullets = new ArrayList<>();
         r = random;
         update(player.location, true, true);
-
     }
 
 
@@ -46,6 +51,7 @@ public class Wave {
      */
     public static void update(Point location, boolean updateBullets, boolean updateZombies) {
 
+        pathEnabled = false;
         String oldMessage = player.getMessage();
 
         if (updateBullets) {
@@ -61,7 +67,6 @@ public class Wave {
             }
 
             player.waitTimeUpdate();
-
             if (player.getMessage() == null || player.getMessage().equals(oldMessage)) {
                 player.setMessage(message());
             }
@@ -75,18 +80,15 @@ public class Wave {
                 // Scenario 2: wave has just ended, begin preparation time
                 waveStarted = false;
                 if (wave < MAX_WAVE) {
-                    wave++;
-                    preparation = wave == 1 ? 50 : 60;
+                    wave++; preparation = wave == 1 ? 50 : 60;
                 } else {
                     // Ends game, player wins
-                    EndMenu menu = new EndMenu(player, "You Win!",
-                            player.keyboardInput);
+                    EndMenu menu = new EndMenu(player, "You Win!", player.keyboardInput);
                     menu.open(new KeyboardInputSource());
                 }
             } else if (zombiesRemaining() == 0) {
                 waveStarted = true;
                 // Scenario 3: player's preparation time is over, begin wave
-                // Add zombies here...
                 for (int i = 0; i < 15 + currentWave() * 5; i++) {
                     Zombie z = new Zombie(player, Engine.randomPlacement(tiles, player));
                     z.explosive = r.nextDouble() > 0.9;
@@ -108,10 +110,10 @@ public class Wave {
                     aliveZombies.remove(deadZombie);
                 }
 
-                for (Point exp: Bullet.RPGexplosion.keySet()) {
+                for (Point exp: Bullet.getRpgExplosion().keySet()) {
                     if (tiles[exp.getX()][exp.getY()].equals(Tileset.FLOOR)
                         || tiles[exp.getX()][exp.getY()].description().contains("RPG")) {
-                        tiles[exp.getX()][exp.getY()] = Bullet.RPGexplosion.get(exp);
+                        tiles[exp.getX()][exp.getY()] = Bullet.getRpgExplosion().get(exp);
                     }
                 }
 
@@ -148,11 +150,19 @@ public class Wave {
         }
     }
 
-    public static void withPaths(TERenderer ter, boolean keyboard, Player player) {
+    public static void withPaths(TERenderer ter, boolean keyboard) {
 
         if (player == null) {
             return;
         }
+
+        if (pathEnabled && keyboard) {
+            ter.renderFrame(tiles);
+            pathEnabled = false;
+            return;
+        }
+
+        pathEnabled = true;
 
         // Create a new copy of tiles so that the original world won't be overwritten
         TETile[][] tilesCopy = TETile.copyOf(tiles);

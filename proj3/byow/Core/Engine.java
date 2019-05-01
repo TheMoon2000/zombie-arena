@@ -6,7 +6,11 @@ import byow.InputDemo.StringInputDevice;
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
-import byow.gameplay.*;
+import byow.gameplay.Shop;
+import byow.gameplay.Player;
+import byow.gameplay.EndMenu;
+import byow.gameplay.Wave;
+import byow.gameplay.Bullet;
 import byow.utils.Direction;
 import byow.utils.InputHistory;
 import byow.utils.NearTree;
@@ -15,7 +19,10 @@ import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 public class Engine {
@@ -25,7 +32,7 @@ public class Engine {
     private TERenderer ter = new TERenderer();
     private static Random r;
     private boolean kbInput = false;
-    public static long seed = 0;
+    private static long seed = 0;
 
     /**
      * Fill up a rectangular region in the given tiles matrix
@@ -60,6 +67,9 @@ public class Engine {
                 RandomUtils.uniform(r, y, y + dy + 1));
     }
 
+    public static long getSeed() {
+        return seed;
+    }
 
     // Helper methods
 
@@ -168,7 +178,7 @@ public class Engine {
 
         kbInput = true;
         seed = 0;
-        interact(inputSource, true, false,false);
+        interact(inputSource, true, false, false);
 
         System.exit(0);
     }
@@ -205,7 +215,7 @@ public class Engine {
 
         InputSource source = new StringInputDevice(input.toUpperCase());
 
-        return interact(source, false, false,false);
+        return interact(source, false, false, false);
     }
 
     /**
@@ -218,14 +228,14 @@ public class Engine {
             ter.renderFrame(tiles);
         }
 
-        for (Point p: Bullet.toBeCleared) {
+        for (Point p: Bullet.getToBeCleared()) {
             if (tiles[p.getX()][p.getY()].equals(Tileset.FLOOR)
                 || tiles[p.getX()][p.getY()].description().toLowerCase().contains("bullet")) {
                 tiles[p.getX()][p.getY()] = Tileset.FLOOR;
             }
         }
 
-        Bullet.toBeCleared.clear();
+        Bullet.getToBeCleared().clear();
 
         if (keyBoardInput) {
             renewDisplayBar(player);
@@ -251,7 +261,8 @@ public class Engine {
      * @param keyboardInput Whether the source is keyboard mode
      */
 
-    private TETile[][] interact(InputSource source, boolean keyboardInput, boolean replay, boolean reset) {
+    private TETile[][] interact(InputSource source,
+                                boolean keyboardInput, boolean replay, boolean reset) {
         makeMenu(replay); seed = 0; boolean startReadingSeed = false;
         TETile[][] tiles = new TETile[WIDTH][HEIGHT]; Player player = null;
         InputSource tmpSource = new StringInputDevice(""); // temporarily stores real-time input
@@ -274,8 +285,7 @@ public class Engine {
                     break;
                 case 'S': // start game
                     if (player == null && startReadingSeed) {
-                        r = new Random(seed); generateWorld(tiles);
-                        startReadingSeed = false;
+                        r = new Random(seed); generateWorld(tiles); startReadingSeed = false;
                         player = new Player(tiles, randomPlacement(tiles), ter, r, kbInput);
                         if (keyboardInput) {
                             ter.initialize(WIDTH, HEIGHT + 3); ter.renderFrame(tiles);
@@ -295,7 +305,7 @@ public class Engine {
                     break;
                 case 'R':
                     reload(player); renderGame(keyboardInput, tiles, player); break;
-                case 'T': Wave.withPaths(ter, keyboardInput, player); break;
+                case 'T': Wave.withPaths(ter, keyboardInput); break;
                 case 'L':
                     if (!InputHistory.reloaded && InputHistory.hasValidInput()) {
                         tmpSource = source; keyboardInput = replay; loadingMenu(replay);
@@ -306,10 +316,13 @@ public class Engine {
                         ter.initialize(WIDTH, HEIGHT + 3); ter.renderFrame(tiles);
                         renewDisplayBar(player); locate(player);
                     }
+                    break;
                 case 'B': //buy a weapon from the store
                     if (player != null && player.atShop()) {
                         String shopMsg = Shop.openMenu(player, source, keyboardInput, r);
-                        if (shopMsg == null) { return tiles; }
+                        if (shopMsg == null) {
+                            return tiles;
+                        }
                         player.setMessage(shopMsg); renewDisplayBar(player);
                     }
                     break;
@@ -318,11 +331,11 @@ public class Engine {
                         player.switchWeapon(); renderGame(keyboardInput, tiles, player);
                     } else if (startReadingSeed && validDigit(next)) {
                         seed = seed * 10 + Integer.parseInt(String.valueOf(next));
-                        displaySeed(seed, keyboardInput);
+                        displaySeed(keyboardInput);
                     }
             }
-            if (EndMenu.reset() || EndMenu.replay) {
-                return interact(loadSrc(), kbInput, EndMenu.replay(), !EndMenu.reset());
+            if (EndMenu.reset() || EndMenu.replay()) {
+                return interact(loadSrc(), kbInput, EndMenu.resetReplay(), EndMenu.resetReset());
             }
             sleep(100, replay); // for debugging only
         }
@@ -347,10 +360,10 @@ public class Engine {
      */
 
     private void renderRPG(TETile[][] tiles) {
-        for (Point p: Bullet.RPGexplosion.keySet()) {
+        for (Point p: Bullet.getRpgExplosion().keySet()) {
             tiles[p.getX()][p.getY()] = Tileset.FLOOR;
         }
-        Bullet.RPGexplosion.clear();
+        Bullet.getRpgExplosion().clear();
     }
 
     /**
@@ -545,10 +558,10 @@ public class Engine {
 
     /**
      * Display the currently entered seed to the user in the main menu screen
-     * @param seed the random generator's seed
+     * @param keyboardInput the keyboard input
      */
 
-    private static void displaySeed(long seed, boolean keyboardInput) {
+    private static void displaySeed(boolean keyboardInput) {
         if (keyboardInput) {
             Font font3 = new Font("Times New Roman", Font.BOLD, 20);
             StdDraw.setFont(font3);

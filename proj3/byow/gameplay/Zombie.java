@@ -1,6 +1,5 @@
 package byow.gameplay;
 
-import byow.Core.Engine;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 import byow.utils.Direction;
@@ -53,11 +52,10 @@ class Zombie extends GameCharacter {
                         b.handleRPGCase(destination.getX(), destination.getY(), false);
                         needRemovalRPGBullet = b;
                     }
-                } else if (Bullet.RPGexplosion.keySet().contains(destination)) {
+                } else if (Bullet.getRpgExplosion().keySet().contains(destination)) {
                     damage = Bullet.computeRPGDamage(b.location, location, b.currentDamage());
                 }
             }
-
             if (needRemovalRPGBullet != null) {
                 Wave.bullets.remove(needRemovalRPGBullet);
             }
@@ -87,6 +85,9 @@ class Zombie extends GameCharacter {
     }
 
     private void attack() {
+        if (getHealth() == 0) {
+            System.out.println("WARNING: A zombie has 0 health but is still alive!");
+        }
         player.reduceHealth(Math.min(10 + Wave.currentWave() * 3, getHealth() + 1));
     }
 

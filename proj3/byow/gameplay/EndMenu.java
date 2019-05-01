@@ -4,14 +4,10 @@ import byow.Core.Engine;
 import byow.InputDemo.InputSource;
 import byow.TileEngine.TERenderer;
 import byow.utils.InputHistory;
-import edu.princeton.cs.introcs.In;
 import edu.princeton.cs.introcs.StdDraw;
 
-import java.awt.*;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
+import java.awt.Font;
+import java.awt.Color;
 
 public class EndMenu {
 
@@ -26,7 +22,7 @@ public class EndMenu {
     private TERenderer renderer;
 
     private static boolean reset = false;
-    public static boolean replay = false;
+    private static boolean replay = false;
 
     EndMenu(Player player, String myTitle, boolean keyboardInput) {
         renderer = player.ter;
@@ -51,7 +47,7 @@ public class EndMenu {
                     break;
                 case '1':
                     // Restart the world
-                    String newWorld = "N" + Engine.seed + "S";
+                    String newWorld = "N" + Engine.getSeed() + "S";
                     InputHistory.reloaded = false;
                     InputHistory.createNewFile(newWorld);
                     reset = true; replay = false;
@@ -113,14 +109,22 @@ public class EndMenu {
     }
 
     public static boolean replay() {
+        return replay;
+    }
+
+    public static boolean resetReplay() {
         boolean tmp = replay;
         replay = false;
         return tmp;
     }
 
-    public static boolean reset() {
+    public static boolean resetReset() {
         boolean tmp = reset;
         reset = false;
         return tmp;
+    }
+
+    public static boolean reset() {
+        return reset;
     }
 }

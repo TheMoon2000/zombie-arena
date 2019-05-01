@@ -4,10 +4,12 @@ import java.util.Random;
 
 public class RandomWeapon implements ShopItem {
 
-    final static int PRICE = 1500;
+    private static final int PRICE = 1500;
     Random random;
 
-    RandomWeapon() {}
+    RandomWeapon() {
+
+    }
 
     @Override
     public int getPrice() {
