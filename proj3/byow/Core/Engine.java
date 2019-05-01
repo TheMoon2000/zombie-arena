@@ -214,7 +214,7 @@ public class Engine {
         // that works for many different input types.
 
         InputSource source = new StringInputDevice(input.toUpperCase());
-
+        kbInput = false;
         return interact(source, false, false, false);
     }
 
@@ -313,7 +313,7 @@ public class Engine {
                     } else if (player != null) { // end of reloading
                         keyboardInput = kbInput; replay = false;
                         source = kbInput ? new KeyboardInputSource() : tmpSource;
-                        ter.initialize(WIDTH, HEIGHT + 3); ter.renderFrame(tiles);
+                        ter.initialize(WIDTH, HEIGHT + 3); renderGame(kbInput, tiles, player);
                         renewDisplayBar(player); locate(player);
                     }
                     break;
