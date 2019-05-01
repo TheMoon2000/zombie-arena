@@ -33,7 +33,7 @@ public class Engine {
     private static Random r;
     private boolean kbInput = false;
     private static long seed = 0;
-    private boolean locatePlayer = false;
+    private boolean locatePlayer = true;
 
     /**
      * Fill up a rectangular region in the given tiles matrix
@@ -364,6 +364,9 @@ public class Engine {
 
     private void renderRPG(TETile[][] tiles) {
         for (Point p: Bullet.getRpgExplosion().keySet()) {
+            if (tiles[p.getX()][p.getY()] == null) {
+                return;
+            }
             if (tiles[p.getX()][p.getY()].description().equals("Flame")) {
                 tiles[p.getX()][p.getY()] = Tileset.FLOOR;
             }

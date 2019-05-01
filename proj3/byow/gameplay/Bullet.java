@@ -75,7 +75,8 @@ public class Bullet {
             || distanceTravelled > weapon.getMaxDistance()) {
             return true;
         }
-        if (distanceTravelled > 0) {
+        if (distanceTravelled > 0
+                && tiles[location.getX()][location.getY()].equals(bulletTile())) {
             tiles[location.getX()][location.getY()] = Tileset.FLOOR;
         }
         TETile trail = weapon.trailTiles[orientation.vertical() ? 1 : 0];

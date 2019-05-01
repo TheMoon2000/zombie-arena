@@ -209,7 +209,7 @@ public class Player extends GameCharacter {
     @Override
     void reduceHealth(int amount) {
         super.reduceHealth(amount);
-//        System.out.println("Player health reduced by " + amount + " to " + getHealth() + ".");
+        System.out.println("Player health reduced by " + amount + " to " + getHealth() + ".");
         if (getHealth() == 0) {
             EndMenu menu = new EndMenu(this, "Game Over");
             menu.open(source);
