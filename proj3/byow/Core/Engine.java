@@ -168,6 +168,7 @@ public class Engine implements Serializable {
      */
 
     private TETile[][] interact(InputSource src, boolean replay) {
+        if (replay) { player = null; tiles = null; }
         makeMenu(); seed = 0; boolean startReadingSeed = false;
         while (src.possibleNextInput()) {
             while (kbInput && !replay && !StdDraw.hasNextKeyTyped()) {
@@ -177,7 +178,7 @@ public class Engine implements Serializable {
             switch (next) {
                 case ':': // if :Q then save and quit
                     if (src.getNextKey() == 'Q') {
-                        save(); // System.exit(0);
+                        save(); System.exit(0);
                     }
                     break;
                 case 'N': // new world
@@ -245,7 +246,7 @@ public class Engine implements Serializable {
      */
 
     public void startNewWorld(InputSource src) {
-        r = new Random(seed); history = new StringBuilder();
+        r = new Random(seed); //history = new StringBuilder();
         tiles = new TETile[WIDTH][HEIGHT]; generateWorld();
         player = new Player(randomPlacement(), this);
         if (kbInput) {
@@ -308,7 +309,8 @@ public class Engine implements Serializable {
 
     public void activatePlayback() {
         System.out.println(history.toString());
-        interact(new StringInputDevice(history.toString()), true);
+        String newString = history.toString();
+        interact(new StringInputDevice(newString.toUpperCase()),true);
     }
 
 
