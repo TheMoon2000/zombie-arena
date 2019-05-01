@@ -27,7 +27,7 @@ public class Shop {
     private static final Color CELL_TEXT_COLOR = new Color(200, 200, 200);
     private static final Color CAPTION_COLOR = new Color(190, 190, 190);
 
-    public static String openMenu(Engine engine, InputSource source) {
+    public static String openMenu(Engine engine, InputSource source, StringBuilder history) {
         Player player = engine.getPlayer();
         int selection = -1;
         ((RandomWeapon) UPGRADES_LIST[UPGRADES_LIST.length - 1]).random = engine.getR();
@@ -38,12 +38,12 @@ public class Shop {
 
             renderMenu(selection, engine.getTer(), engine.isKbInput());
             char next = source.getNextKey();
-            InputHistory.addInputChar(next);
+            history.append(next);
 
             switch (next) {
                 case ':': // if :Q then save and quit
                     if (source.getNextKey() == 'Q') {
-                        InputHistory.save(); return null;
+                        return null;
                     }
                     break;
                 case ' ':

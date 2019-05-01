@@ -21,7 +21,6 @@ public class EndMenu {
     private boolean keyboard;
     private TERenderer renderer;
 
-    private static boolean reset = false;
     private static boolean replay = false;
     private Engine engine;
 
@@ -40,29 +39,21 @@ public class EndMenu {
         while (source.possibleNextInput()) {
             renderMenu(renderer);
             char next = source.getNextKey();
-            InputHistory.addInputChar(next);
-            System.out.println(next);
+            engine.getHistory().deleteCharAt(engine.getHistory().length() - 1);
             switch (next) {
                 case ':': // if :Q then save and quit
                     if (source.getNextKey() == 'Q') {
-                        InputHistory.save(); System.exit(0);
+                        System.exit(0);
                     }
                     break;
                 case '1':
                     // Restart the world
                     engine.startNewWorld(source);
-                    InputHistory.createNewFile();
                     return;
                 case '2':
-                    if (keyboard) {
-                        replay = true;
-                        StdDraw.clear(StdDraw.BLACK);
-                        StdDraw.show();
-                    }
-                    InputHistory.setReloaded(false);
-                    return;
+                    engine.activatePlayback();
+                    break;
                 case '3':
-                    InputHistory.createNewFile();
                     engine.setBackToMenu();
                     return;
                 default:
@@ -118,13 +109,4 @@ public class EndMenu {
         return tmp;
     }
 
-    public static boolean resetReset() {
-        boolean tmp = reset;
-        reset = false;
-        return tmp;
-    }
-
-    public static boolean reset() {
-        return reset;
-    }
 }

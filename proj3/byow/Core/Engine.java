@@ -51,6 +51,7 @@ public class Engine implements Serializable {
     private Wave wave;
     private WeightedUndirectedGraph arena;
     private boolean backToMenu = false;
+    private StringBuilder history = new StringBuilder();
 
 
     /**
@@ -120,7 +121,7 @@ public class Engine implements Serializable {
 
         kbInput = true;
         seed = 0;
-        interact(source);
+        interact(source, false);
 
         System.exit(0);
     }
@@ -157,7 +158,7 @@ public class Engine implements Serializable {
 
         InputSource source = new StringInputDevice(input.toUpperCase());
         kbInput = false;
-        return interact(source);
+        return interact(source, false);
     }
 
 
@@ -166,13 +167,13 @@ public class Engine implements Serializable {
      * @param src The input source
      */
 
-    private TETile[][] interact(InputSource src) {
+    private TETile[][] interact(InputSource src, boolean replay) {
         makeMenu(); seed = 0; boolean startReadingSeed = false;
         while (src.possibleNextInput()) {
-            while (kbInput && !StdDraw.hasNextKeyTyped()) {
+            while (kbInput && !replay && !StdDraw.hasNextKeyTyped()) {
                 sleep(10, false); renewDisplayBar();
             }
-            char next = src.getNextKey(); InputHistory.addInputChar(next); renderRPG();
+            char next = src.getNextKey(); history.append(next); renderRPG();
             switch (next) {
                 case ':': // if :Q then save and quit
                     if (src.getNextKey() == 'Q') {
@@ -211,10 +212,11 @@ public class Engine implements Serializable {
                         }
                         Direction.setArena(potential.arena);
                     }
+                    history.deleteCharAt(history.length() - 1);
                     break;
                 case 'B': //buy a weapon from the store
                     if (player != null && player.atShop()) {
-                        String shopMsg = Shop.openMenu(this, src);
+                        String shopMsg = Shop.openMenu(this, src, history);
                         if (shopMsg == null) {
                             InputHistory.save(); return tiles;
                         }
@@ -230,8 +232,9 @@ public class Engine implements Serializable {
                     }
             }
             if (backToMenu) {
-                backToMenu = false; return interact(src);
+                backToMenu = false; return interact(src, false);
             }
+            sleep(100, replay);
         }
         return tiles;
     }
@@ -242,7 +245,7 @@ public class Engine implements Serializable {
      */
 
     public void startNewWorld(InputSource src) {
-        r = new Random(seed);
+        r = new Random(seed); history = new StringBuilder();
         tiles = new TETile[WIDTH][HEIGHT]; generateWorld();
         player = new Player(randomPlacement(), this);
         if (kbInput) {
@@ -301,6 +304,11 @@ public class Engine implements Serializable {
 
         toBeCleared.clear();
         renewDisplayBar();
+    }
+
+    public void activatePlayback() {
+        System.out.println(history.toString());
+        interact(new StringInputDevice(history.toString()), true);
     }
 
 
@@ -790,6 +798,10 @@ public class Engine implements Serializable {
 
     public TERenderer getTer() {
         return ter;
+    }
+
+    public StringBuilder getHistory() {
+        return history;
     }
 
     public void setBackToMenu() {
