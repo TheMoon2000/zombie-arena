@@ -125,8 +125,7 @@ public class Bullet implements Serializable {
         }
 
         if (kills > 1) {
-            player.addPoints(50);
-            player.setMessage("Multikill! You get 50 points!");
+            player.addPoints(50); player.setMessage("Multikill! You get 50 points!");
         }
 
         //if bullet hasn't hit anything, show its new position, return false to keep track of it

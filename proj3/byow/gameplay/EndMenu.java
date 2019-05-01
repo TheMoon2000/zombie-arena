@@ -52,7 +52,7 @@ public class EndMenu {
                     System.out.println("\n" + input);
                     Engine tmp = new Engine();
                     tmp.setKbInput(engine.isKbInput());
-                    tmp.interact(new StringInputDevice(input),true);
+                    tmp.interact(new StringInputDevice(input), true);
                     break;
                 case '3':
                     engine.setBackToMenu();
