@@ -472,7 +472,7 @@ public class Engine {
 
     private void renewDisplayBar(Player player) {
 
-        if (player == null) {
+        if (player == null || !kbInput) {
             return;
         }
 

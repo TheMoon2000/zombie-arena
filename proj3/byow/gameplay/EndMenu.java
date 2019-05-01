@@ -24,10 +24,10 @@ public class EndMenu {
     private static boolean reset = false;
     private static boolean replay = false;
 
-    EndMenu(Player player, String myTitle, boolean keyboardInput) {
+    EndMenu(Player player, String myTitle) {
         renderer = player.ter;
         titleText = myTitle;
-        keyboard = keyboardInput;
+        keyboard = player.keyboardInput;
         InputHistory.save();
         InputHistory.clear();
     }
