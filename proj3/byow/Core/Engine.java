@@ -257,37 +257,36 @@ public class Engine {
 
     /**
      * Reads an input source and do something about it
-     * @param source The input source
-     * @param keyboardInput Whether the source is keyboard mode
+     * @param src The input source
+     * @param kb Whether the source is keyboard mode
      */
 
-    private TETile[][] interact(InputSource source,
-                                boolean keyboardInput, boolean replay, boolean reset) {
+    private TETile[][] interact(InputSource src, boolean kb, boolean replay, boolean reset) {
         makeMenu(replay); seed = 0; boolean startReadingSeed = false;
         TETile[][] tiles = new TETile[WIDTH][HEIGHT]; Player player = null;
         InputSource tmpSource = new StringInputDevice(""); // temporarily stores real-time input
-        while (source.possibleNextInput()) {
-            while (!replay && keyboardInput && !StdDraw.hasNextKeyTyped() && !reset) {
+        while (src.possibleNextInput()) {
+            while (!replay && kb && !StdDraw.hasNextKeyTyped() && !reset) {
                 sleep(10, false); renewDisplayBar(player);
             }
-            char next = source.getNextKey(); InputHistory.addInputChar(next); renderRPG(tiles);
+            char next = src.getNextKey(); InputHistory.addInputChar(next); renderRPG(tiles);
             switch (next) {
                 case ':': // if :Q then save and quit
-                    if (source.getNextKey() == 'Q') {
+                    if (src.getNextKey() == 'Q') {
                         InputHistory.save(); return tiles;
                     }
                     break;
                 case 'N': // new world
                     if (player == null) {
-                        startReadingSeed = true; drawSeedPrompt(keyboardInput);
+                        startReadingSeed = true; drawSeedPrompt(kb);
                         InputHistory.createNewFile(); // overwrites existing world
                     }
                     break;
                 case 'S': // start game
                     if (player == null && startReadingSeed) {
                         r = new Random(seed); generateWorld(tiles); startReadingSeed = false;
-                        player = new Player(tiles, randomPlacement(tiles), ter, r, kbInput);
-                        if (keyboardInput) {
+                        player = new Player(tiles, randomPlacement(tiles), ter, r, kbInput, src);
+                        if (kb) {
                             ter.initialize(WIDTH, HEIGHT + 3); ter.renderFrame(tiles);
                             locate(player);
                         }
@@ -295,32 +294,31 @@ public class Engine {
                     } // fall through is 'S' refers to a direction
                 case 'W': case 'A': case 'D':
                     if (player != null) {
-                        player.move(Direction.parse(next));
-                        renderGame(keyboardInput, tiles, player);
+                        player.move(Direction.parse(next)); renderGame(kb, tiles, player);
                     }
                     break;
                 case ' ':
                     if (player != null) {
-                        player.fire(); renderGame(keyboardInput, tiles, player);
+                        player.fire(); renderGame(kb, tiles, player);
                     }
                     break;
                 case 'R':
-                    reload(player); renderGame(keyboardInput, tiles, player); break;
-                case 'T': Wave.withPaths(ter, keyboardInput); break;
+                    reload(player); renderGame(kb, tiles, player); break;
+                case 'T': Wave.withPaths(ter, kb); break;
                 case 'L':
                     if (!InputHistory.isReloaded() && InputHistory.hasValidInput()) {
-                        tmpSource = source; keyboardInput = replay; loadingMenu(replay);
-                        source = InputHistory.source(); InputHistory.setReloaded(true);
+                        tmpSource = src; kb = replay; loadingMenu(replay);
+                        src = InputHistory.source(); InputHistory.setReloaded(true);
                     } else if (player != null) { // end of reloading
-                        keyboardInput = kbInput; replay = false;
-                        source = kbInput ? new KeyboardInputSource() : tmpSource;
+                        kb = kbInput; replay = false;
+                        src = kbInput ? new KeyboardInputSource() : tmpSource;
                         ter.initialize(WIDTH, HEIGHT + 3); renderGame(kbInput, tiles, player);
                         renewDisplayBar(player); locate(player);
                     }
                     break;
                 case 'B': //buy a weapon from the store
                     if (player != null && player.atShop()) {
-                        String shopMsg = Shop.openMenu(player, source, keyboardInput, r);
+                        String shopMsg = Shop.openMenu(player, src, kb, r);
                         if (shopMsg == null) {
                             return tiles;
                         }
@@ -329,10 +327,10 @@ public class Engine {
                     break;
                 default:
                     if ((next == '1' || next == '2') && player != null) {
-                        player.switchWeapon(); renderGame(keyboardInput, tiles, player);
+                        player.switchWeapon(); renderGame(kb, tiles, player);
                     } else if (startReadingSeed && validDigit(next)) {
                         seed = seed * 10 + Integer.parseInt(String.valueOf(next));
-                        displaySeed(keyboardInput);
+                        displaySeed(kb);
                     }
             }
             if (EndMenu.reset() || EndMenu.replay()) {

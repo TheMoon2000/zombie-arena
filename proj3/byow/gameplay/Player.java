@@ -1,6 +1,7 @@
 package byow.gameplay;
 
 import byow.Core.Engine;
+import byow.InputDemo.InputSource;
 import byow.InputDemo.KeyboardInputSource;
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
@@ -20,8 +21,10 @@ public class Player extends GameCharacter {
     boolean keyboardInput;
     static final int MAX_HEALTH = 100;
     private String message;
+    private InputSource source;
 
-    public Player(TETile[][] tiles, Point location, TERenderer renderer, Random r, boolean kb) {
+    public Player(TETile[][] tiles, Point location, TERenderer renderer,
+                  Random r, boolean kb, InputSource src) {
         super(tiles);
         this.addHealth(MAX_HEALTH);
         points = 2000;
@@ -31,6 +34,8 @@ public class Player extends GameCharacter {
         message = Wave.message();
         ter = renderer;
         keyboardInput = kb;
+
+        source = src;
 
         // Make default orientation North:Q
         this.location = location;
@@ -208,7 +213,7 @@ public class Player extends GameCharacter {
 //        System.out.println("Player health reduced by " + amount + " to " + getHealth() + ".");
         if (getHealth() == 0) {
             EndMenu menu = new EndMenu(this, "Game Over");
-            menu.open(new KeyboardInputSource());
+            menu.open(source);
             System.out.println("menu closed");
         }
     }
