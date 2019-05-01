@@ -23,21 +23,25 @@ public class EndMenu {
 
     private static boolean reset = false;
     private static boolean replay = false;
+    private Engine engine;
 
-    EndMenu(Player player, String myTitle) {
-        renderer = player.ter;
+    public EndMenu(Player player, String myTitle) {
+        renderer = player.engine.getTer();
         titleText = myTitle;
-        keyboard = player.keyboardInput;
+        keyboard = player.engine.isKbInput();
+        this.engine = player.engine;
+        engine.save();
         InputHistory.save();
         InputHistory.clear();
     }
 
-    void open(InputSource source) {
+    public void open(InputSource source) {
         renderMenu(renderer);
         while (source.possibleNextInput()) {
             renderMenu(renderer);
             char next = source.getNextKey();
             InputHistory.addInputChar(next);
+            System.out.println(next);
             switch (next) {
                 case ':': // if :Q then save and quit
                     if (source.getNextKey() == 'Q') {
@@ -46,10 +50,8 @@ public class EndMenu {
                     break;
                 case '1':
                     // Restart the world
-                    String newWorld = "N" + Engine.getSeed() + "S";
-                    InputHistory.setReloaded(false);
-                    InputHistory.createNewFile(newWorld);
-                    reset = true; replay = false;
+                    engine.startNewWorld(source);
+                    InputHistory.createNewFile();
                     return;
                 case '2':
                     if (keyboard) {
@@ -60,9 +62,8 @@ public class EndMenu {
                     InputHistory.setReloaded(false);
                     return;
                 case '3':
-                    InputHistory.setReloaded(false);
                     InputHistory.createNewFile();
-                    reset = true; replay = false;
+                    engine.setBackToMenu();
                     return;
                 default:
             }

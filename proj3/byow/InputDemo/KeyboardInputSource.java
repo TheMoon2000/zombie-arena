@@ -5,7 +5,9 @@ package byow.InputDemo;
  */
 import edu.princeton.cs.introcs.StdDraw;
 
-public class KeyboardInputSource implements InputSource {
+import java.io.Serializable;
+
+public class KeyboardInputSource implements InputSource, Serializable {
     private static final boolean PRINT_TYPED_KEYS = false;
     public KeyboardInputSource() {
         StdDraw.text(0.3, 0.3, "press m to moo, q to quit");

@@ -1,10 +1,12 @@
 package byow.hw4;
 
+import java.io.Serializable;
+
 /**
  * Utility class that represents a weighted edge.
  * Created by hug.
  */
-public class WeightedEdge<Vertex> {
+public class WeightedEdge<Vertex> implements Serializable {
     private Vertex v;
     private Vertex w;
     private double weight;

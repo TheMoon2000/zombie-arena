@@ -1,40 +1,41 @@
 package byow.gameplay;
 
 import byow.Core.Engine;
-import byow.InputDemo.InputSource;
-import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 import byow.utils.Point;
 import byow.utils.Direction;
 
-import java.util.Random;
-
 public class Player extends GameCharacter {
+
+    private static final long serialVersionUID = 12345654321L;
 
     private Weapon[] weapons = new Weapon[2]; // Player has the ability to use weapons
     private int currentWeapon = 0;
     private Direction orientation;
     private int points;
-    TERenderer ter;
-    boolean keyboardInput;
     static final int MAX_HEALTH = 100;
     private String message;
-    private InputSource source;
+    private Wave wave;
+    Engine engine;
 
-    public Player(TETile[][] tiles, Point location, TERenderer renderer,
-                  Random r, boolean kb, InputSource src) {
-        super(tiles);
+    public Player() {
+        orientation = Direction.North;
+        points = 500;
+        message = "Welcome to Zombie Arena!";
+    }
+
+    public Player(Point location, Engine e) {
+        super(e.getTiles());
+        this.engine = e;
         this.addHealth(MAX_HEALTH);
+
         points = 2000;
         weapons[0] = Weapon.makePistol();
         weapons[1] = Weapon.rocketLauncher();
-        Wave.init(this, tiles, r);
-        message = Wave.message();
-        ter = renderer;
-        keyboardInput = kb;
 
-        source = src;
+        this.wave = new Wave(this, tiles, e.getR());
+        e.setWave(this.wave);
 
         // Make default orientation North:Q
         this.location = location;
@@ -45,7 +46,7 @@ public class Player extends GameCharacter {
     public void move(Direction direction) {
         int x = location.getX(), y = location.getY();
         Point previousLocation = location;
-        Wave.update(location, true, false);
+        wave.update(location, true, false);
         switch (direction) {
             case North:
                 if (!orientation.equals(Direction.North)) {
@@ -95,7 +96,7 @@ public class Player extends GameCharacter {
                 throw new IllegalArgumentException("Illegal movement direction: " + direction);
         }
 
-        Wave.update(previousLocation, false, true);
+        wave.update(previousLocation, false, true);
 
         if (atShop()) {
             message = Shop.displayMessage();
@@ -138,7 +139,7 @@ public class Player extends GameCharacter {
         }
 
         // Unfortunately, switching weapon counts as one step
-        Wave.update(location, true, true);
+        wave.update(location, true, true);
     }
 
     public String ammoDescription() {
@@ -166,25 +167,25 @@ public class Player extends GameCharacter {
 
     public void fire() {
         if (currentWeapon().shoot()) { // Whether the weapon can shoot
-            Wave.bullets.add(new Bullet(this, location, currentWeapon()));
+            wave.bullets.add(new Bullet(this, location, currentWeapon()));
             if (currentWeapon().getName().equals("Flamethrower")) {
                 switch (orientation) {
                     case North:
                     case South:
-                        Wave.bullets.add(new Bullet(this, location.left(), Weapon.flame()));
-                        Wave.bullets.add(new Bullet(this, location.right(), Weapon.flame()));
+                        wave.bullets.add(new Bullet(this, location.left(), Weapon.flame()));
+                        wave.bullets.add(new Bullet(this, location.right(), Weapon.flame()));
                         break;
                     case East:
                     case West:
-                        Wave.bullets.add(new Bullet(this, location.top(), Weapon.flame()));
-                        Wave.bullets.add(new Bullet(this, location.bottom(), Weapon.flame()));
+                        wave.bullets.add(new Bullet(this, location.top(), Weapon.flame()));
+                        wave.bullets.add(new Bullet(this, location.bottom(), Weapon.flame()));
                         break;
                     default:
                         throw new IllegalArgumentException("Invalid firing orientation");
                 }
             }
         }
-        Wave.update(location, true, true);
+        wave.update(location, true, true);
     }
 
     void waitTimeUpdate() {
@@ -209,10 +210,5 @@ public class Player extends GameCharacter {
     @Override
     void reduceHealth(int amount) {
         super.reduceHealth(amount);
-        System.out.println("Player health reduced by " + amount + " to " + getHealth() + ".");
-        if (getHealth() == 0) {
-            EndMenu menu = new EndMenu(this, "Game Over");
-            menu.open(source);
-        }
     }
 }

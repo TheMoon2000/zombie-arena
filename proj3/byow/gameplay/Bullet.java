@@ -1,18 +1,18 @@
 package byow.gameplay;
 
+import byow.Core.Engine;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 import byow.utils.Direction;
 import byow.utils.Point;
 
 import java.awt.Color;
+import java.io.Serializable;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Queue;
-import java.util.ArrayDeque;
 import java.util.HashMap;
 
-public class Bullet {
+public class Bullet implements Serializable {
 
     private Weapon weapon;
     Point location; //current location of the bullet
@@ -21,9 +21,9 @@ public class Bullet {
     private int distanceTravelled = 0; //how many blocks traveled
     private Player player;
     private Direction orientation;
-    private int zombiesHarmed = 0;
-    private static Queue<Point> toBeCleared = new ArrayDeque<>();
+    int zombiesHarmed = 0;
     static HashMap<Point, TETile> rpgExplosion = new HashMap<>();
+    private Engine engine;
 
     Bullet(Player player, Point start, Weapon w) {
         this.weapon = w;
@@ -32,6 +32,7 @@ public class Bullet {
         this.player = player;
         this.orientation = player.getOrientation();
         this.speed = weapon.getSpeed();
+        this.engine = player.engine;
     }
 
     boolean advance() {
@@ -40,7 +41,7 @@ public class Bullet {
             case South: return advanceHelper(-1, 0);
             case East: return advanceHelper(0, 1);
             case West: return advanceHelper(0, -1);
-            default: return false;
+            default: return true;
         }
     }
 
@@ -57,11 +58,11 @@ public class Bullet {
      * @param dx the horizontal displacement of the bullet
      * @return Whether the bullet should be removed from the map after this step
      */
-    public boolean advanceHelper(int dy, int dx) {
+    private boolean advanceHelper(int dy, int dx) {
         if (weapon.getName().equals("Sword")) {
             if (tiles[location.getX() + dx][location.getY() + dy]
                     .description().toLowerCase().contains("zombie")) {
-                for (Zombie z : Wave.aliveZombies) {
+                for (Zombie z: engine.getWave().aliveZombies) {
                     if (z.location.equals(new Point(location.getX()
                         + dx, location.getY() + dy))) {
                         z.reduceHealth(currentDamage());
@@ -90,7 +91,7 @@ public class Bullet {
                     handleRPGCase(targetX, targetY, true); return true;
                 } else {
                     List<Zombie> toBeDeleted = new ArrayList<>();
-                    for (Zombie z: Wave.aliveZombies) {
+                    for (Zombie z: engine.getWave().aliveZombies) {
                         if (z.location.equals(new Point(targetX, targetY))) {
                             z.reduceHealth(currentDamage()); zombiesHarmed++;
                             if (z.getHealth() == 0) {
@@ -100,14 +101,14 @@ public class Bullet {
                         }
                     }
                     for (Zombie dead : toBeDeleted) {
-                        Wave.aliveZombies.remove(dead);
+                        engine.getWave().aliveZombies.remove(dead);
                     }
                 }
             }
 
             if (tiles[targetX][targetY].equals(Tileset.FLOOR)) {
                 tiles[targetX][targetY] = trail;
-                toBeCleared.add(new Point(targetX, targetY));
+                engine.toBeCleared().add(new Point(targetX, targetY));
             } else if (tiles[targetX][targetY].equals(Tileset.WEAPON_BOX)
                     || tiles[targetX][targetY].equals(Tileset.WALL)) {
                 if (this.weapon.getName().equals("RPG")) {
@@ -151,7 +152,7 @@ public class Bullet {
     void handleRPGCase(int targetX, int targetY, boolean clearDead) {
         Point source = new Point(targetX, targetY); // center of explosion
         List<Zombie> toBeDeleted = new ArrayList<>();
-        for (Zombie z: Wave.aliveZombies) {
+        for (Zombie z: engine.getWave().aliveZombies) {
             int damage = computeRPGDamage(source, z.location, currentDamage());
             if (damage > 0) {
                 zombiesHarmed++; z.reduceHealth(damage);
@@ -166,8 +167,8 @@ public class Bullet {
         }
 
         if (clearDead) {
-            for (Zombie dead : toBeDeleted) {
-                Wave.aliveZombies.remove(dead);
+            for (Zombie dead: toBeDeleted) {
+                engine.getWave().aliveZombies.remove(dead);
             }
         }
 
@@ -177,7 +178,7 @@ public class Bullet {
                 if (!((i >= 0 && i < tiles.length) && (j >= 0 && j < tiles[i].length))) {
                     continue;
                 }
-                if ((tiles[i][j] == Tileset.FLOOR) || (i == targetX && j == targetY
+                if ((tiles[i][j].equals(Tileset.FLOOR)) || (i == targetX && j == targetY
                         && !tiles[i][j].description().equals("Wall"))) {
                     double distance = Point.distance(source, current);
                     int red = (int) (255.0 / Math.pow(1.4, distance));
@@ -193,9 +194,5 @@ public class Bullet {
 
     public static HashMap<Point, TETile> getRpgExplosion() {
         return rpgExplosion;
-    }
-
-    public static Queue<Point> getToBeCleared() {
-        return toBeCleared;
     }
 }

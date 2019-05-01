@@ -3,11 +3,17 @@ package byow.gameplay;
 import byow.TileEngine.TETile;
 import byow.utils.Point;
 
-public class GameCharacter {
+import java.io.Serializable;
+
+public class GameCharacter implements Serializable {
 
     private int health;
     Point location;
     TETile[][] tiles;
+
+    GameCharacter() {
+
+    }
 
     GameCharacter(TETile[][] tiles) {
         this.tiles = tiles;

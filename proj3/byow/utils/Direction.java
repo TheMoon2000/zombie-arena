@@ -5,11 +5,12 @@ import byow.TileEngine.Tileset;
 import byow.hw4.AStarSolver;
 import byow.hw4.WeightedUndirectedGraph;
 
+import java.io.Serializable;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
 
-public enum Direction {
+public enum Direction implements Serializable {
     West, East, North, South, Disoriented;
 
     static WeightedUndirectedGraph arena;
@@ -34,13 +35,14 @@ public enum Direction {
         return this.equals(North) || this.equals(South);
     }
 
-    public static void initPathFinder(TETile[][] myTiles, Point s) {
+    public static WeightedUndirectedGraph initPathFinder(TETile[][] myTiles, Point s) {
         Direction.tiles = myTiles;
         Set<Point> visited = new HashSet<>();
         WeightedUndirectedGraph graph = new WeightedUndirectedGraph();
         makeGraph(graph, visited, s);
 
         arena = graph;
+        return arena;
     }
 
     /**
@@ -74,6 +76,10 @@ public enum Direction {
                 makeGraph(aStarGraph, visited, p);
             }
         }
+    }
+
+    public static void setArena(WeightedUndirectedGraph a) {
+        Direction.arena = a;
     }
 
     public static List<Point> shortestPath(Point s, Point t) {

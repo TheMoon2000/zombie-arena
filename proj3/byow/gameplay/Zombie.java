@@ -14,17 +14,19 @@ class Zombie extends GameCharacter {
     private Player player;
     private boolean isHurt = false;
     boolean explosive = false;
+    private Wave wave;
 
     Zombie(Player player, Point location) {
         super(player.tiles);
         this.location = location;
         this.player = player;
+        this.wave = player.engine.getWave();
 
         addHealth(fullHealth());
     }
 
     private int fullHealth() {
-        return 25 + Wave.currentWave() * 6;
+        return 25 + wave.currentWave() * 6;
     }
 
     public void advance(Point target) {
@@ -45,19 +47,20 @@ class Zombie extends GameCharacter {
                 || desTile.description().equals("Flame")) && !isHurt) {
             int damage = 0;
             Bullet needRemovalRPGBullet = null;
-            for (Bullet b: Wave.bullets) {
+            for (Bullet b: wave.bullets) {
                 if (b.location.equals(destination)) {
-                    damage = b.currentDamage();
                     if (b.bulletTile().description().contains("RPG")) {
                         b.handleRPGCase(destination.getX(), destination.getY(), false);
                         needRemovalRPGBullet = b;
+                    } else {
+                        damage = b.currentDamage(); b.zombiesHarmed++;
                     }
                 } else if (Bullet.getRpgExplosion().keySet().contains(destination)) {
                     damage = Bullet.computeRPGDamage(b.location, location, b.currentDamage());
                 }
             }
             if (needRemovalRPGBullet != null) {
-                Wave.bullets.remove(needRemovalRPGBullet);
+                wave.bullets.remove(needRemovalRPGBullet);
             }
 
             if (damage > 0) {
@@ -73,11 +76,11 @@ class Zombie extends GameCharacter {
         }
     }
 
-    private static void refreshTile(Point p, TETile[][] tiles) {
+    private void refreshTile(Point p, TETile[][] tiles) {
         if (!tiles[p.getX()][p.getY()].equals(Tileset.FLOOR)) {
             return;
         }
-        for (Bullet bullet: Wave.bullets) {
+        for (Bullet bullet: wave.bullets) {
             if (bullet.location.equals(p)) {
                 tiles[p.getX()][p.getY()] = bullet.bulletTile();
             }
@@ -88,7 +91,7 @@ class Zombie extends GameCharacter {
         if (getHealth() == 0) {
             System.out.println("WARNING: A zombie has 0 health but is still alive!");
         }
-        player.reduceHealth(Math.min(10 + Wave.currentWave() * 3, getHealth() + 1));
+        player.reduceHealth(Math.min(10 + wave.currentWave() * 3, getHealth() + 1));
     }
 
     @Override
@@ -102,7 +105,7 @@ class Zombie extends GameCharacter {
                 && Math.abs(location.getY() - player.getLocation().getY()) <= 1) {
                 //find adjacent zombies first
                 ArrayList<Zombie> surroundingZombies = new ArrayList<>();
-                for (Zombie z : Wave.aliveZombies) {
+                for (Zombie z: wave.aliveZombies) {
                     if (Math.abs(location.getX() - z.getLocation().getX()) <= 1
                             && Math.abs(location.getY() - z.getLocation().getY()) <= 1) {
                         surroundingZombies.add(z);

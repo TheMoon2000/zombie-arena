@@ -5,8 +5,9 @@ import byow.TileEngine.Tileset;
 import byow.utils.Direction;
 
 import java.awt.Color;
+import java.io.Serializable;
 
-public class Weapon implements ShopItem {
+public class Weapon implements ShopItem, Serializable {
 
     private String name;
     private int damage;
@@ -44,7 +45,7 @@ public class Weapon implements ShopItem {
         return "Not enough points to buy " + name + "!";
     }
 
-    public int getSpeed() {
+    int getSpeed() {
         return this.speed;
     }
 
@@ -223,7 +224,7 @@ public class Weapon implements ShopItem {
         return flame;
     }
 
-    int damage(int distance, int z) {
+    private int damage(int distance, int z) {
         if (maxDistance < distance) {
             return 0;
         } else if (name.equals("Shotgun")) {

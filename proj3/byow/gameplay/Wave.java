@@ -8,6 +8,7 @@ import byow.TileEngine.Tileset;
 import byow.utils.Direction;
 import byow.utils.Point;
 
+import java.io.Serializable;
 import java.util.Random;
 import java.util.List;
 import java.util.Queue;
@@ -16,31 +17,31 @@ import java.util.HashSet;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 
-public class Wave {
+public class Wave implements Serializable {
 
     private static final int MAX_WAVE = 12;
 
-    private static int wave = 0;
-    private static Random r;
-    private static boolean waveStarted = false;
-    private static Player player;
-    private static TETile[][] tiles;
-    private static Queue<Zombie> waveZombies;
-    static Set<Zombie> aliveZombies;
-    private static int preparation; // How many steps the player can make before wave starts
-    static List<Bullet> bullets;
-    private static boolean pathEnabled = false;
+    private int wave;
+    private Random r;
+    private boolean waveStarted;
+    private Player player;
+    private TETile[][] tiles;
+    private Queue<Zombie> waveZombies;
+    Set<Zombie> aliveZombies;
+    private int preparation; // How many steps the player can make before wave starts
+    List<Bullet> bullets = new ArrayList<>();
+    private boolean pathEnabled = false;
 
-    public static void init(Player myPlayer, TETile[][] myTiles, Random random) {
+    public Wave(Player myPlayer, TETile[][] myTiles, Random random) {
         wave = 0;
-        Wave.player = myPlayer;
-        Wave.tiles = myTiles;
+        player = myPlayer;
+        tiles = myTiles;
         aliveZombies = new HashSet<>();
         waveZombies = new ArrayDeque<>();
         waveStarted = true;
-        bullets = new ArrayList<>();
         r = random;
         update(player.location, true, true);
+        player.setMessage("Welcome to Zombie arena!");
     }
 
 
@@ -49,13 +50,13 @@ public class Wave {
      * The player takes a step
      * @param location Where the zombies think the player is at
      */
-    public static void update(Point location, boolean updateBullets, boolean updateZombies) {
+    public void update(Point location, boolean updateBullets, boolean updateZombies) {
         pathEnabled = false;
         String oldMessage = player.getMessage();
         if (updateBullets) {
             //first deal with all the bullets
             ArrayList<Bullet> removeList = new ArrayList<>();
-            for (Bullet b : bullets) {
+            for (Bullet b: bullets) {
                 if (b.advance()) {
                     removeList.add(b);
                 }
@@ -87,7 +88,7 @@ public class Wave {
                 waveStarted = true;
                 // Scenario 3: player's preparation time is over, begin wave
                 for (int i = 0; i < 15 + currentWave() * 5; i++) {
-                    Zombie z = new Zombie(player, Engine.randomPlacement(tiles, player));
+                    Zombie z = new Zombie(player, Engine.randomPlacement(tiles, player, r));
                     z.explosive = r.nextDouble() > 0.9;
                     waveZombies.add(z);
                 }
@@ -126,15 +127,15 @@ public class Wave {
         }
     }
 
-    static int currentWave() {
+    int currentWave() {
         return wave;
     }
 
-    private static int zombiesRemaining() {
+    private int zombiesRemaining() {
         return aliveZombies.size() + waveZombies.size();
     }
 
-    static String message() {
+    private String message() {
         if (aliveZombies.isEmpty()) {
             return "Get ready for wave #" + wave + "! " + preparation + " steps remaining...";
         } else {
@@ -143,7 +144,7 @@ public class Wave {
         }
     }
 
-    public static void withPaths(TERenderer ter, boolean keyboard) {
+    public void withPaths(TERenderer ter, boolean keyboard) {
 
         if (player == null) {
             return;

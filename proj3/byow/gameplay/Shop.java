@@ -1,5 +1,6 @@
 package byow.gameplay;
 
+import byow.Core.Engine;
 import byow.InputDemo.InputSource;
 import byow.TileEngine.TERenderer;
 import byow.utils.InputHistory;
@@ -7,7 +8,6 @@ import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.util.Random;
 
 public class Shop {
 
@@ -27,16 +27,16 @@ public class Shop {
     private static final Color CELL_TEXT_COLOR = new Color(200, 200, 200);
     private static final Color CAPTION_COLOR = new Color(190, 190, 190);
 
-    public static String openMenu(Player player, InputSource source, boolean kb, Random r) {
-
+    public static String openMenu(Engine engine, InputSource source) {
+        Player player = engine.getPlayer();
         int selection = -1;
-        ((RandomWeapon) UPGRADES_LIST[UPGRADES_LIST.length - 1]).random = r;
+        ((RandomWeapon) UPGRADES_LIST[UPGRADES_LIST.length - 1]).random = engine.getR();
 
-        Wave.update(player.location, true, true);
+        engine.getWave().update(player.location, true, true);
 
         while (source.possibleNextInput()) {
 
-            renderMenu(selection, player.ter, kb);
+            renderMenu(selection, engine.getTer(), engine.isKbInput());
             char next = source.getNextKey();
             InputHistory.addInputChar(next);
 
@@ -48,22 +48,18 @@ public class Shop {
                     break;
                 case ' ':
                     selection = (selection + 1) % UPGRADES_LIST.length;
-                    renderMenu(selection, player.ter, kb);
+                    renderMenu(selection, engine.getTer(), engine.isKbInput());
                     break;
                 case 'P':
                     if (selection == -1) {
                         break;
                     } else {
                         String returnValue = UPGRADES_LIST[selection].apply(player);
-                        if (kb) {
-                            player.ter.renderFrame(player.tiles);
-                        }
+                        engine.renderGame(source);
                         return returnValue;
                     }
                 case 'B':
-                    if (kb) {
-                        player.ter.renderFrame(player.tiles);
-                    }
+                    engine.renderGame(source);
                     return "You did not buy anything :("; // Exit the shop
                 default:
             }

@@ -2,11 +2,12 @@ package byow.hw4;
 
 import byow.utils.Point;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class WeightedUndirectedGraph implements AStarGraph<Point> {
+public class WeightedUndirectedGraph implements AStarGraph<Point>, Serializable {
 
     private HashMap<Point, List<WeightedEdge<Point>>> edgesMap = new HashMap<>();
 
