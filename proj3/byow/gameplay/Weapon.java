@@ -118,8 +118,8 @@ public class Weapon implements ShopItem {
         machineGun.penetration = 0.75;
         machineGun.reloadTime = 3;
         machineGun.trailTiles = new TETile[] {
-                new TETile('⋯', new Color(220, 214, 167), Tileset.FLOOR_COLOR, "Arena"),
-                new TETile('⋮', new Color(220, 214, 167), Tileset.FLOOR_COLOR, "Arena")
+            new TETile('⋯', new Color(220, 214, 167), Tileset.FLOOR_COLOR, "Arena"),
+            new TETile('⋮', new Color(220, 214, 167), Tileset.FLOOR_COLOR, "Arena")
         };
         return machineGun;
     }
@@ -163,8 +163,8 @@ public class Weapon implements ShopItem {
         minigun.penetration = 0.8;
         minigun.reloadTime = 6;
         minigun.trailTiles = new TETile[] {
-             new TETile('⋯', new Color(226, 220, 214), Tileset.FLOOR_COLOR, "Arena"),
-             new TETile('⋮', new Color(226, 220, 214), Tileset.FLOOR_COLOR, "Arena")
+            new TETile('⋯', new Color(226, 220, 214), Tileset.FLOOR_COLOR, "Arena"),
+            new TETile('⋮', new Color(226, 220, 214), Tileset.FLOOR_COLOR, "Arena")
         };
         return minigun;
     }

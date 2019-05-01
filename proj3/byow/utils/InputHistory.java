@@ -12,7 +12,7 @@ import java.nio.charset.StandardCharsets;
 public class InputHistory {
 
     private static StringBuilder input = new StringBuilder();
-    public static boolean reloaded = false;
+    private static boolean reloaded = false;
 
     public static void addInputChar(char c) {
         if (c != ':' && c != 'L') {
@@ -82,5 +82,13 @@ public class InputHistory {
         System.out.println("\nRead the following string from SaveFile.txt:");
         System.out.println(fileInput.toString());
         return new StringInputDevice(fileInput.toString());
+    }
+
+    public static boolean isReloaded() {
+        return reloaded;
+    }
+
+    public static void setReloaded(boolean r) {
+        InputHistory.reloaded = r;
     }
 }

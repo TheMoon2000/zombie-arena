@@ -289,8 +289,9 @@ public class Engine {
                         player = new Player(tiles, randomPlacement(tiles), ter, r, kbInput);
                         if (keyboardInput) {
                             ter.initialize(WIDTH, HEIGHT + 3); ter.renderFrame(tiles);
+                            locate(player);
                         }
-                        locate(player); break;
+                        break;
                     } // fall through is 'S' refers to a direction
                 case 'W': case 'A': case 'D':
                     if (player != null) {
@@ -307,9 +308,9 @@ public class Engine {
                     reload(player); renderGame(keyboardInput, tiles, player); break;
                 case 'T': Wave.withPaths(ter, keyboardInput); break;
                 case 'L':
-                    if (!InputHistory.reloaded && InputHistory.hasValidInput()) {
+                    if (!InputHistory.isReloaded() && InputHistory.hasValidInput()) {
                         tmpSource = source; keyboardInput = replay; loadingMenu(replay);
-                        source = InputHistory.source(); InputHistory.reloaded = true;
+                        source = InputHistory.source(); InputHistory.setReloaded(true);
                     } else if (player != null) { // end of reloading
                         keyboardInput = kbInput; replay = false;
                         source = kbInput ? new KeyboardInputSource() : tmpSource;

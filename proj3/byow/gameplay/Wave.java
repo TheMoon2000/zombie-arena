@@ -50,10 +50,8 @@ public class Wave {
      * @param location Where the zombies think the player is at
      */
     public static void update(Point location, boolean updateBullets, boolean updateZombies) {
-
         pathEnabled = false;
         String oldMessage = player.getMessage();
-
         if (updateBullets) {
             //first deal with all the bullets
             ArrayList<Bullet> removeList = new ArrayList<>();
@@ -65,7 +63,6 @@ public class Wave {
             for (Bullet b : removeList) {
                 bullets.remove(b);
             }
-
             player.waitTimeUpdate();
             if (player.getMessage() == null || player.getMessage().equals(oldMessage)) {
                 player.setMessage(message());
@@ -109,28 +106,24 @@ public class Wave {
                 for (Zombie deadZombie: toBeRemoved) {
                     aliveZombies.remove(deadZombie);
                 }
-
                 for (Point exp: Bullet.getRpgExplosion().keySet()) {
                     if (tiles[exp.getX()][exp.getY()].equals(Tileset.FLOOR)
                         || tiles[exp.getX()][exp.getY()].description().contains("RPG")) {
                         tiles[exp.getX()][exp.getY()] = Bullet.getRpgExplosion().get(exp);
                     }
                 }
-
                 while (!waveZombies.isEmpty() && aliveZombies.size() < 20) {
                     Zombie z = waveZombies.remove(); // dequeue a zombie from the waiting list
                     aliveZombies.add(z);
                     // spawn the zombie 'z'
                     tiles[z.location.getX()][z.location.getY()] = z.tile();
                 }
-
             }
 
             if (player.getMessage() == null || player.getMessage().equals(oldMessage)) {
                 player.setMessage(message());
             }
         }
-
     }
 
     static int currentWave() {

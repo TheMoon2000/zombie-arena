@@ -48,7 +48,7 @@ public class EndMenu {
                 case '1':
                     // Restart the world
                     String newWorld = "N" + Engine.getSeed() + "S";
-                    InputHistory.reloaded = false;
+                    InputHistory.setReloaded(false);
                     InputHistory.createNewFile(newWorld);
                     reset = true; replay = false;
                     return;
@@ -58,10 +58,10 @@ public class EndMenu {
                         StdDraw.clear(StdDraw.BLACK);
                         StdDraw.show();
                     }
-                    InputHistory.reloaded = false;
+                    InputHistory.setReloaded(false);
                     return;
                 case '3':
-                    InputHistory.reloaded = false;
+                    InputHistory.setReloaded(false);
                     InputHistory.createNewFile();
                     reset = true; replay = false;
                     return;
