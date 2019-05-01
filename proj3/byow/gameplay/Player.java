@@ -2,7 +2,6 @@ package byow.gameplay;
 
 import byow.Core.Engine;
 import byow.InputDemo.InputSource;
-import byow.InputDemo.KeyboardInputSource;
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;

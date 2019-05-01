@@ -297,13 +297,8 @@ public class Engine {
                         player.move(Direction.parse(next)); renderGame(kb, tiles, player);
                     }
                     break;
-                case ' ':
-                    if (player != null) {
-                        player.fire(); renderGame(kb, tiles, player);
-                    }
-                    break;
-                case 'R':
-                    reload(player); renderGame(kb, tiles, player); break;
+                case ' ': attemptFire(player); renderGame(kb, tiles, player); break;
+                case 'R': reload(player); renderGame(kb, tiles, player); break;
                 case 'T': Wave.withPaths(ter, kb); break;
                 case 'L':
                     if (!InputHistory.isReloaded() && InputHistory.hasValidInput()) {
@@ -312,8 +307,10 @@ public class Engine {
                     } else if (player != null) { // end of reloading
                         kb = kbInput; replay = false;
                         src = kbInput ? new KeyboardInputSource() : tmpSource;
-                        ter.initialize(WIDTH, HEIGHT + 3); renderGame(kbInput, tiles, player);
-                        renewDisplayBar(player); locate(player);
+                        if (kb) {
+                            ter.initialize(WIDTH, HEIGHT + 3); renderGame(kbInput, tiles, player);
+                            renewDisplayBar(player); locate(player);
+                        }
                     }
                     break;
                 case 'B': //buy a weapon from the store
@@ -339,6 +336,12 @@ public class Engine {
             sleep(100, replay); // for debugging only
         }
         return tiles;
+    }
+
+    private void attemptFire(Player player) {
+        if (player != null) {
+            player.fire();
+        }
     }
 
     private InputSource loadSrc() {
