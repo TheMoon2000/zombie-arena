@@ -232,7 +232,7 @@ public class Engine implements Serializable {
                     }
             }
             if (backToMenu) {
-                backToMenu = false; return interact(src, false);
+                backToMenu = false; player = null; return interact(src, false);
             }
             sleep(100, replay);
         }

@@ -45,7 +45,7 @@ class Zombie extends GameCharacter {
             attack();
         } else if ((desTile.description().toLowerCase().contains("bullet")
                 || desTile.description().equals("Flame")) && !isHurt) {
-            int damage = 0;
+            int damage = -1;
             Bullet needRemovalRPGBullet = null;
             for (Bullet b: wave.bullets) {
                 if (b.location.equals(destination)) {
@@ -63,7 +63,7 @@ class Zombie extends GameCharacter {
                 wave.bullets.remove(needRemovalRPGBullet);
             }
 
-            if (damage > 0) {
+            if (damage >= 0) {
                 tiles[location.getX()][location.getY()] = Tileset.FLOOR;
                 tiles[destination.getX()][destination.getY()] = tile();
                 refreshTile(location, tiles);
