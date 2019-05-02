@@ -44,7 +44,7 @@ public class Engine implements Serializable {
     private Random r;
     private boolean kbInput = false;
     private long seed = 0;
-    private TETile[][] tiles;
+    private TETile[][] tiles = new TETile[WIDTH][HEIGHT];
     private Queue<Point> toBeCleared;
     private Player player = null;
     private Wave wave;
@@ -169,14 +169,15 @@ public class Engine implements Serializable {
     public TETile[][] interact(InputSource src, boolean replay) {
         makeMenu(); seed = 0; boolean startReadingSeed = false; toBeCleared = new ArrayDeque<>();
         while (src.possibleNextInput()) {
-            while (kbInput && !replay && !StdDraw.hasNextKeyTyped()) {
+            /*while (kbInput && !replay && !StdDraw.hasNextKeyTyped()) {
                 sleep(10, false); renewDisplayBar();
-            }
+            }*/
             char next = src.getNextKey(); history.append(next); renderRPG();
             switch (next) {
                 case ':': // if :Q then save and quit
+                    history.deleteCharAt(history.length() - 1);
                     if (src.getNextKey() == 'Q' && player != null) {
-                        save(); // System.exit(0);
+                        save(); System.exit(0);
                     }
                     break;
                 case 'Q': System.exit(0);
@@ -188,7 +189,7 @@ public class Engine implements Serializable {
                 case 'S': // start game
                     if (player == null && startReadingSeed) {
                         startReadingSeed = false;
-                        startNewWorld(src);
+                        startNewWorld(src, false);
                         break;
                     } // fall through is 'S' refers to a direction
                 case 'W': case 'A': case 'D':
@@ -201,7 +202,10 @@ public class Engine implements Serializable {
                 case 'T': wave.withPaths(ter, kbInput); break;
                 case 'L':
                     Engine potential = loadEngine();
+                    history.deleteCharAt(history.length() - 1);
                     if (potential != null) {
+                        this.history = potential.history;
+                        System.out.println("loaded history: " + this.history);
                         this.r = potential.r; this.seed = potential.seed;
                         this.tiles = potential.tiles; this.ter = potential.ter;
                         this.player = potential.player; this.wave = potential.wave;
@@ -212,7 +216,6 @@ public class Engine implements Serializable {
                         }
                         Direction.setArena(potential.arena);
                     }
-                    history.deleteCharAt(history.length() - 1);
                     break;
                 case 'B': //buy a weapon from the store
                     if (player != null && player.atShop()) {
@@ -242,13 +245,20 @@ public class Engine implements Serializable {
     /**
      * Constructs a fresh world
      * @param src the input source that the world will use
+     * @param addSeed whether to insert the seed into the history string
      */
 
-    public void startNewWorld(InputSource src) {
+    public void startNewWorld(InputSource src, boolean addSeed) {
         r = new Random(seed);
+        if (addSeed) {
+            history.append('N');
+            history.append(seed);
+            history.append('S');
+        }
         tiles = new TETile[WIDTH][HEIGHT]; generateWorld();
-        player = new Player(randomPlacement(), this);
+        this.player = new Player(randomPlacement(), this);
         if (kbInput) {
+            System.out.println("reset world, player health = " + player.getHealth());
             ter.initialize(WIDTH, HEIGHT + 3); renderGame(src);
             locate();
         }
@@ -285,12 +295,13 @@ public class Engine implements Serializable {
      *
      */
     public void renderGame(InputSource src) {
+
         if (kbInput && !backToMenu) {
             ter.renderFrame(tiles);
         }
 
         if (player.getHealth() == 0) {
-            EndMenu menu = new EndMenu(player, "Game Over");
+            EndMenu menu = new EndMenu(player, "Game Over", this);
             menu.open(src);
             return;
         }
@@ -307,7 +318,6 @@ public class Engine implements Serializable {
 
     /**
      * Pause for a moment
-     *
      * @param n (in milliseconds) the time to wait
      */
     private static void sleep(int n, boolean replay) {
@@ -802,7 +812,12 @@ public class Engine implements Serializable {
     }
 
     public void setBackToMenu() {
+        player = null;
         backToMenu = true;
+    }
+
+    public void setPlayer(Player p) {
+        this.player = p;
     }
 
     public void setHistory(StringBuilder h) {

@@ -24,11 +24,11 @@ public class EndMenu {
     private static boolean replay = false;
     private Engine engine;
 
-    public EndMenu(Player player, String myTitle) {
+    public EndMenu(Player player, String myTitle, Engine e) {
         renderer = player.engine.getTer();
         titleText = myTitle;
         keyboard = player.engine.isKbInput();
-        this.engine = player.engine;
+        engine = e;
         engine.save();
     }
 
@@ -41,13 +41,13 @@ public class EndMenu {
                 case ':': // if :Q then save and quit
                     if (source.getNextKey() == 'Q') {
                         engine.save();
-                        // System.exit(0);
+                        System.exit(0);
                     }
                     break;
                 case '1':
                     // Restart the world
                     engine.setHistory(new StringBuilder());
-                    engine.startNewWorld(source);
+                    engine.startNewWorld(source, true);
                     return;
                 case '2':
                     String input = engine.getHistory();

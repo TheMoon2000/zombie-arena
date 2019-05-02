@@ -81,7 +81,7 @@ public class Wave implements Serializable {
                     wave++; preparation = wave == 1 ? 50 : 60;
                 } else {
                     // Ends game, player wins
-                    EndMenu menu = new EndMenu(player, "You Win!");
+                    EndMenu menu = new EndMenu(player, "You Win!", player.engine);
                     menu.open(new KeyboardInputSource());
                 }
             } else if (zombiesRemaining() == 0) {
