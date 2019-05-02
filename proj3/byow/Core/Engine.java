@@ -175,10 +175,11 @@ public class Engine implements Serializable {
             char next = src.getNextKey(); history.append(next); renderRPG();
             switch (next) {
                 case ':': // if :Q then save and quit
-                    if (src.getNextKey() == 'Q') {
+                    if (src.getNextKey() == 'Q' && player != null) {
                         save(); // System.exit(0);
                     }
                     break;
+                case 'Q': System.exit(0);
                 case 'N': // new world
                     if (player == null) {
                         startReadingSeed = true; drawSeedPrompt();
@@ -201,11 +202,10 @@ public class Engine implements Serializable {
                 case 'L':
                     Engine potential = loadEngine();
                     if (potential != null) {
+                        this.r = potential.r; this.seed = potential.seed;
                         this.tiles = potential.tiles; this.ter = potential.ter;
                         this.player = potential.player; this.wave = potential.wave;
-                        this.r = potential.r; this.seed = potential.seed;
-                        this.toBeCleared = potential.toBeCleared;
-                        this.arena = potential.arena;
+                        this.toBeCleared = potential.toBeCleared; this.arena = potential.arena;
                         if (kbInput) {
                             ter.initialize(WIDTH, HEIGHT + 3);
                             renderGame(src); locate(); renewDisplayBar();
