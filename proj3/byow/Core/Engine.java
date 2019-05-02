@@ -285,7 +285,7 @@ public class Engine implements Serializable {
      *
      */
     public void renderGame(InputSource src) {
-        if (kbInput) {
+        if (kbInput && !backToMenu) {
             ter.renderFrame(tiles);
         }
 
@@ -805,5 +805,7 @@ public class Engine implements Serializable {
         backToMenu = true;
     }
 
-
+    public void setHistory(StringBuilder h) {
+        this.history = h;
+    }
 }

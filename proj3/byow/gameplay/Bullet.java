@@ -77,7 +77,7 @@ public class Bullet implements Serializable {
         }
         if (tiles[location.getX()][location.getY()].equals(Tileset.WEAPON_BOX)
             || tiles[location.getX()][location.getY()].equals(Tileset.WALL)
-            || distanceTravelled > weapon.getMaxDistance()) {
+            || distanceTravelled > weapon.getMaxDistance() || currentDamage() == 0) {
             return true;
         }
 

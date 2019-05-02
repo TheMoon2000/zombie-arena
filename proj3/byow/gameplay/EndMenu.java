@@ -46,6 +46,7 @@ public class EndMenu {
                     break;
                 case '1':
                     // Restart the world
+                    engine.setHistory(new StringBuilder());
                     engine.startNewWorld(source);
                     return;
                 case '2':

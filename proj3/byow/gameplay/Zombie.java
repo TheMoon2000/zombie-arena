@@ -73,6 +73,7 @@ class Zombie extends GameCharacter {
             }
         } else {
             isHurt = false;
+            System.out.println("zombie is hurt, does not advance");
         }
     }
 
@@ -91,16 +92,21 @@ class Zombie extends GameCharacter {
         if (getHealth() == 0) {
             System.out.println("WARNING: A zombie has 0 health but is still alive!");
         }
-        player.reduceHealth(Math.min(10 + wave.currentWave() * 3, getHealth() + 1));
+        player.reduceHealth(Math.min(10 + wave.currentWave(), getHealth() + 1));
     }
 
     @Override
     void reduceHealth(int amount) {
         super.reduceHealth(amount);
-        isHurt = true;
+        if (amount > 0) {
+            isHurt = true;
+        }
         if (this.getHealth() == 0) {
             tiles[location.getX()][location.getY()] = Tileset.FLOOR;
             player.addPoints(80);
+            if (wave.r.nextDouble() > 0.9) {
+                player.addHealth(wave.r.nextInt(15));
+            }
             if (explosive && Math.abs(location.getX() - player.getLocation().getX()) <= 1
                 && Math.abs(location.getY() - player.getLocation().getY()) <= 1) {
                 //find adjacent zombies first

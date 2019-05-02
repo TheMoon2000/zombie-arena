@@ -51,7 +51,7 @@ public class Weapon implements ShopItem, Serializable {
 
     static Weapon makePistol() {
         Weapon pistol = new Weapon("H&K USP");
-        pistol.damage = 22;
+        pistol.damage = 25;
         pistol.maxDistance = 8;
         pistol.clip = 10;
         pistol.clipCapacity = 10;
@@ -87,7 +87,7 @@ public class Weapon implements ShopItem, Serializable {
 
     static Weapon makeSniperRifle() {
         Weapon sniperRifle = new Weapon("Barrett");
-        sniperRifle.damage = 80;
+        sniperRifle.damage = 85;
         sniperRifle.maxDistance = 80;
         sniperRifle.clip = 5;
         sniperRifle.clipCapacity = 5;
@@ -138,7 +138,7 @@ public class Weapon implements ShopItem, Serializable {
 
     static Weapon makeMachinePistol() {
         Weapon machinePistol = new Weapon("Glock");
-        machinePistol.damage = 30;
+        machinePistol.damage = 35;
         machinePistol.maxDistance = 10;
         machinePistol.clip = 15;
         machinePistol.clipCapacity = 15;
@@ -153,7 +153,7 @@ public class Weapon implements ShopItem, Serializable {
 
     static Weapon makeMinigun() {
         Weapon minigun = new Weapon("Minigun");
-        minigun.damage = 60;
+        minigun.damage = 62;
         minigun.maxDistance = 15;
         minigun.clip = 100;
         minigun.clipCapacity = 100;
@@ -189,10 +189,10 @@ public class Weapon implements ShopItem, Serializable {
         Weapon rocketLauncher = new Weapon("RPG");
         rocketLauncher.damage = 100;
         rocketLauncher.maxDistance = 20;
-        rocketLauncher.clip = 1;
-        rocketLauncher.clipCapacity = 1;
+        rocketLauncher.clip = 2;
+        rocketLauncher.clipCapacity = 2;
         rocketLauncher.ammo = 10;
-        rocketLauncher.ammoCapacity = 15;
+        rocketLauncher.ammoCapacity = 16;
         rocketLauncher.speed = 1;
         rocketLauncher.waitTime = 3;
         rocketLauncher.penetration = 1;
@@ -202,8 +202,8 @@ public class Weapon implements ShopItem, Serializable {
 
     static Weapon flamethrower() {
         Weapon flamethrower = new Weapon("Flamethrower");
-        flamethrower.damage = 75;
-        flamethrower.maxDistance = 6;
+        flamethrower.damage = 76;
+        flamethrower.maxDistance = 7;
         flamethrower.clip = 50;
         flamethrower.clipCapacity = 50;
         flamethrower.ammo = 200;
@@ -217,8 +217,8 @@ public class Weapon implements ShopItem, Serializable {
 
     static Weapon flame() {
         Weapon flame = new Weapon("Flame");
-        flame.damage = 45;
-        flame.maxDistance = 5;
+        flame.damage = 48;
+        flame.maxDistance = 6;
         flame.speed = 1;
         flame.penetration = 0.35;
         return flame;
@@ -230,7 +230,7 @@ public class Weapon implements ShopItem, Serializable {
         } else if (name.equals("Shotgun")) {
             return (int) (Math.max(0.0, damage - distance * 2) * Math.pow(penetration, z));
         } else if (name.contains("Flame")) {
-            return Math.max(0, damage - distance * distance - z * 5);
+            return Math.max(0, damage - (int) Math.pow(distance, 1.5) - z * 5);
         } else {
             return (int) (Math.max(0.0, damage - distance) * Math.pow(penetration, z));
         }
@@ -304,13 +304,13 @@ public class Weapon implements ShopItem, Serializable {
                 return new TETile('⋆', new Color(226, 220, 214),
                         Tileset.FLOOR_COLOR, "MP5 bullet");
             case "Flamethrower":
-                int red = (int) (255.0 / Math.pow(1.2, (double) distanceTravelled - 1));
+                int red = (int) (250.0 / Math.pow(1.22, (double) distanceTravelled - 1)) + 5;
                 int green = (int) (120.0 / Math.pow(1.25, (double) distanceTravelled - 1));
                 int blue = (int) (80.0 / Math.pow(1.3, (double) distanceTravelled - 1));
                 return new TETile('✦', new Color(red, green, blue),
                         Tileset.FLOOR_COLOR, "Flame");
             case "Flame":
-                red = (int) (190.0 / Math.pow(1.3, (double) distanceTravelled - 1)) + 5;
+                red = (int) (190.0 / Math.pow(1.29, (double) distanceTravelled - 1)) + 5;
                 green = (int) (80.0 / Math.pow(1.3, (double) distanceTravelled - 1)) + 1;
                 blue = (int) (60.0 / Math.pow(1.35, (double) distanceTravelled - 1)) + 1;
                 return new TETile('✧', new Color(red, green, blue),

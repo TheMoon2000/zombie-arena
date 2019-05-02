@@ -22,7 +22,7 @@ public class Wave implements Serializable {
     private static final int MAX_WAVE = 12;
 
     private int wave;
-    private Random r;
+    Random r;
     private boolean waveStarted;
     private Player player;
     private TETile[][] tiles;
