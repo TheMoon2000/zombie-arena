@@ -310,9 +310,9 @@ public class Weapon implements ShopItem, Serializable {
                 return new TETile('✦', new Color(red, green, blue),
                         Tileset.FLOOR_COLOR, "Flame");
             case "Flame":
-                red = (int) (190.0 / Math.pow(1.29, (double) distanceTravelled - 1)) + 5;
-                green = (int) (80.0 / Math.pow(1.3, (double) distanceTravelled - 1)) + 1;
-                blue = (int) (60.0 / Math.pow(1.35, (double) distanceTravelled - 1)) + 1;
+                red = (int) (192.0 / Math.pow(1.25, (double) distanceTravelled - 1)) + 5;
+                green = (int) (80.0 / Math.pow(1.28, (double) distanceTravelled - 1)) + 1;
+                blue = (int) (65.0 / Math.pow(1.30, (double) distanceTravelled - 1)) + 1;
                 return new TETile('✧', new Color(red, green, blue),
                         Tileset.FLOOR_COLOR, "Flame");
             case "RPG":
