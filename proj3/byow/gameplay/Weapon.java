@@ -230,7 +230,7 @@ public class Weapon implements ShopItem, Serializable {
         } else if (name.equals("Shotgun")) {
             return (int) (Math.max(0.0, damage - distance * 2) * Math.pow(penetration, z));
         } else if (name.contains("Flame")) {
-            return Math.max(0, damage - (int) Math.pow(distance, 1.5) - z * 5);
+            return Math.max(0, damage - (int) Math.pow(distance, 2.0) - z * 5);
         } else {
             return (int) (Math.max(0.0, damage - distance) * Math.pow(penetration, z));
         }
