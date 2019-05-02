@@ -73,7 +73,6 @@ class Zombie extends GameCharacter {
             }
         } else {
             isHurt = false;
-            System.out.println("zombie is hurt, does not advance");
         }
     }
 
