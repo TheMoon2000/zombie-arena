@@ -169,9 +169,9 @@ public class Engine implements Serializable {
     public TETile[][] interact(InputSource src, boolean replay) {
         makeMenu(); seed = 0; boolean startReadingSeed = false; toBeCleared = new ArrayDeque<>();
         while (src.possibleNextInput()) {
-            /*while (kbInput && !replay && !StdDraw.hasNextKeyTyped()) {
+            while (kbInput && !replay && !StdDraw.hasNextKeyTyped()) {
                 sleep(10, false); renewDisplayBar();
-            }*/
+            }
             char next = src.getNextKey(); history.append(next); renderRPG();
             switch (next) {
                 case ':': // if :Q then save and quit
@@ -180,7 +180,7 @@ public class Engine implements Serializable {
                         save(); System.exit(0);
                     }
                     break;
-                case 'Q': System.exit(0);
+                case 'Q': System.exit(0); break;
                 case 'N': // new world
                     if (player == null) {
                         startReadingSeed = true; drawSeedPrompt();

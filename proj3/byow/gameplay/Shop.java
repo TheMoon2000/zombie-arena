@@ -39,7 +39,6 @@ public class Shop {
             renderMenu(selection, engine.getTer(), engine.isKbInput());
             char next = source.getNextKey();
             history.append(next);
-            sleep(30);
 
             switch (next) {
                 case ':': // if :Q then save and quit
@@ -64,6 +63,7 @@ public class Shop {
                     return "You did not buy anything :("; // Exit the shop
                 default:
             }
+            sleep(80);
         }
 
         return "Source interrupted";
