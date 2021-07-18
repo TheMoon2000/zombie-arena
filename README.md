@@ -14,4 +14,4 @@ Here are some important features of the game:
 - After each wave the player has 60 moves to prepare himself for the next wave.
 - We recorded a tutorial at https://www.youtube.com/watch?v=xsSVxd_UbP0.
 
-<img src='screenshots/rocket.png' width=500>
+<img src='screenshots/rocket.png' width=700>
