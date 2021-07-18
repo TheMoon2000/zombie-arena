@@ -13,3 +13,5 @@ Here are some important features of the game:
 - There are 15 waves of zombies. The health and number of zombies gradually increase with the wave number, which increases the difficulty of the game.
 - After each wave the player has 60 moves to prepare himself for the next wave.
 - We recorded a tutorial at https://www.youtube.com/watch?v=xsSVxd_UbP0.
+
+<img src='screenshots/rocket.png' width=500>
